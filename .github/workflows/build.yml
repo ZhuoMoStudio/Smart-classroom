@@ -59,10 +59,10 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
 
-      - name: 设置 Python 3.12
+      - name: 设置 Python 3.11
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: 安装系统依赖
         run: |
@@ -80,6 +80,13 @@ jobs:
           pip install cython
           pip install buildozer
 
+      - name: 安装 Android SDK API 34
+        run: |
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+
       - name: 使用 Buildozer 构建 APK
         run: buildozer -v android debug
 
@@ -89,31 +96,47 @@ jobs:
           name: SmartClassroom-Android
           path: bin/*.apk
 
-  # ==================== 自动创建发行版 ====================
+  # ==================== 条件自动发布 ====================
   create-release:
     name: Create GitHub Release
     needs: [build-windows, build-android]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      - name: 检出代码（用于变更检测）
+        uses: actions/checkout@v6
+
+      - name: 检查 main.py 是否变更
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            main:
+              - 'main.py'
+
       - name: 下载 Windows 产物
+        if: steps.changes.outputs.main == 'true'
         uses: actions/download-artifact@v6
         with:
           name: SmartClassroom-Windows
           path: release-assets/windows
 
       - name: 下载 Android 产物
+        if: steps.changes.outputs.main == 'true'
         uses: actions/download-artifact@v6
         with:
           name: SmartClassroom-Android
           path: release-assets/android
 
       - name: 创建 Release 并上传文件
+        if: steps.changes.outputs.main == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          name: "灵动课堂 v${{ github.run_number }}"
+          body: "自动构建版本，包含 Windows 和 Android 安装包。"
           files: |
             release-assets/windows/*.exe
             release-assets/android/*.apk
