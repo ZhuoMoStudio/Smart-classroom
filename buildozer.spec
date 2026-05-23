@@ -16,6 +16,8 @@ android.minapi = 24
 android.ndk = 28c
 android.accept_sdk_license = True
 android.archs = arm64-v8a
+android.python_version = 3.12
+p4a.python_version = 3.12
 
 osx.python_version = 3
 osx.kivy_version = 2.3.0
