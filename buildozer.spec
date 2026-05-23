@@ -36,7 +36,7 @@ version = 2.5
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.3.0,openssl
+requirements = python3,kivy==2.3.0
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -46,7 +46,7 @@ requirements = python3,kivy==2.3.0,openssl
 #presplash.filename = %(source.dir)s/presplash.png
 
 # (str) Icon of the application
-icon.filename = icon.png
+icon.filename = assets/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = all
@@ -104,7 +104,7 @@ android.minapi = 24
 #android.sdk = 33
 
 # (str) Android NDK version to use
-android.ndk = 25b
+android.ndk = 28c
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 #android.ndk_api = 24
