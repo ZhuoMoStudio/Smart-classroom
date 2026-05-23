@@ -13,14 +13,16 @@ jobs:
   # ==================== Windows 打包 ====================
   build-windows:
     name: Build Windows (PyInstaller)
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
+    permissions:
+      contents: write
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 设置 Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -36,7 +38,7 @@ jobs:
           pyinstaller --onefile --name "SmartClassroom" --icon="icon.ico" --hidden-import kivy.graphics --hidden-import kivy.core.window --hidden-import kivy.uix.widget --hidden-import kivy.uix.boxlayout --hidden-import kivy.uix.gridlayout --hidden-import kivy.uix.floatlayout --hidden-import kivy.uix.scrollview --hidden-import kivy.uix.label --hidden-import kivy.uix.button --hidden-import kivy.uix.textinput --hidden-import kivy.uix.popup --hidden-import kivy.uix.filechooser --hidden-import kivy.uix.behaviors main.py
 
       - name: 上传 Windows 产物
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: SmartClassroom-Windows
           path: dist/SmartClassroom.exe
@@ -48,16 +50,20 @@ jobs:
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: 缓存 Buildozer 依赖
-        uses: actions/cache@v4
+      # 清除旧缓存（避免污染）
+      - name: 清除旧的 Buildozer 缓存
+        run: rm -rf .buildozer
+
+      - name: 缓存 Buildozer 依赖（加速后续构建）
+        uses: actions/cache@v5
         with:
           path: .buildozer
           key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
 
       - name: 设置 Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -81,7 +87,7 @@ jobs:
         run: buildozer -v android debug
 
       - name: 上传 Android 产物
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: SmartClassroom-Android
           path: bin/*.apk
@@ -89,19 +95,21 @@ jobs:
   # ==================== 自动创建发行版 ====================
   create-release:
     name: Create GitHub Release
-    needs: [build-windows, build-android]          # 等待两个平台均构建成功
-    if: startsWith(github.ref, 'refs/tags/v')      # 仅在推送版本标签时运行
+    needs: [build-windows, build-android]
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: 下载 Windows 产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: SmartClassroom-Windows
           path: release-assets/windows
 
       - name: 下载 Android 产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: SmartClassroom-Android
           path: release-assets/android
