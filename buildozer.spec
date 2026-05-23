@@ -6,7 +6,7 @@ package.domain = org.example
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 2.5
-requirements = python3,kivy==2.3.0
+requirements = python3==3.12,kivy==2.3.0
 icon.filename = assets/icon.png
 orientation = all
 fullscreen = 0
@@ -16,8 +16,6 @@ android.minapi = 24
 android.ndk = 28c
 android.accept_sdk_license = True
 android.archs = arm64-v8a
-android.python_version = 3.12
-p4a.python_version = 3.12
 
 osx.python_version = 3
 osx.kivy_version = 2.3.0
