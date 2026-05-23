@@ -159,6 +159,10 @@ android.ndk = 25b
 # (int) port numbers to specify for --private mode
 #p4a.private_storage_ports = 4443,4444
 
+# (list) The CPU architectures to build for
+# Only build for 64-bit to avoid compatibility issues with newer NDK
+android.archs = arm64-v8a
+
 #
 # iOS specific
 #
