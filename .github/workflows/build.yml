@@ -19,48 +19,31 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      # 1. 安装 cairo 图形库（cairosvg 必须的底层依赖）
+      - name: 安装 Windows cairo 运行库
+        run: |
+          choco install gtk3-runtime -y --force
+          # 将 cairo 的 bin 目录加入 PATH
+          echo "C:\Program Files\GTK3-Runtime\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - name: 设置 Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: 安装依赖
+      - name: 安装 Python 依赖
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 从 SVG 生成图标 (icon.png + icon.ico)
+      # 2. SVG → PNG → ICO（现在 cairo 已存在，不会报错）
+      - name: 生成图标（SVG → icon.png + icon.ico）
         run: |
-          python -c "
-          import cairosvg
-          from PIL import Image
-          # SVG → 512x512 PNG
-          cairosvg.svg2png(url='assets/icon.svg', write_to='icon.png', output_width=512, output_height=512)
-          # PNG → 多尺寸 ICO (16,32,48,256)
-          img = Image.open('icon.png')
-          img.save('icon.ico', format='ICO', sizes=[(16,16),(32,32),(48,48),(256,256)])
-          "
+          python -c "import cairosvg; from PIL import Image; cairosvg.svg2png(url='assets/icon.svg', write_to='icon.png', output_width=512, output_height=512); img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(16,16),(32,32),(48,48),(256,256)])"
 
-      - name: 使用 PyInstaller 打包为单文件 exe（含图标）
+      - name: 使用 PyInstaller 打包
         run: |
-          pyinstaller --onefile `
-            --name "SmartClassroom" `
-            --icon="icon.ico" `
-            --add-data "数据;数据" `
-            --hidden-import kivy.graphics `
-            --hidden-import kivy.core.window `
-            --hidden-import kivy.uix.widget `
-            --hidden-import kivy.uix.boxlayout `
-            --hidden-import kivy.uix.gridlayout `
-            --hidden-import kivy.uix.floatlayout `
-            --hidden-import kivy.uix.scrollview `
-            --hidden-import kivy.uix.label `
-            --hidden-import kivy.uix.button `
-            --hidden-import kivy.uix.textinput `
-            --hidden-import kivy.uix.popup `
-            --hidden-import kivy.uix.filechooser `
-            --hidden-import kivy.uix.behaviors `
-            main.py
+          pyinstaller --onefile --name "SmartClassroom" --icon="icon.ico" --add-data '数据;数据' --hidden-import kivy.graphics --hidden-import kivy.core.window --hidden-import kivy.uix.widget --hidden-import kivy.uix.boxlayout --hidden-import kivy.uix.gridlayout --hidden-import kivy.uix.floatlayout --hidden-import kivy.uix.scrollview --hidden-import kivy.uix.label --hidden-import kivy.uix.button --hidden-import kivy.uix.textinput --hidden-import kivy.uix.popup --hidden-import kivy.uix.filechooser --hidden-import kivy.uix.behaviors main.py
 
       - name: 上传 Windows 产物
         uses: actions/upload-artifact@v4
@@ -77,19 +60,26 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 缓存 Buildozer 依赖（加速构建）
+        uses: actions/cache@v4
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+
       - name: 设置 Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      # 3. 修复 Ubuntu 24.04 包名问题：移除 libtinfo5，使用 ncurses-dev
       - name: 安装系统依赖
         run: |
           sudo apt update
           sudo apt install -y \
             git zip unzip openjdk-17-jdk \
             python3-pip autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev \
-            libtinfo5 cmake libffi-dev libssl-dev \
+            zlib1g-dev libncurses-dev libncursesw-dev \
+            cmake libffi-dev libssl-dev \
             libltdl-dev libusb-1.0-0-dev libcairo2
 
       - name: 安装 Buildozer 和 Cython
@@ -98,13 +88,11 @@ jobs:
           pip install cython
           pip install buildozer
 
-      - name: 从 SVG 生成 Android 图标 (icon.png)
+      # 4. 生成 Android 图标（cairo 已安装，cairosvg 可正常使用）
+      - name: 生成图标（SVG → icon.png）
         run: |
           pip install cairosvg Pillow
-          python -c "
-          import cairosvg
-          cairosvg.svg2png(url='assets/icon.svg', write_to='icon.png', output_width=512, output_height=512)
-          "
+          python -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='icon.png', output_width=512, output_height=512)"
 
       - name: 使用 Buildozer 构建 APK
         run: buildozer -v android debug
