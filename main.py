@@ -931,7 +931,7 @@ class SmartClassroomApp(App):
         return self.main_screen
         
     def on_start(self):
-        # 智能新手引导生命周期
+        # 新手引导生命周期
         if self.store.is_first_time:
             OnboardingModal.show(self, self.main_screen.p_leader.refresh)
         else:
