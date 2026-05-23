@@ -1,14 +1,18 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
 dist/
 build/
 *.spec
+
+# 数据文件夹
 数据/
+
+# Buildozer
 .buildozer/
 bin/
+
+# 虚拟环境
 venv/
 env/
-# 以下文件是我们需要提交的图标，不要忽略
-# icon.png
-# icon.ico
