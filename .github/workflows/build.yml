@@ -31,7 +31,7 @@ jobs:
 
       - name: 使用 PyInstaller 打包
         run: |
-          pyinstaller --onefile --name "SmartClassroom" --icon="icon.ico" --add-data '数据;数据' --hidden-import kivy.graphics --hidden-import kivy.core.window --hidden-import kivy.uix.widget --hidden-import kivy.uix.boxlayout --hidden-import kivy.uix.gridlayout --hidden-import kivy.uix.floatlayout --hidden-import kivy.uix.scrollview --hidden-import kivy.uix.label --hidden-import kivy.uix.button --hidden-import kivy.uix.textinput --hidden-import kivy.uix.popup --hidden-import kivy.uix.filechooser --hidden-import kivy.uix.behaviors main.py
+          pyinstaller --onefile --name "SmartClassroom" --icon="icon.ico" --hidden-import kivy.graphics --hidden-import kivy.core.window --hidden-import kivy.uix.widget --hidden-import kivy.uix.boxlayout --hidden-import kivy.uix.gridlayout --hidden-import kivy.uix.floatlayout --hidden-import kivy.uix.scrollview --hidden-import kivy.uix.label --hidden-import kivy.uix.button --hidden-import kivy.uix.textinput --hidden-import kivy.uix.popup --hidden-import kivy.uix.filechooser --hidden-import kivy.uix.behaviors main.py
 
       - name: 上传 Windows 产物
         uses: actions/upload-artifact@v4
