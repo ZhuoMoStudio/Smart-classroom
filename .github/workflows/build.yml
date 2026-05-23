@@ -78,14 +78,6 @@ jobs:
             libltdl-dev libusb-1.0-0-dev libcairo2 \
             lld
 
-      - name: 增加 Swap 空间
-        run: |
-          sudo fallocate -l 4G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
-
       - name: 安装 Buildozer 和 Cython
         run: |
           pip install --upgrade pip
