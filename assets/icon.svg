@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Windows 标准圆角 (112px for 512x512) -->
+  <rect width="512" height="512" rx="112" fill="#5865F2"/>
+  
+  <!-- 书本/讲台底座 -->
+  <rect x="128" y="320" width="256" height="112" rx="16" fill="white" opacity="0.9"/>
+  <rect x="144" y="304" width="224" height="16" rx="8" fill="white" opacity="0.7"/>
+  
+  <!-- 随机抽取符号 -->
+  <g transform="translate(256, 200)">
+    <!-- 外圈 -->
+    <circle cx="0" cy="0" r="80" fill="white" opacity="0.2"/>
+    <!-- 内圈 -->
+    <circle cx="0" cy="0" r="56" fill="white"/>
+    <!-- 随机符号 (加粗线条，小尺寸更清晰) -->
+    <path d="M-24 -24 L24 24 M-24 0 L24 0 M-24 24 L24 -24" 
+          stroke="#5865F2" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  
+  <!-- 顶部装饰点 -->
+  <circle cx="176" cy="128" r="16" fill="white" opacity="0.8"/>
+  <circle cx="256" cy="96" r="20" fill="white" opacity="0.9"/>
+  <circle cx="336" cy="128" r="16" fill="white" opacity="0.8"/>
+</svg>
