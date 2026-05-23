@@ -19,12 +19,12 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      # 1. 安装 cairo 图形库（cairosvg 必须的底层依赖）
-      - name: 安装 Windows cairo 运行库
-        run: |
-          choco install gtk3-runtime -y --force
-          # 将 cairo 的 bin 目录加入 PATH
-          echo "C:\Program Files\GTK3-Runtime\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      # 通过 MSYS2 安装 cairo（包含 libcairo-2.dll），比 choco 更稳定
+      - name: 通过 MSYS2 安装 cairo
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: mingw-w64-x86_64-cairo
 
       - name: 设置 Python 3.12
         uses: actions/setup-python@v5
@@ -36,9 +36,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 2. SVG → PNG → ICO（现在 cairo 已存在，不会报错）
+      # 将 MSYS2 中的 cairo bin 目录加入 PATH，使 cairocffi 能找到 libcairo-2.dll
       - name: 生成图标（SVG → icon.png + icon.ico）
         run: |
+          $env:Path = "C:\msys64\mingw64\bin;$env:Path"
           python -c "import cairosvg; from PIL import Image; cairosvg.svg2png(url='assets/icon.svg', write_to='icon.png', output_width=512, output_height=512); img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(16,16),(32,32),(48,48),(256,256)])"
 
       - name: 使用 PyInstaller 打包
@@ -71,14 +72,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      # 3. 修复 Ubuntu 24.04 包名问题：移除 libtinfo5，使用 ncurses-dev
+      # Ubuntu 24.04 上真正存在的包：libncurses-dev（同时替代 libncurses5-dev 和 libncursesw5-dev）
+      # libtinfo5 已被 libtinfo6 取代，CMake/FFI 等底层库会自动依赖，无需手动安装
       - name: 安装系统依赖
         run: |
           sudo apt update
           sudo apt install -y \
             git zip unzip openjdk-17-jdk \
             python3-pip autoconf libtool pkg-config \
-            zlib1g-dev libncurses-dev libncursesw-dev \
+            zlib1g-dev libncurses-dev \
             cmake libffi-dev libssl-dev \
             libltdl-dev libusb-1.0-0-dev libcairo2
 
@@ -88,7 +90,7 @@ jobs:
           pip install cython
           pip install buildozer
 
-      # 4. 生成 Android 图标（cairo 已安装，cairosvg 可正常使用）
+      # 生成 Android 图标（cairo 已安装，cairosvg 可正常使用）
       - name: 生成图标（SVG → icon.png）
         run: |
           pip install cairosvg Pillow
