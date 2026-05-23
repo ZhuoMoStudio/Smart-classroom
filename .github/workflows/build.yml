@@ -53,9 +53,6 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v6
 
-      - name: 清除旧的 Buildozer 缓存
-        run: rm -rf .buildozer
-
       - name: 缓存 Buildozer 依赖
         uses: actions/cache@v5
         with:
@@ -75,8 +72,7 @@ jobs:
             python3-pip autoconf libtool pkg-config \
             zlib1g-dev libncurses-dev \
             cmake libffi-dev libssl-dev \
-            libltdl-dev libusb-1.0-0-dev libcairo2 \
-            lld
+            libltdl-dev libusb-1.0-0-dev
 
       - name: 安装 Buildozer 和 Cython
         run: |
@@ -85,9 +81,6 @@ jobs:
           pip install buildozer
 
       - name: 使用 Buildozer 构建 APK
-        env:
-          MAKEFLAGS: -j1
-          CFLAGS: -Wno-implicit-function-declaration -Wno-int-conversion
         run: buildozer -v android debug
 
       - name: 上传 Android 产物
