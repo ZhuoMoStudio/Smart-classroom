@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.spec
+
+# 数据文件夹（运行时生成，不纳入版本控制）
+数据/
+
+# Buildozer 中间文件
+.buildozer/
+bin/
+
+# 生成的图标文件（由 CI 自动生成，无需提交）
+icon.png
+icon.ico
+
+# 虚拟环境
+venv/
+env/
