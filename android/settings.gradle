@@ -1,12 +1,11 @@
-// 顶层获取 Flutter SDK 路径，供 pluginManagement 和 dependencyResolutionManagement 共用
-def props = new Properties()
-def propsFile = file("local.properties")
-if (propsFile.exists()) {
-    propsFile.withInputStream { props.load(it) }
-}
-def flutterSdkPath = props.getProperty("flutter.sdk")
-
 pluginManagement {
+    def props = new Properties()
+    def propsFile = file("local.properties")
+    if (propsFile.exists()) {
+        propsFile.withInputStream { props.load(it) }
+    }
+    def flutterSdkPath = props.getProperty("flutter.sdk")
+
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
@@ -29,8 +28,14 @@ dependencyResolutionManagement {
         mavenCentral()
         gradlePluginPortal()
         // Flutter 本地 Maven 仓库（per-ABI embedding artifacts）
+        def fRoot = System.getenv("FLUTTER_ROOT")
+        if (fRoot == null) {
+            def p = new Properties()
+            file("local.properties").withInputStream { p.load(it) }
+            fRoot = p.getProperty("flutter.sdk")
+        }
         maven {
-            url "$flutterSdkPath/bin/cache/artifacts/engine/android"
+            url "$fRoot/bin/cache/artifacts/engine/android"
         }
     }
 }
