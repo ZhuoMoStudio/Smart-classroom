@@ -18,6 +18,8 @@ if (flutterRoot == null) {
 if (flutterRoot != null) {
     subprojects {
         repositories {
+            google()
+            mavenCentral()
             maven {
                 url "$flutterRoot/bin/cache/artifacts/engine/android"
             }
