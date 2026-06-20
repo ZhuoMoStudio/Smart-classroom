@@ -1,30 +1,115 @@
-import 'package:webdav_client/webdav_client.dart' as wc;
+import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
+
+class WebDavFile {
+  final String name;
+  final String path;
+  final int size;
+  final DateTime lastModified;
+  final bool isDirectory;
+
+  const WebDavFile({
+    required this.name,
+    required this.path,
+    this.size = 0,
+    required this.lastModified,
+    this.isDirectory = false,
+  });
+}
 
 class WebDavClientService {
-  late wc.WebDavClient _c; bool _connected = false;
+  final Dio _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 10)));
+  bool _connected = false;
+
   bool get isConnected => _connected;
 
-  Future<bool> connect({required String url, required String username, required String password}) async {
+  Future<bool> connect({
+    required String url,
+    required String username,
+    required String password,
+  }) async {
     try {
-      _c = wc.WebDavClient(url, user: username, password: password, timeout: const Duration(seconds: 10));
-      await _c.readDir('/'); _connected = true; return true;
-    } catch (_) { _connected = false; return false; }
+      _dio.options.baseUrl = url.endsWith('/') ? url : '$url/';
+      _dio.options.headers['Authorization'] =
+          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+      final resp = await _dio.request('/', options: Options(method: 'PROPFIND'));
+      _connected = resp.statusCode == 207;
+      return _connected;
+    } catch (_) {
+      _connected = false;
+      return false;
+    }
   }
 
-  Future<List<wc.WebDavFile>> listFiles(String rp) async { if (!_connected) return []; return await _c.readDir(rp); }
-
-  Future<void> uploadFile(String lp, String rp) async {
-    final f = File(lp); if (!await f.exists()) return; await _c.write(rp, await f.readAsBytes());
+  Future<List<WebDavFile>> listFiles(String remotePath) async {
+    if (!_connected) return [];
+    try {
+      final resp = await _dio.request(remotePath,
+          options: Options(method: 'PROPFIND', headers: {'Depth': '1'}));
+      if (resp.statusCode != 207) return [];
+      return _parseMultiStatus(resp.data.toString(), remotePath);
+    } catch (_) {
+      return [];
+    }
   }
 
-  Future<void> downloadFile(String rp, String lp) async {
-    await File(lp).writeAsBytes(await _c.read(rp));
+  Future<void> uploadFile(String localPath, String remotePath) async {
+    final file = File(localPath);
+    if (!await file.exists()) return;
+    final bytes = await file.readAsBytes();
+    await _dio.put(remotePath, data: bytes);
   }
 
-  Future<void> deleteFile(String rp) async { await _c.delete(rp); }
+  Future<void> downloadFile(String remotePath, String localPath) async {
+    final resp = await _dio.get(remotePath,
+        options: Options(responseType: ResponseType.bytes));
+    await File(localPath).writeAsBytes(resp.data);
+  }
 
-  Future<wc.WebDavFile?> getFileInfo(String rp) async {
-    try { final fs = await _c.readDir(rp); if (fs.isNotEmpty) return fs.first; } catch (_) {} return null;
+  Future<void> deleteFile(String remotePath) async {
+    await _dio.delete(remotePath);
+  }
+
+  Future<WebDavFile?> getFileInfo(String remotePath) async {
+    try {
+      final files = await listFiles(remotePath);
+      return files.isNotEmpty ? files.first : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<WebDavFile> _parseMultiStatus(String xml, String basePath) {
+    final files = <WebDavFile>[];
+    final responses = xml.split('<D:response>').skip(1);
+    for (final part in responses) {
+      final hrefMatch = RegExp(r'<D:href>(.*?)</D:href>').firstMatch(part);
+      final nameMatch =
+          RegExp(r'<D:displayname>(.*?)</D:displayname>').firstMatch(part);
+      final sizeMatch =
+          RegExp(r'<D:getcontentlength>(.*?)</D:getcontentlength>').firstMatch(part);
+      final dateMatch =
+          RegExp(r'<D:getlastmodified>(.*?)</D:getlastmodified>').firstMatch(part);
+      final collMatch = RegExp(r'<D:collection/>').firstMatch(part);
+
+      if (hrefMatch == null) continue;
+      final href = hrefMatch.group(1)!.trim();
+      final name = nameMatch?.group(1)?.trim() ??
+          href.split('/').where((s) => s.isNotEmpty).last;
+      final size = int.tryParse(sizeMatch?.group(1) ?? '0') ?? 0;
+      DateTime lm = DateTime.now();
+      if (dateMatch != null) {
+        lm = DateTime.tryParse(dateMatch.group(1)!) ?? DateTime.now();
+      }
+      files.add(WebDavFile(
+        name: name,
+        path: href,
+        size: size,
+        lastModified: lm,
+        isDirectory: collMatch != null,
+      ));
+    }
+    return files;
   }
 }
