@@ -10,7 +10,7 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Java 17
         uses: actions/setup-java@v5
@@ -82,7 +82,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -101,6 +101,17 @@ jobs:
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
           (Get-Content windows/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/CMakeLists.txt
           (Get-Content windows/runner/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/runner/CMakeLists.txt
+          $config = @{
+            configurations = @(
+              @{
+                name = "x64-Release"
+                generator = "Visual Studio 18 2026"
+                configurationType = "Release"
+              }
+            )
+          }
+          $config | ConvertTo-Json -Depth 3 | Set-Content windows/CMakeSettings.json
+          Write-Host "Created windows/CMakeSettings.json with VS 2026 generator"
 
       - name: Create dummy sound files
         shell: bash
@@ -121,20 +132,9 @@ jobs:
             Write-Host "Cleaned build/windows CMake cache"
           }
 
-      - name: Patch Flutter SDK (VS generator)
-        shell: pwsh
-        run: |
-          $files = Get-ChildItem -Path "$env:FLUTTER_ROOT" -Recurse -Filter "*.dart" | Select-String -Pattern "Visual Studio 16 2019" -List
-          foreach ($f in $files) {
-            Write-Host "Patching: $($f.Path)"
-            (Get-Content $f.Path -Raw) -replace 'Visual Studio 16 2019', 'Visual Studio 18 2026' | Set-Content $f.Path -NoNewline
-          }
-          if (-not $files) { Write-Host "No Flutter SDK files needed patching" }
-
       - name: Build Windows
         shell: pwsh
         env:
-          # windows-latest (2026-06) 仅含 VS 2026；若 CI 环境有 VS 2022 可改为 "Visual Studio 17 2022"
           CMAKE_GENERATOR: "Visual Studio 18 2026"
         run: |
           $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath 2>$null

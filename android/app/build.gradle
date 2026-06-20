@@ -85,4 +85,6 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
+    releaseImplementation 'io.flutter:flutter_embedding_release'
+    debugImplementation 'io.flutter:flutter_embedding_debug'
 }
