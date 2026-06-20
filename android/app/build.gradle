@@ -82,20 +82,3 @@ android {
 flutter {
     source "../.."
 }
-
-// 动态读取 Flutter engine 版本，用于兜底 embedding 依赖
-def flutterSdkPath = localProperties.getProperty('flutter.sdk')
-if (flutterSdkPath == null) {
-    flutterSdkPath = System.getenv('FLUTTER_ROOT')
-}
-def engineVersionFile = file("$flutterSdkPath/bin/internal/engine.version")
-def engineVersion = engineVersionFile.exists() ? engineVersionFile.text.trim() : null
-def embeddingVersion = engineVersion != null ? "1.0.0-$engineVersion" : null
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
-    if (embeddingVersion != null) {
-        releaseImplementation "io.flutter:flutter_embedding_release:$embeddingVersion"
-        debugImplementation "io.flutter:flutter_embedding_debug:$embeddingVersion"
-    }
-}

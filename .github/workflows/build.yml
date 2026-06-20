@@ -21,7 +21,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27'
+          flutter-version: '3.44'
           channel: 'stable'
           cache: true
 
@@ -87,26 +87,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27'
+          flutter-version: '3.44'
           channel: 'stable'
           architecture: x64
 
       - name: Enable Windows
         run: flutter config --enable-windows-desktop
-
-      - name: Patch Flutter SDK for VS 2026
-        shell: pwsh
-        run: |
-          $file = "$env:FLUTTER_ROOT/packages/flutter_tools/lib/src/windows/build_windows.dart"
-          if (Test-Path $file) {
-            (Get-Content $file -Raw) -replace 'Visual Studio 16 2019', 'Visual Studio 18 2026' | Set-Content $file -NoNewline
-            Write-Host "Patched: $file"
-          } else {
-            Write-Host "WARNING: $file not found"
-          }
-          Remove-Item "$env:FLUTTER_ROOT/bin/cache/flutter_tools.stamp" -Force -ErrorAction SilentlyContinue
-          Remove-Item "$env:FLUTTER_ROOT/bin/cache/flutter_tools.snapshot" -Force -ErrorAction SilentlyContinue
-          Write-Host "Removed Flutter tool cache (will recompile)"
 
       - name: Recreate Windows project
         shell: pwsh
@@ -124,16 +110,13 @@ jobs:
             echo "RIFFDUMMY" > "assets/sounds/${name}.wav"
           done
 
-      - name: Get dependencies + clean
-        run: |
-          flutter pub get
-          flutter clean
+      - name: Get dependencies
+        run: flutter pub get
 
       - name: Build Windows
         shell: pwsh
-        env:
-          CMAKE_GENERATOR: "Visual Studio 18 2026"
         run: |
+          flutter clean
           if (Test-Path build/windows) {
             Remove-Item -Recurse -Force build/windows
           }
