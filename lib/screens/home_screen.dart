@@ -11,6 +11,7 @@ import '../widgets/central_console.dart';
 import '../widgets/toast_overlay.dart';
 import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
+import '../providers/services_provider.dart';
 import 'draw_panel.dart';
 import 'question_panel.dart';
 import 'timer_panel.dart';
