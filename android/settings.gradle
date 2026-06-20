@@ -26,17 +26,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        gradlePluginPortal()
-        // Flutter 本地 Maven 仓库（per-ABI embedding artifacts）
-        def fRoot = System.getenv("FLUTTER_ROOT")
-        if (fRoot == null) {
-            def p = new Properties()
-            file("local.properties").withInputStream { p.load(it) }
-            fRoot = p.getProperty("flutter.sdk")
-        }
-        maven {
-            url "$fRoot/bin/cache/artifacts/engine/android"
-        }
     }
 }
 
