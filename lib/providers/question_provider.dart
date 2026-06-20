@@ -37,7 +37,7 @@ class QuestionNotifier extends StateNotifier<QuestionState> {
   }
 
   Question? getRandomUnusedNonRisk() {
-    final pool = allQuestions.where((q) => !q.used && !q.isRisk).toList();
+    final pool = state.allQuestions.where((q) => !q.used && !q.isRisk).toList();
     if (pool.isEmpty) return null; pool.shuffle(); return pool.first;
   }
 
