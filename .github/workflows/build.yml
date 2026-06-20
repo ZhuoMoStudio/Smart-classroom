@@ -101,6 +101,8 @@ jobs:
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
           (Get-Content windows/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/CMakeLists.txt
           (Get-Content windows/runner/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/runner/CMakeLists.txt
+          # VS 2026 已弃用 experimental/coroutine，抑制编译错误
+          Add-Content -Path windows/CMakeLists.txt -Value "`nadd_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)"
 
       - name: Create dummy sound files
         shell: bash
