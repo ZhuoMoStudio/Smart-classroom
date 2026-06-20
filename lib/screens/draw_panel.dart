@@ -35,7 +35,7 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
   @override
   Widget build(BuildContext ctx) {
     final d = ref.watch(drawProvider);
-    final mp = d.availableMembers; final gp = d.availableGroups;
+    final mp = ref.read(drawProvider.notifier).availableMembers; final gp = ref.read(drawProvider.notifier).availableGroups;
     final t = Theme.of(ctx);
     return Row(children: [
       Expanded(child: Column(children: [
