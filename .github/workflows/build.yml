@@ -98,11 +98,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build Windows (VS 2022)
+      - name: Clean CMake cache
         shell: pwsh
-        run: |
-          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1" -SkipAutomaticLocation
-          flutter build windows --release
+        run: if (Test-Path build\windows) { Remove-Item -Recurse -Force build\windows }
+
+      - name: Build Windows
+        run: flutter build windows --release
 
       - name: Package ZIP
         shell: pwsh
