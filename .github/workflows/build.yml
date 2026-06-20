@@ -101,17 +101,6 @@ jobs:
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
           (Get-Content windows/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/CMakeLists.txt
           (Get-Content windows/runner/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/runner/CMakeLists.txt
-          $config = @{
-            configurations = @(
-              @{
-                name = "x64-Release"
-                generator = "Visual Studio 18 2026"
-                configurationType = "Release"
-              }
-            )
-          }
-          $config | ConvertTo-Json -Depth 3 | Set-Content windows/CMakeSettings.json
-          Write-Host "Created windows/CMakeSettings.json with VS 2026 generator"
 
       - name: Create dummy sound files
         shell: bash
@@ -124,13 +113,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Clean CMake cache
+      - name: Flutter clean + clear CMake cache
         shell: pwsh
         run: |
+          flutter clean
           if (Test-Path build/windows) {
             Remove-Item -Recurse -Force build/windows
-            Write-Host "Cleaned build/windows CMake cache"
           }
+          Write-Host "Cleaned Flutter and CMake cache"
 
       - name: Build Windows
         shell: pwsh
