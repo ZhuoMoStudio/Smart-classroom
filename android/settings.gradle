@@ -17,8 +17,27 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
-    id "com.android.application" version "9.0.0" apply false
-    id "org.jetbrains.kotlin.android" version "2.2.20" apply false
+    id "com.android.application" version "8.7.3" apply false
+    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        // Flutter 本地 Maven 仓库（per-ABI embedding artifacts）
+        def fRoot = System.getenv("FLUTTER_ROOT")
+        if (fRoot == null) {
+            def p = new Properties()
+            file("local.properties").withInputStream { p.load(it) }
+            fRoot = p.getProperty("flutter.sdk")
+        }
+        maven {
+            url "$fRoot/bin/cache/artifacts/engine/android"
+        }
+    }
 }
 
 include ":app"

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
+import '../theme/design_tokens.dart';
 
 class RankBadge extends StatefulWidget {
   final double score;
@@ -58,7 +59,7 @@ class _RankBadgeState extends State<RankBadge> with SingleTickerProviderStateMix
     if (lv >= 20) return [Colors.blue, Colors.lightBlueAccent];
     if (lv >= 15) return [Colors.teal, Colors.cyanAccent];
     if (lv >= 10) return [Colors.amber, Colors.yellowAccent];
-    if (lv >= 5) return [Colors.blueGrey, Colors.grey];
-    return [const Color(0xFF8D6E63), Colors.brown];
+    if (lv >= 5) return [AppColors.neutral300, AppColors.neutral200];
+    return [AppColors.neutral400, AppColors.neutral300];
   }
 }

@@ -10,10 +10,10 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -82,7 +82,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -101,8 +101,7 @@ jobs:
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
           (Get-Content windows/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/CMakeLists.txt
           (Get-Content windows/runner/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION [0-9.]+\)', 'cmake_minimum_required(VERSION 3.20)' | Set-Content windows/runner/CMakeLists.txt
-          # VS 2026 已弃用 experimental/coroutine，设置全局编译标志抑制错误
-          (Get-Content windows/CMakeLists.txt -Raw) -replace '(add_subdirectory)', "set(CMAKE_CXX_FLAGS `"`${CMAKE_CXX_FLAGS} /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS`")`n`$1" | Set-Content windows/CMakeLists.txt -NoNewline
+          (Get-Content windows/CMakeLists.txt -Raw) -replace '(add_subdirectory)', "set(CMAKE_CXX_FLAGS `${CMAKE_CXX_FLAGS} /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS`)`n`$1" | Set-Content windows/CMakeLists.txt -NoNewline
 
       - name: Create dummy sound files
         shell: bash
