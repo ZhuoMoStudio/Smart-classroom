@@ -1,0 +1,44 @@
+name: smart_classroom
+description: 灵动课堂 - 课堂互动管理工具（非商业用途）
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_riverpod: ^2.5.1
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  flutter_secure_storage: ^9.0.0
+  file_picker: ^11.0.0
+  http: ^1.2.0
+  dio: ^5.4.0
+  audioplayers: ^6.0.0
+  flutter_local_notifications: ^17.0.0
+  uuid: ^4.3.3
+  archive: ^3.4.10
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.2.4
+  excel: ^3.0.0
+  pdfrx: ^1.0.100
+  path: ^1.8.3
+  crypto: ^3.0.3
+  webdav_plus: ^1.2.0
+  xml: ^6.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/sounds/

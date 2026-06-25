@@ -172,3 +172,5 @@ class ClassNotifier extends StateNotifier<ClassState> {
   static int _uuidCounter = DateTime.now().microsecondsSinceEpoch;
   static String _uid() => '${++_uuidCounter}-${DateTime.now().millisecondsSinceEpoch % 100000}';
 }
+
+final classProvider = StateNotifierProvider<ClassNotifier, ClassState>((ref) => ClassNotifier());
