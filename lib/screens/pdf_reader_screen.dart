@@ -39,15 +39,14 @@ class _State extends ConsumerState<PdfReaderScreen> {
     setState(() { _loading=true; _status='准备中...'; _progress=0; });
     try {
       String? fp;
-      if (widget.localFilePath != null) {
-        fp = widget.localFilePath; _status = '打开本地文件...';
-      } else if (widget.networkUrl != null) {
+      if (widget.localFilePath != null) { fp = widget.localFilePath; _status = '打开本地文件...'; }
+      else if (widget.networkUrl != null) {
         final cm = PdfCacheManager();
         final cached = await cm.getCachedPath(widget.networkUrl!);
         if (cached != null) { fp=cached; _status='从缓存加载'; }
         else {
-          _status='下载中（加速节点）...';
-          fp = await cm.downloadAndCache(widget.networkUrl!, onProgress:(r,t){ if(mounted&&t>0) setState((){ _progress=r/t; _status='下载 ${(r/1048576).toStringAsFixed(1)} MB'; }); }, onStatus:(s){ if(mounted) setState((){ switch(s){ case DownloadState.downloading: _status='下载中...'; case DownloadState.completed: _status='完成...'; case DownloadState.failed: _status='失败'; default: break; } }); });
+          _status='下载中...';
+          fp = await cm.downloadAndCache(widget.networkUrl!, onProgress:(r,t){ if(mounted&&t>0) setState((){ _progress=r/t; }); }, onStatus:(s){ if(mounted) setState((){ switch(s){ case DownloadState.downloading: _status='下载中...'; case DownloadState.completed: _status='完成...'; case DownloadState.failed: _status='失败'; default: break; } }); });
         }
         await PdfMergeService.mergeAllInDirectory(Directory(fp).parent.path);
       }
@@ -55,7 +54,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
       _fp=fp; setState(()=>_loading=false);
     } catch(e) {
       setState((){ _loading=false; _status='失败: $e'; });
-      if(mounted) ToastOverlay.show(context, '加载失败: $e');
+      if(mounted) ToastOverlay.show(context, '加载失败');
     }
   }
 
@@ -81,16 +80,29 @@ class _State extends ConsumerState<PdfReaderScreen> {
     ]));
   }
 
-  Widget _pdfView() => GestureDetector(onTap:_resetHide, child: PdfViewer.file(_fp!, controller:_ctrl, initialPageNumber:widget.initialPage, params:PdfViewerParams(scrollByMouseWheel:true, onViewerReady:(doc,ctrl){ WidgetsBinding.instance.addPostFrameCallback((_){ if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); } }); }), onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); }));
+  Widget _pdfView() => GestureDetector(
+    onTap:_resetHide,
+    child: PdfViewer.file(_fp!, controller:_ctrl, initialPageNumber:widget.initialPage,
+      params: PdfViewerParams(
+        scrollByMouseWheel:true,
+        onViewerReady:(doc,ctrl){
+          WidgetsBinding.instance.addPostFrameCallback((_){
+            if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
+          });
+        },
+        onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); },
+      ),
+    ),
+  );
 
-  Widget _topBar(BuildContext ctx) => Positioned(top:0,left:0,right:0, child: AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.black87,Colors.black54,Colors.transparent], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(top:MediaQuery.of(ctx).padding.top+4,left:8,right:8,bottom:8), child:Row(children:[
+  Widget _topBar(BuildContext ctx) => Positioned(top:0,left:0,right:0, child:AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.black87,Colors.black54,Colors.transparent], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(top:MediaQuery.of(ctx).padding.top+4,left:8,right:8,bottom:8), child:Row(children:[
     IconButton(icon:const Icon(Icons.arrow_back,color:Colors.white,size:28), onPressed:()=>Navigator.pop(ctx)),
     const SizedBox(width:8),
     Expanded(child:Text(widget.title??'教材阅读', style:const TextStyle(color:Colors.white,fontSize:18,fontWeight:FontWeight.w500), overflow:TextOverflow.ellipsis)),
     IconButton(icon:const Icon(Icons.folder_open,color:Colors.white70,size:24), onPressed:_openLocal),
   ])))));
 
-  Widget _bottomBar(BuildContext ctx) => Positioned(bottom:0,left:0,right:0, child: AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.transparent,Colors.black54,Colors.black87], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(left:12,right:12,top:8,bottom:MediaQuery.of(ctx).padding.bottom+8), child:Row(mainAxisAlignment:MainAxisAlignment.center, children:[
+  Widget _bottomBar(BuildContext ctx) => Positioned(bottom:0,left:0,right:0, child:AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.transparent,Colors.black54,Colors.black87], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(left:12,right:12,top:8,bottom:MediaQuery.of(ctx).padding.bottom+8), child:Row(mainAxisAlignment:MainAxisAlignment.center, children:[
     IconButton(icon:const Icon(Icons.arrow_left,color:Colors.white,size:28), onPressed:(){ if(_cur>1) _ctrl.goToPage(pageNumber:_cur-1); _resetHide(); }),
     GestureDetector(onTap:(){ _pageInput.text=_cur.toString(); showDialog(context:ctx, builder:(c)=>AlertDialog(title:const Text('跳转到页码'), content:TextField(autofocus:true, keyboardType:TextInputType.number, controller:_pageInput, decoration:InputDecoration(hintText:'输入页码 (1-$_total)', border:const OutlineInputBorder()), onSubmitted:(_){ Navigator.pop(c); _goPage(); }), actions:[TextButton(onPressed:()=>Navigator.pop(c), child:const Text('取消')), FilledButton(onPressed:(){ Navigator.pop(c); _goPage(); }, child:const Text('跳转'))])); }, child:Container(padding:const EdgeInsets.symmetric(horizontal:16,vertical:6), decoration:BoxDecoration(color:Colors.white24, borderRadius:BorderRadius.circular(20)), child:Text('$_cur / $_total', style:const TextStyle(color:Colors.white,fontSize:16,fontWeight:FontWeight.w500)))),
     IconButton(icon:const Icon(Icons.arrow_right,color:Colors.white,size:28), onPressed:(){ if(_cur<_total) _ctrl.goToPage(pageNumber:_cur+1); _resetHide(); }),
