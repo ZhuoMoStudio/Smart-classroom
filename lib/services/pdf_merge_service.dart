@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 /// PDF 分卷文件自动合并服务
@@ -51,7 +51,7 @@ class PdfMergeService {
         mergedPaths.add(basePath);
       } catch (e) {
         // 合并失败，跳过
-        print('PDF merge failed for $basePath: $e');
+        debugPrint('PDF merge failed for $basePath: $e');
       }
     }
 

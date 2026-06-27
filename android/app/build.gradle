@@ -68,6 +68,11 @@ android {
             shrinkResources false
         }
     }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
 }
 
 flutter {

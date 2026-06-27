@@ -8,10 +8,14 @@ class ClassState {
   const ClassState(
       {this.classrooms = const [], this.selectedClassUid, this.isDirty = false});
 
-  Classroom? get selectedClass => selectedClassUid == null
-      ? null
-      : classrooms.cast<Classroom?>().firstWhere((c) => c!.uid == selectedClassUid,
-          orElse: () => null);
+  Classroom? get selectedClass {
+    if (selectedClassUid == null) return null;
+    try {
+      return classrooms.firstWhere((c) => c.uid == selectedClassUid);
+    } catch (_) {
+      return null;
+    }
+  }
 
   ClassState copyWith(
           {List<Classroom>? classrooms, String? selectedClassUid, bool? isDirty}) =>

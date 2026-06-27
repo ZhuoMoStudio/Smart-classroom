@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:uuid/uuid.dart';
 import '../models/question_bank.dart';
 import '../models/class_model.dart';
 
@@ -35,17 +36,25 @@ class ExcelService {
     final sheet = excel.tables.keys.first;
     final table = excel.tables[sheet]!;
     final classMap = <String, Classroom>{};
-    final groupMap = <String, Map<String, Group>>{};
+    // 使用可变列表暂存成员，避免 Group 的 const members 不可变
+    final groupMembers = <String, Map<String, List<Member>>>{};
     for (int i = 0; i < table.maxRows; i++) {
       if (i == 0) { final fc = _cell(table,i,0); if (fc.contains('班级')||fc.contains('班')||fc.contains('Class')) continue; }
       final cn = _cell(table,i,0).trim(), gn = _cell(table,i,1).trim(), mn = _cell(table,i,2).trim();
       if (cn.isEmpty||mn.isEmpty) continue;
       final gnf = gn.isEmpty?'默认小组':gn;
-      if (!classMap.containsKey(cn)) { classMap[cn]=Classroom(uid:_uid(), name:cn); groupMap[cn]={}; }
-      if (!groupMap[cn]!.containsKey(gnf)) { groupMap[cn]![gnf]=Group(uid:_uid(), name:gnf); }
-      groupMap[cn]![gnf]!.members.add(Member(uid:_uid(), name:mn));
+      if (!classMap.containsKey(cn)) { classMap[cn]=Classroom(uid:_uid(), name:cn); groupMembers[cn]={}; }
+      if (!groupMembers[cn]!.containsKey(gnf)) { groupMembers[cn]![gnf]=[]; }
+      groupMembers[cn]![gnf]!.add(Member(uid:_uid(), name:mn));
     }
-    return classMap.entries.map((e){ final gs = groupMap[e.key]!.values.toList(); return e.value.copyWith(groups:gs); }).toList();
+    // 使用不可变 List 构建 Group/Classroom
+    return classMap.entries.map((e){
+      final cn = e.key;
+      final groups = (groupMembers[cn] ?? {}).entries.map((ge) =>
+        Group(uid: _uid(), name: ge.key, members: List.unmodifiable(ge.value))
+      ).toList();
+      return e.value.copyWith(groups: groups);
+    }).toList();
   }
 
   // ========== 积分导出 (excel 3.x API: List<dynamic>) ==========
@@ -117,9 +126,5 @@ class ExcelService {
     return c?.value?.toString()??'';
   }
 
-  static String _uid() {
-    final n = DateTime.now().microsecondsSinceEpoch;
-    final r = (n*9301+49297)%233280;
-    return '${n.toRadixString(36)}-${r.toRadixString(36)}-${(r^n).toRadixString(36)}';
-  }
+  static String _uid() => const Uuid().v4();
 }

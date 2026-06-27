@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../providers/services_provider.dart';
 import '../../services/audio_engine.dart';
 import '../../services/cloud/cloud_presets.dart';
+import '../../services/cloud/cloud_storage_service.dart';
 import '../../services/cloud/webdav_plus_sync.dart';
 import '../../services/storage_service.dart';
 import '../../services/update_service.dart';
@@ -19,12 +21,50 @@ class SettingsDialog extends ConsumerStatefulWidget {
 
 class _SettingsDialogState extends ConsumerState<SettingsDialog> {
   late SettingsState _local;
+  final _passwordController = TextEditingController();
 
   static const _grades = ['一年级','二年级','三年级','四年级','五年级','六年级','初一','初二','初三','高一','高二','高三'];
   static const _subjects = ['语文','数学','英语','物理','化学','生物','历史','地理','政治','科学','信息技术','通用技术','体育','音乐','美术'];
 
   @override
-  void initState() { super.initState(); _local = ref.read(settingsProvider); }
+  void initState() {
+    super.initState();
+    _local = ref.read(settingsProvider);
+    _loadPassword();
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPassword() async {
+    final pw = await ref.read(storageServiceProvider).getSecure('webdav_password');
+    if (pw != null && mounted) {
+      _passwordController.text = pw;
+    }
+  }
+
+  /// 执行真实云端同步
+  Future<void> _performRealSync() async {
+    ref.read(syncProvider.notifier).startSync();
+    try {
+      final cloudService = ref.read(cloudStorageServiceProvider);
+      final success = await cloudService.sync();
+      if (mounted) {
+        if (success) {
+          ToastOverlay.show(context, '同步完成');
+        } else {
+          ToastOverlay.show(context, '同步失败，请检查设置');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastOverlay.show(context, '同步失败: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +72,6 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
       title: const Row(children: [Icon(Icons.settings, size: 20), SizedBox(width: 8), Text('设置')]),
       content: SizedBox(width: 440, child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // 年级学科切换
           _section('当前教学信息'),
           Row(children: [
             Expanded(child: DropdownButtonFormField<String?>(
@@ -49,10 +88,8 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
               onChanged: (v) => setState(() => _local = _local.copyWith(currentSubject: v)),
             )),
           ]),
-          const SizedBox(height: 8),
-          const Divider(),
+          const SizedBox(height: 8), const Divider(),
 
-          // 主题
           _section('主题设置'),
           SwitchListTile(title: const Text('24小时制'), value: _local.is24Hour, dense: true, onChanged: (v) => setState(() => _local = _local.copyWith(is24Hour: v))),
           SwitchListTile(title: const Text('深色模式'), value: _local.isDarkMode, dense: true, onChanged: (v) => setState(() => _local = _local.copyWith(isDarkMode: v))),
@@ -64,7 +101,6 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             onChanged: (v) { final l = v.split(',').map((s) => int.tryParse(s.trim()) ?? 0).where((n) => n > 0).toList(); if (l.isNotEmpty) setState(() => _local = _local.copyWith(timerPresets: l)); }),
           const SizedBox(height: 8), const Divider(),
 
-          // 云同步 (WebDAV Plus)
           _section('云端同步 (WebDAV)'),
           Row(children: [
             Expanded(child: Text('同步至坚果云', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Theme.of(context).colorScheme.primary))),
@@ -78,8 +114,12 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             onChanged: (v) => setState(() => _local = _local.copyWith(webdavUrl: v))),
           TextFormField(initialValue: _local.webdavUsername, decoration: const InputDecoration(labelText: '用户名（邮箱/手机号）', isDense: true),
             onChanged: (v) => setState(() => _local = _local.copyWith(webdavUsername: v))),
-          TextFormField(obscureText: true, decoration: const InputDecoration(labelText: '第三方应用专用密码', isDense: true, hintText: '非登录密码'),
-            onChanged: (v) => _savePassword(v)),
+          TextFormField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: '第三方应用专用密码', isDense: true, hintText: '非登录密码'),
+            onChanged: (v) => _savePassword(v),
+          ),
           TextFormField(initialValue: _local.remoteFolder, decoration: const InputDecoration(labelText: '远程文件夹', isDense: true, hintText: '/灵动课堂数据/'),
             onChanged: (v) => setState(() => _local = _local.copyWith(remoteFolder: v))),
           const SizedBox(height: 4),
@@ -94,7 +134,10 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             }),
             const Spacer(),
             TextButton.icon(icon: const Icon(Icons.sync, size: 16), label: const Text('立即同步'),
-              onPressed: () { ref.read(syncProvider.notifier).startSync(); Future.delayed(const Duration(seconds: 2), () { ref.read(syncProvider.notifier).syncComplete(); ToastOverlay.show(context, '同步完成'); }); }),
+              onPressed: () async {
+                ToastOverlay.show(context, '正在同步...');
+                await _performRealSync();
+              }),
           ]),
           SwitchListTile(title: const Text('自动同步'), value: _local.autoSync, dense: true, onChanged: (v) => setState(() => _local = _local.copyWith(autoSync: v))),
           DropdownButtonFormField<int>(value: _local.autoSyncInterval, decoration: const InputDecoration(labelText: '同步间隔', isDense: true), items: const [
@@ -102,7 +145,6 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
           ], onChanged: (v) => setState(() => _local = _local.copyWith(autoSyncInterval: v!))),
           const SizedBox(height: 8), const Divider(),
 
-          // 存档
           _section('存档操作'),
           SwitchListTile(title: const Text('自动保存'), value: _local.autoSave, dense: true, onChanged: (v) => setState(() => _local = _local.copyWith(autoSave: v))),
           DropdownButtonFormField<int>(value: _local.autoSaveInterval, decoration: const InputDecoration(labelText: '保存间隔', isDense: true), items: const [
@@ -112,7 +154,6 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             onChanged: (v) => setState(() => _local = _local.copyWith(usbDataPath: v.isEmpty ? null : v))),
           const SizedBox(height: 8), const Divider(),
 
-          // 关于
           _section('关于'),
           Row(children: [
             Expanded(child: Text('灵动课堂 v1.0.0', style: const TextStyle(fontSize: 13))),

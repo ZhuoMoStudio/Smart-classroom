@@ -43,7 +43,8 @@ class UpdateService {
         return data['html_url']?.toString();
       }
     } catch (_) {}
-    return null;
+    // 降级：返回仓库主页（用户可手动查看 releases）
+    return _repoUrl;
   }
 
   static String releaseUrl(String version) =>

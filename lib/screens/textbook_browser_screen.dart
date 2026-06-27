@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/textbook_repo_service.dart';
-import '../services/gh_proxy_service.dart';
 import '../widgets/toast_overlay.dart';
 import 'pdf_reader_screen.dart';
 
@@ -217,9 +216,16 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
     );
 
     try {
-      final pdfs = await TextbookRepoService.fetchAllPdfs(
+      // 优先使用 Tree API 快速获取全量文件树
+      var pdfs = await TextbookRepoService.fetchAllPdfsFromTree(
         onProgress: (count) {},
       );
+      if (pdfs.isEmpty) {
+        // Tree API 失败时降级到 Contents API 逐层方式
+        pdfs = await TextbookRepoService.fetchAllPdfs(
+          onProgress: (count) {},
+        );
+      }
       TextbookRepoService.clearCache();
 
       Navigator.pop(context); // 关闭 loading

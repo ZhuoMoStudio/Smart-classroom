@@ -6,6 +6,7 @@ import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'l10n/generated/app_localizations.dart';
 
 class SmartClassroomApp extends ConsumerStatefulWidget {
   const SmartClassroomApp({super.key});
@@ -22,9 +23,10 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
     return MaterialApp(
       title: '灵动课堂',
       debugShowCheckedModeBanner: false,
-      locale: const Locale('zh'),
-      supportedLocales: const [Locale('zh'), Locale('en')],
+      locale: Locale(settings.localeTag),
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

@@ -1,0 +1,20 @@
+# 签名密钥（绝不上传）
+android/key.properties
+android/upload-keystore.jks
+*.jks
+
+# Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+.vscode/
+*.lock
+
+# l10n generated (run: flutter gen-l10n)
+lib/l10n/generated/
+
+# OS
+.DS_Store
+Thumbs.db
