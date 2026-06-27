@@ -65,13 +65,14 @@ class FileService {
   Future<AppData?> loadJsonFromPath(String path) async {
     final f = File(path);
     if (!await f.exists()) return null;
-    return AppData.fromJson(
-        jsonDecode(await f.readAsString(encoding: utf8)));
+    return AppData.fromJson(jsonDecode(await f.readAsString(encoding: utf8)));
   }
 
   Future<AppData?> pickAndLoadJson() async {
     final r = await FilePicker.pickFiles(
-        type: FileType.custom, allowedExtensions: ['json']);
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
     if (r == null || r.files.isEmpty) return null;
     final p = r.files.single.path;
     if (p == null) return null;
@@ -104,7 +105,9 @@ class FileService {
   /// 从 Excel 导入积分
   Future<Map<String, Map<String, Map<String, double>>>> importScores() async {
     final r = await FilePicker.pickFiles(
-        type: FileType.custom, allowedExtensions: ['xlsx', 'xls']);
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls'],
+    );
     if (r == null || r.files.isEmpty) {
       throw Exception('未选择文件');
     }
@@ -125,14 +128,16 @@ class FileService {
     return files;
   }
 
-  Future<void> cleanArchives(String dirPath,
-      {int keepRecent = 4, int keepOldest = 1}) async {
+  Future<void> cleanArchives(
+    String dirPath, {
+    int keepRecent = 4,
+    int keepOldest = 1,
+  }) async {
     final files = await listArchives(dirPath);
     if (files.length <= keepRecent + keepOldest) return;
 
     // 保留最近的 keepRecent 个和最早的 keepOldest 个，删除中间
-    final toDelete =
-        files.sublist(keepRecent, files.length - keepOldest);
+    final toDelete = files.sublist(keepRecent, files.length - keepOldest);
     for (final f in toDelete) {
       await f.delete();
     }
@@ -151,7 +156,9 @@ class FileService {
     await for (final e in d.list()) {
       if (e is File && e.path.endsWith('.json')) jsonFiles.add(e);
     }
-    jsonFiles.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+    jsonFiles.sort(
+      (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+    );
     if (jsonFiles.length > 6) {
       final keep = <File>{};
       keep.addAll(jsonFiles.take(5));

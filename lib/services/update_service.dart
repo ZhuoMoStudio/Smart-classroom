@@ -9,7 +9,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 class UpdateService {
   static const String _owner = 'ZhuoMoStudio';
   static const String _repo = 'Smart-classroom';
-  static const String _repoUrl = 'https://github.com/ZhuoMoStudio/Smart-classroom';
+  static const String _repoUrl =
+      'https://github.com/ZhuoMoStudio/Smart-classroom';
 
   static Future<String> getCurrentVersion() async =>
       (await PackageInfo.fromPlatform()).version;
@@ -17,7 +18,9 @@ class UpdateService {
   static Future<String?> getLatestVersion() async {
     try {
       final r = await http.get(
-        Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
+        Uri.parse(
+          'https://api.github.com/repos/$_owner/$_repo/releases/latest',
+        ),
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'User-Agent': 'SmartClassroom/1.0',
@@ -35,7 +38,9 @@ class UpdateService {
   static Future<String?> getLatestDownloadUrl() async {
     try {
       final r = await http.get(
-        Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
+        Uri.parse(
+          'https://api.github.com/repos/$_owner/$_repo/releases/latest',
+        ),
         headers: {'Accept': 'application/vnd.github.v3+json'},
       );
       if (r.statusCode == 200) {
@@ -56,10 +61,7 @@ class UpdateService {
     final lat = await getLatestVersion();
 
     if (lat == null) {
-      return UpdateResult(
-        hasUpdate: false,
-        message: '无法获取更新信息，请检查网络连接',
-      );
+      return UpdateResult(hasUpdate: false, message: '无法获取更新信息，请检查网络连接');
     }
 
     final hasUpdate = _compareVersions(cur, lat) < 0;

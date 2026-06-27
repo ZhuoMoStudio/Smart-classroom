@@ -15,16 +15,20 @@ class QuestionDetailDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: question.isRisk
-                  ? Colors.red.shade50
-                  : theme.colorScheme.primaryContainer,
+              color:
+                  question.isRisk
+                      ? Colors.red.shade50
+                      : theme.colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '#${question.index}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: question.isRisk ? Colors.red.shade700 : theme.colorScheme.primary,
+                color:
+                    question.isRisk
+                        ? Colors.red.shade700
+                        : theme.colorScheme.primary,
               ),
             ),
           ),
@@ -32,13 +36,23 @@ class QuestionDetailDialog extends StatelessWidget {
             const SizedBox(width: 8),
             const Icon(Icons.warning_amber, color: Colors.red, size: 22),
             const SizedBox(width: 4),
-            Text('风险题', style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(
+              '风险题',
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
           ],
           if (question.used) ...[
             const Spacer(),
             Icon(Icons.check_circle, color: Colors.green.shade600, size: 18),
             const SizedBox(width: 4),
-            Text('已答', style: TextStyle(color: Colors.green.shade600, fontSize: 13)),
+            Text(
+              '已答',
+              style: TextStyle(color: Colors.green.shade600, fontSize: 13),
+            ),
           ],
         ],
       ),
@@ -58,12 +72,19 @@ class QuestionDetailDialog extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 20),
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.red.shade700,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '此题为风险题（难题），答对可获得额外加分',
-                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -93,30 +114,41 @@ class QuestionDetailDialog extends StatelessWidget {
                 foregroundColor: Colors.green.shade700,
                 side: BorderSide(color: Colors.green.shade300),
               ),
-              onPressed: () => showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: Row(children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.amber.shade700, size: 20),
-                    const SizedBox(width: 6),
-                    const Text('参考答案'),
-                  ]),
-                  content: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(question.answer!, style: const TextStyle(fontSize: 16)),
+              onPressed:
+                  () => showDialog(
+                    context: context,
+                    builder:
+                        (_) => AlertDialog(
+                          title: Row(
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline,
+                                color: Colors.amber.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 6),
+                              const Text('参考答案'),
+                            ],
+                          ),
+                          content: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              question.answer!,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('关闭'),
+                            ),
+                          ],
+                        ),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('关闭'),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ],
         ],

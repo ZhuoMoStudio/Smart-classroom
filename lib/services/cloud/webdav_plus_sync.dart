@@ -31,7 +31,8 @@ class WebdavPlusSyncService {
     if (settings.currentGrade != null && settings.currentGrade!.isNotEmpty) {
       parts.add(safeName(settings.currentGrade!));
     }
-    if (settings.currentSubject != null && settings.currentSubject!.isNotEmpty) {
+    if (settings.currentSubject != null &&
+        settings.currentSubject!.isNotEmpty) {
       parts.add(safeName(settings.currentSubject!));
     }
     parts.add(safeName(fileName));
@@ -41,9 +42,14 @@ class WebdavPlusSyncService {
   /// 创建 WebDAV 客户端
   Future<WebdavClient> _createClient() async {
     final settings = _ref.read(settingsProvider);
-    final password = await _ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
+    final password =
+        await _ref.read(storageServiceProvider).getSecure('webdav_password') ??
+        '';
 
-    final client = WebdavClient.withCredentials(settings.webdavUsername, password);
+    final client = WebdavClient.withCredentials(
+      settings.webdavUsername,
+      password,
+    );
     client.setBaseUrl(settings.webdavUrl);
 
     return client;
@@ -106,7 +112,8 @@ class WebdavPlusSyncService {
     try {
       final client = await _createClient();
       final settings = _ref.read(settingsProvider);
-      final fullPath = '${settings.remoteFolder.replaceAll(RegExp(r'/+$'), '')}/$dirPath';
+      final fullPath =
+          '${settings.remoteFolder.replaceAll(RegExp(r'/+$'), '')}/$dirPath';
       await client.createDirectory(fullPath);
       return true;
     } catch (_) {

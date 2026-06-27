@@ -90,12 +90,14 @@ class RosterSmartManager {
       if (files.length <= 2) continue; // 只有 1-2 个文件，全保留
 
       // 按修改时间排序（最新的在前）
-      files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+      files.sort(
+        (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+      );
 
       // 保留：最初始（最旧的 1 个）+ 最近 5 个
       final keep = <File>{};
-      keep.addAll(files.take(5));        // 最近 5 个
-      keep.add(files.last);               // 最旧的 1 个
+      keep.addAll(files.take(5)); // 最近 5 个
+      keep.add(files.last); // 最旧的 1 个
 
       // 删除其余
       for (final f in files) {

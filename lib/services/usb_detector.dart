@@ -10,11 +10,9 @@ class UsbDetector {
       !defaultTargetPlatform.toString().contains('android') &&
       !defaultTargetPlatform.toString().contains('ios');
 
-  static bool get isWindows =>
-      defaultTargetPlatform == TargetPlatform.windows;
+  static bool get isWindows => defaultTargetPlatform == TargetPlatform.windows;
 
-  static bool get isLinux =>
-      defaultTargetPlatform == TargetPlatform.linux;
+  static bool get isLinux => defaultTargetPlatform == TargetPlatform.linux;
 
   /// 获取默认数据目录
   static Future<String> getDefaultDataDir() async {
@@ -28,7 +26,10 @@ class UsbDetector {
     if (!isWindows) return null;
     try {
       // 尝试 D: 到 Z: 盘
-      for (var drive in List.generate(22, (i) => '${String.fromCharCode(68 + i)}:\\')) {
+      for (var drive in List.generate(
+        22,
+        (i) => '${String.fromCharCode(68 + i)}:\\',
+      )) {
         final dataFolder = Directory('$drive${Platform.pathSeparator}data');
         if (await dataFolder.exists()) {
           return dataFolder.path;
@@ -43,7 +44,10 @@ class UsbDetector {
     if (!isWindows) return [];
     final drives = <String>[];
     try {
-      for (var drive in List.generate(22, (i) => '${String.fromCharCode(68 + i)}:\\')) {
+      for (var drive in List.generate(
+        22,
+        (i) => '${String.fromCharCode(68 + i)}:\\',
+      )) {
         final dir = Directory(drive);
         if (await dir.exists()) {
           drives.add(drive);

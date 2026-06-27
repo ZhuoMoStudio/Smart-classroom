@@ -7,7 +7,11 @@ class AudioEngine {
   final _p = AudioPlayer();
   bool _on = true;
   void setEnabled(bool v) => _on = v;
-  Future<void> _play(String a) async { if (!_on) return; await _p.play(AssetSource(a)); }
+  Future<void> _play(String a) async {
+    if (!_on) return;
+    await _p.play(AssetSource(a));
+  }
+
   Future<void> playClick() => _play('sounds/click.wav');
   Future<void> playDrawStart() => _play('sounds/draw_start.wav');
   Future<void> playDrawRoll() => _play('sounds/draw_roll.wav');

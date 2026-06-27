@@ -5,7 +5,9 @@ import '../services/cloud/webdav_client.dart';
 import '../services/cloud/cloud_storage_service.dart';
 
 final fileServiceProvider = Provider<FileService>((ref) => FileService());
-final webdavClientProvider = Provider<WebDavClientService>((ref) => WebDavClientService());
+final webdavClientProvider = Provider<WebDavClientService>(
+  (ref) => WebDavClientService(),
+);
 final cloudStorageServiceProvider = Provider<CloudStorageService>((ref) {
   return CloudStorageService(ref, ref.watch(webdavClientProvider));
 });

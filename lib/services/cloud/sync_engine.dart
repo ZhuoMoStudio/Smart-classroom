@@ -25,7 +25,9 @@ class SyncEngine {
       if (lfs.isNotEmpty && st.syncStrategy != 'download') {
         sn.updateProgress(0.3, '正在上传...');
         await _wd.uploadFile(
-            lfs.first.path, '${st.remoteFolder}${lfs.first.path.split('/').last}');
+          lfs.first.path,
+          '${st.remoteFolder}${lfs.first.path.split('/').last}',
+        );
       }
 
       final cfs = await _wd.listFiles(st.remoteFolder);
@@ -35,14 +37,18 @@ class SyncEngine {
         if (rjs.isNotEmpty) {
           sn.updateProgress(0.6, '正在下载...');
           await _wd.downloadFile(
-              '${st.remoteFolder}${rjs.first.name}', '$ld/${rjs.first.name}');
+            '${st.remoteFolder}${rjs.first.name}',
+            '$ld/${rjs.first.name}',
+          );
         }
       }
 
       sn.updateProgress(0.8, '清理旧存档...');
       await _fs.cleanArchives(ld);
       await _ss.setString(
-          'last_sync_timestamp', DateTime.now().toIso8601String());
+        'last_sync_timestamp',
+        DateTime.now().toIso8601String(),
+      );
       sn.syncComplete();
       return true;
     } catch (e) {

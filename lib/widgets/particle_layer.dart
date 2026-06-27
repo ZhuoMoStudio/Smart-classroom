@@ -2,11 +2,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class ParticleLayer extends StatefulWidget {
-  final Widget child; const ParticleLayer({super.key, required this.child});
-  @override State<ParticleLayer> createState() => ParticleLayerState();
+  final Widget child;
+  const ParticleLayer({super.key, required this.child});
+  @override
+  State<ParticleLayer> createState() => ParticleLayerState();
 }
 
-class ParticleLayerState extends State<ParticleLayer> with SingleTickerProviderStateMixin {
+class ParticleLayerState extends State<ParticleLayer>
+    with SingleTickerProviderStateMixin {
   final _ps = <_Particle>[];
   late AnimationController _c;
 
@@ -29,13 +32,15 @@ class ParticleLayerState extends State<ParticleLayer> with SingleTickerProviderS
     for (int i = 0; i < 12; i++) {
       final a = r.nextDouble() * 2 * pi;
       final sp = 80 + r.nextDouble() * 120;
-      _ps.add(_Particle(
-        x: p.dx,
-        y: p.dy,
-        vx: cos(a) * sp,
-        vy: sin(a) * sp,
-        color: Colors.primaries[r.nextInt(Colors.primaries.length)],
-      ));
+      _ps.add(
+        _Particle(
+          x: p.dx,
+          y: p.dy,
+          vx: cos(a) * sp,
+          vy: sin(a) * sp,
+          color: Colors.primaries[r.nextInt(Colors.primaries.length)],
+        ),
+      );
     }
     _c.forward(from: 0);
   }
@@ -49,24 +54,54 @@ class ParticleLayerState extends State<ParticleLayer> with SingleTickerProviderS
   }
 
   @override
-  Widget build(BuildContext ctx) => Stack(children: [
-    widget.child,
-    Positioned.fill(
-      child: IgnorePointer(
-        child: CustomPaint(
-          painter: _ParticlePainter(particles: _ps, progress: _c.value),
+  Widget build(BuildContext ctx) => Stack(
+    children: [
+      widget.child,
+      Positioned.fill(
+        child: IgnorePointer(
+          child: CustomPaint(
+            painter: _ParticlePainter(particles: _ps, progress: _c.value),
+          ),
         ),
       ),
-    ),
-  ]);
+    ],
+  );
 }
 
-class _Particle { final double x,y,vx,vy; final Color color; const _Particle({required this.x,required this.y,required this.vx,required this.vy,required this.color}); }
+class _Particle {
+  final double x, y, vx, vy;
+  final Color color;
+  const _Particle({
+    required this.x,
+    required this.y,
+    required this.vx,
+    required this.vy,
+    required this.color,
+  });
+}
+
 class _ParticlePainter extends CustomPainter {
-  final List<_Particle> particles; final double progress;
+  final List<_Particle> particles;
+  final double progress;
   _ParticlePainter({required this.particles, required this.progress});
-  @override void paint(Canvas c, Size s) { for (final p in particles) {
-    final pt = Paint()..color=p.color.withOpacity(1-progress)..style=PaintingStyle.fill;
-    c.drawCircle(Offset(p.x+p.vx*progress, p.y+p.vy*progress+100*progress*progress), 3*(1-progress), pt); }}
-  @override bool shouldRepaint(covariant _ParticlePainter o) => true;
+  @override
+  void paint(Canvas c, Size s) {
+    for (final p in particles) {
+      final pt =
+          Paint()
+            ..color = p.color.withOpacity(1 - progress)
+            ..style = PaintingStyle.fill;
+      c.drawCircle(
+        Offset(
+          p.x + p.vx * progress,
+          p.y + p.vy * progress + 100 * progress * progress,
+        ),
+        3 * (1 - progress),
+        pt,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlePainter o) => true;
 }

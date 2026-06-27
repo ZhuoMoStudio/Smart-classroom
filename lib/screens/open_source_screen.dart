@@ -7,7 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 class OpenSourceScreen extends StatelessWidget {
   const OpenSourceScreen({super.key});
 
-  static const String repoUrl = 'https://github.com/ZhuoMoStudio/Smart-classroom';
+  static const String repoUrl =
+      'https://github.com/ZhuoMoStudio/Smart-classroom';
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +42,10 @@ class OpenSourceScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 13, height: 1.5),
                 ),
                 const SizedBox(height: 12),
-                _linkButton('查看完整协议 (CC BY-NC 4.0)',
-                    'https://creativecommons.org/licenses/by-nc/4.0/'),
+                _linkButton(
+                  '查看完整协议 (CC BY-NC 4.0)',
+                  'https://creativecommons.org/licenses/by-nc/4.0/',
+                ),
                 const SizedBox(height: 4),
                 _linkButton('项目仓库', repoUrl),
               ],
@@ -76,25 +79,97 @@ class OpenSourceScreen extends StatelessWidget {
               title: '使用的开源项目',
               color: Colors.pink.shade600,
               children: [
-                _licenseItem('Flutter', 'BSD-3-Clause', 'https://github.com/flutter/flutter'),
-                _licenseItem('flutter_riverpod', 'MIT', 'https://github.com/rrousselGit/riverpod'),
-                _licenseItem('pdfrx', 'MIT', 'https://github.com/espresso3389/pdfrx'),
-                _licenseItem('webdav_plus', 'MIT', 'https://github.com/arcticfox1919/webdav_plus'),
-                _licenseItem('excel', 'MIT', 'https://github.com/justkawal/excel'),
-                _licenseItem('file_picker', 'MIT', 'https://github.com/miguelpruivo/flutter_file_picker'),
+                _licenseItem(
+                  'Flutter',
+                  'BSD-3-Clause',
+                  'https://github.com/flutter/flutter',
+                ),
+                _licenseItem(
+                  'flutter_riverpod',
+                  'MIT',
+                  'https://github.com/rrousselGit/riverpod',
+                ),
+                _licenseItem(
+                  'pdfrx',
+                  'MIT',
+                  'https://github.com/espresso3389/pdfrx',
+                ),
+                _licenseItem(
+                  'webdav_plus',
+                  'MIT',
+                  'https://github.com/arcticfox1919/webdav_plus',
+                ),
+                _licenseItem(
+                  'excel',
+                  'MIT',
+                  'https://github.com/justkawal/excel',
+                ),
+                _licenseItem(
+                  'file_picker',
+                  'MIT',
+                  'https://github.com/miguelpruivo/flutter_file_picker',
+                ),
                 _licenseItem('dio', 'MIT', 'https://github.com/cfug/dio'),
-                _licenseItem('http', 'BSD-3-Clause', 'https://github.com/dart-lang/http'),
-                _licenseItem('crypto', 'BSD-3-Clause', 'https://github.com/dart-lang/crypto'),
-                _licenseItem('archive', 'MIT', 'https://github.com/brendan-duncan/archive'),
-                _licenseItem('uuid', 'MIT', 'https://github.com/daegalus/dart-uuid'),
-                _licenseItem('audioplayers', 'MIT', 'https://github.com/bluefireteam/audioplayers'),
-                _licenseItem('path_provider', 'BSD-3-Clause', 'https://github.com/flutter/packages'),
-                _licenseItem('shared_preferences', 'BSD-3-Clause', 'https://github.com/flutter/packages'),
-                _licenseItem('flutter_secure_storage', 'BSD-3-Clause', 'https://github.com/mogol/flutter_secure_storage'),
-                _licenseItem('package_info_plus', 'BSD-3-Clause', 'https://github.com/fluttercommunity/plus_plugins'),
-                _licenseItem('url_launcher', 'BSD-3-Clause', 'https://github.com/flutter/packages'),
-                _licenseItem('flutter_local_notifications', 'BSD-3-Clause', 'https://github.com/MaikuB/flutter_local_notifications'),
-                _licenseItem('intl', 'BSD-3-Clause', 'https://github.com/dart-lang/intl'),
+                _licenseItem(
+                  'http',
+                  'BSD-3-Clause',
+                  'https://github.com/dart-lang/http',
+                ),
+                _licenseItem(
+                  'crypto',
+                  'BSD-3-Clause',
+                  'https://github.com/dart-lang/crypto',
+                ),
+                _licenseItem(
+                  'archive',
+                  'MIT',
+                  'https://github.com/brendan-duncan/archive',
+                ),
+                _licenseItem(
+                  'uuid',
+                  'MIT',
+                  'https://github.com/daegalus/dart-uuid',
+                ),
+                _licenseItem(
+                  'audioplayers',
+                  'MIT',
+                  'https://github.com/bluefireteam/audioplayers',
+                ),
+                _licenseItem(
+                  'path_provider',
+                  'BSD-3-Clause',
+                  'https://github.com/flutter/packages',
+                ),
+                _licenseItem(
+                  'shared_preferences',
+                  'BSD-3-Clause',
+                  'https://github.com/flutter/packages',
+                ),
+                _licenseItem(
+                  'flutter_secure_storage',
+                  'BSD-3-Clause',
+                  'https://github.com/mogol/flutter_secure_storage',
+                ),
+                _licenseItem(
+                  'package_info_plus',
+                  'BSD-3-Clause',
+                  'https://github.com/fluttercommunity/plus_plugins',
+                ),
+                _licenseItem(
+                  'url_launcher',
+                  'BSD-3-Clause',
+                  'https://github.com/flutter/packages',
+                ),
+                _licenseItem(
+                  'flutter_local_notifications',
+                  'BSD-3-Clause',
+                  'https://github.com/MaikuB/flutter_local_notifications',
+                ),
+                _licenseItem(
+                  'intl',
+                  'BSD-3-Clause',
+                  'https://github.com/dart-lang/intl',
+                ),
               ],
             ),
 
@@ -125,11 +200,20 @@ class OpenSourceScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Icon(icon, size: 20, color: color),
-              const SizedBox(width: 8),
-              Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color)),
-            ]),
+            Row(
+              children: [
+                Icon(icon, size: 20, color: color),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             ...children,
           ],
@@ -142,14 +226,22 @@ class OpenSourceScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: InkWell(
-        onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+        onTap:
+            () =>
+                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
         borderRadius: BorderRadius.circular(6),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
             children: [
               Expanded(
-                child: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -157,7 +249,10 @@ class OpenSourceScreen extends StatelessWidget {
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(license, style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                child: Text(
+                  license,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                ),
               ),
             ],
           ),
@@ -170,7 +265,8 @@ class OpenSourceScreen extends StatelessWidget {
     return TextButton.icon(
       icon: const Icon(Icons.open_in_new, size: 14),
       label: Text(label, style: const TextStyle(fontSize: 13)),
-      onPressed: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      onPressed:
+          () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
     );
   }

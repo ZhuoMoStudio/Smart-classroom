@@ -24,7 +24,8 @@ class PdfCacheManager {
 
   /// 缓存根目录
   Future<String> get cacheDirectory async {
-    _cacheDir ??= '${(await getApplicationDocumentsDirectory()).path}/pdf_cache';
+    _cacheDir ??=
+        '${(await getApplicationDocumentsDirectory()).path}/pdf_cache';
     final dir = Directory(_cacheDir!);
     if (!await dir.exists()) await dir.create(recursive: true);
     return _cacheDir!;
@@ -34,10 +35,14 @@ class PdfCacheManager {
   Future<String> _cachePathForUrl(String url) async {
     final hash = sha256.convert(utf8.encode(url)).toString();
     // 从 URL 中提取原始文件名作为前缀，方便人工识别
-    final originalName = p.basenameWithoutExtension(url).isNotEmpty
-        ? p.basenameWithoutExtension(url)
-        : 'document';
-    final safeName = originalName.replaceAll(RegExp(r'[^\w\u4e00-\u9fff]'), '_');
+    final originalName =
+        p.basenameWithoutExtension(url).isNotEmpty
+            ? p.basenameWithoutExtension(url)
+            : 'document';
+    final safeName = originalName.replaceAll(
+      RegExp(r'[^\w\u4e00-\u9fff]'),
+      '_',
+    );
     final dir = await cacheDirectory;
     return '$dir/${safeName}_$hash.pdf';
   }
@@ -101,9 +106,9 @@ class PdfCacheManager {
             'Accept': '*/*',
           });
 
-          final response = await client.send(request).timeout(
-            const Duration(seconds: 120),
-          );
+          final response = await client
+              .send(request)
+              .timeout(const Duration(seconds: 120));
 
           if (response.statusCode != 200) {
             // 尝试下一个镜像
@@ -192,12 +197,7 @@ class PdfCacheManager {
 }
 
 /// 下载状态枚举
-enum DownloadState {
-  idle,
-  downloading,
-  completed,
-  failed,
-}
+enum DownloadState { idle, downloading, completed, failed }
 
 /// PDF 缓存异常
 class PdfCacheException implements Exception {

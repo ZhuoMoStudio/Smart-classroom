@@ -69,36 +69,58 @@ class AppLocalizations {
     'loadSuccess': {'zh': '加载成功', 'en': 'Load successful'},
     'loadFailed': {'zh': '加载失败: {error}', 'en': 'Load failed: {error}'},
     'syncComplete': {'zh': '同步完成', 'en': 'Sync Complete'},
-    'scoreExportSuccess': {'zh': '积分导出成功', 'en': 'Scores exported successfully'},
-    'scoreExportFailed': {'zh': '积分导出失败: {error}', 'en': 'Score export failed: {error}'},
-    'scoreImportSuccess': {'zh': '积分导入成功', 'en': 'Scores imported successfully'},
-    'scoreImportFailed': {'zh': '积分导入失败: {error}', 'en': 'Score import failed: {error}'},
+    'scoreExportSuccess': {
+      'zh': '积分导出成功',
+      'en': 'Scores exported successfully',
+    },
+    'scoreExportFailed': {
+      'zh': '积分导出失败: {error}',
+      'en': 'Score export failed: {error}',
+    },
+    'scoreImportSuccess': {
+      'zh': '积分导入成功',
+      'en': 'Scores imported successfully',
+    },
+    'scoreImportFailed': {
+      'zh': '积分导入失败: {error}',
+      'en': 'Score import failed: {error}',
+    },
     'usbDetected': {'zh': '检测到 U 盘', 'en': 'USB drive detected'},
     'folderSelected': {'zh': '已选择文件夹', 'en': 'Folder selected'},
-    'onboardingPage1Title': {'zh': '欢迎使用灵动课堂', 'en': 'Welcome to Smart Classroom'},
+    'onboardingPage1Title': {
+      'zh': '欢迎使用灵动课堂',
+      'en': 'Welcome to Smart Classroom',
+    },
     'onboardingPage1Desc': {
       'zh': '一款专为教师设计的课堂互动管理工具\n\n帮助您高效管理班级、小组和成员\n实现随机抽取、积分管理和数据同步',
-      'en': 'A classroom interaction tool designed for teachers\n\nEfficiently manage classes, groups and members\nRandom draws, score management and data sync'
+      'en':
+          'A classroom interaction tool designed for teachers\n\nEfficiently manage classes, groups and members\nRandom draws, score management and data sync',
     },
     'onboardingPage2Title': {'zh': '创建班级与小组', 'en': 'Create Classes & Groups'},
     'onboardingPage2Desc': {
-      'zh': '点击中央控制台创建您的班级\n在每个班级下添加小组\n为小组添加成员，开始您的教学互动之旅\n\n支持导入 Excel 名单快速建班',
-      'en': 'Create your classes from the central console\nAdd groups under each class\nAdd members to groups and start teaching\n\nImport Excel rosters for quick setup'
+      'zh':
+          '点击中央控制台创建您的班级\n在每个班级下添加小组\n为小组添加成员，开始您的教学互动之旅\n\n支持导入 Excel 名单快速建班',
+      'en':
+          'Create your classes from the central console\nAdd groups under each class\nAdd members to groups and start teaching\n\nImport Excel rosters for quick setup',
     },
     'onboardingPage3Title': {'zh': '随机抽取与积分', 'en': 'Random Draw & Scores'},
     'onboardingPage3Desc': {
       'zh': '课堂随机点名，支持个人/小组两种模式\n可锁定特定小组、设置不重复抽取\n为被点到的学生一键加减分\n积分自动生成趣味段位徽章',
-      'en': 'Random roll-call for individuals and groups\nLock specific groups, set no-repeat mode\nOne-tap score adjustments for drawn students\nAuto-generated rank badges for fun'
+      'en':
+          'Random roll-call for individuals and groups\nLock specific groups, set no-repeat mode\nOne-tap score adjustments for drawn students\nAuto-generated rank badges for fun',
     },
     'onboardingPage4Title': {'zh': '题库与倒计时', 'en': 'Quiz Bank & Timer'},
     'onboardingPage4Desc': {
-      'zh': '导入 Excel 格式题库，支持风险题标记\n随机抽取未答题目，混合多题库出题\n内置倒计时器，支持自定义预设时长\n双击时钟可同步网络时间',
-      'en': 'Import Excel question banks with risk tagging\nRandom non-answered questions, multi-bank mix\nBuilt-in countdown timer with presets\nDouble-click clock to sync network time'
+      'zh':
+          '导入 Excel 格式题库，支持风险题标记\n随机抽取未答题目，混合多题库出题\n内置倒计时器，支持自定义预设时长\n双击时钟可同步网络时间',
+      'en':
+          'Import Excel question banks with risk tagging\nRandom non-answered questions, multi-bank mix\nBuilt-in countdown timer with presets\nDouble-click clock to sync network time',
     },
     'onboardingPage5Title': {'zh': '数据同步与备份', 'en': 'Data Sync & Backup'},
     'onboardingPage5Desc': {
       'zh': '本地数据自动保存至 U 盘\n支持 Excel 积分导入导出\n支持 WebDAV 云端同步（坚果云等）\n跨设备无缝接续教学进度',
-      'en': 'Auto-save data to USB drive\nExcel score import/export\nWebDAV cloud sync (e.g. Nutstore)\nSeamless cross-device teaching continuity'
+      'en':
+          'Auto-save data to USB drive\nExcel score import/export\nWebDAV cloud sync (e.g. Nutstore)\nSeamless cross-device teaching continuity',
     },
   };
 
@@ -176,12 +198,12 @@ class AppLocalizations {
   String get onboardingPage5Desc => _t('onboardingPage5Desc');
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      ['zh', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => ['zh', 'en'].contains(locale.languageCode);
 
   @override
   Future<AppLocalizations> load(Locale locale) {

@@ -112,7 +112,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     try {
       final data = await ref.read(fileServiceProvider).pickAndLoadJson();
       if (data != null) {
-        ref.read(classProvider.notifier).loadFromData(
+        ref
+            .read(classProvider.notifier)
+            .loadFromData(
               data.classrooms,
               data.classrooms.isNotEmpty ? data.classrooms.first.uid : null,
             );
@@ -127,9 +129,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _pickFolder() async {
     final path = await ref.read(fileServiceProvider).pickFolder();
     if (path != null) {
-      ref.read(settingsProvider.notifier).update(
-            ref.read(settingsProvider).copyWith(usbDataPath: path),
-          );
+      ref
+          .read(settingsProvider.notifier)
+          .update(ref.read(settingsProvider).copyWith(usbDataPath: path));
       ToastOverlay.show(context, '已选择文件夹');
     }
   }
@@ -150,10 +152,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ToastOverlay.show(context, '未能解析到任何班级数据');
         return;
       }
-      ref.read(classProvider.notifier).loadFromData(
-            classrooms,
-            classrooms.first.uid,
-          );
+      ref
+          .read(classProvider.notifier)
+          .loadFromData(classrooms, classrooms.first.uid);
       ToastOverlay.show(context, '导入名单成功: ${classrooms.length} 个班级');
     } catch (e) {
       ToastOverlay.show(context, '导入名单失败: $e');
@@ -186,8 +187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           for (final member in group.members) {
             final newScore = groupScores[member.name];
             if (newScore != null) {
-              notifier.setScore(
-                  classroom.uid, group.uid, member.uid, newScore);
+              notifier.setScore(classroom.uid, group.uid, member.uid, newScore);
             }
           }
         }
@@ -278,19 +278,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                AutoSaveIndicator(
-                    isDirty: ref.watch(classProvider).isDirty),
+                AutoSaveIndicator(isDirty: ref.watch(classProvider).isDirty),
                 const SizedBox(height: 4),
                 const SyncStatusIndicator(),
               ],
             ),
           ),
           // 左上角教材入口
-          Positioned(
-            top: 8,
-            left: 16,
-            child: _buildTextbookButton(),
-          ),
+          Positioned(top: 8, left: 16, child: _buildTextbookButton()),
         ],
       ),
     );
@@ -357,15 +352,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600)),
-            ]),
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             child,
           ],
@@ -383,33 +385,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         // 教材
-        _chip(Icons.menu_book, '教材', theme.colorScheme.primaryContainer, theme.colorScheme.primary, () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const TextbookBrowserScreen()));
-        }),
+        _chip(
+          Icons.menu_book,
+          '教材',
+          theme.colorScheme.primaryContainer,
+          theme.colorScheme.primary,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TextbookBrowserScreen()),
+            );
+          },
+        ),
         const SizedBox(width: 6),
         // 年级快捷切换
         _gradeSubjectChip(settings),
         const SizedBox(width: 6),
         // 开源说明
-        _chip(Icons.favorite, '开源', theme.colorScheme.errorContainer, theme.colorScheme.error, () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const OpenSourceScreen()));
-        }),
+        _chip(
+          Icons.favorite,
+          '开源',
+          theme.colorScheme.errorContainer,
+          theme.colorScheme.error,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OpenSourceScreen()),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _chip(IconData icon, String label, Color bg, Color fg, VoidCallback onTap) {
+  Widget _chip(
+    IconData icon,
+    String label,
+    Color bg,
+    Color fg,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.lg),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppSpacing.lg),
-          boxShadow: [BoxShadow(color: fg.withOpacity(0.12), blurRadius: 4)]),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 18, color: fg), const SizedBox(width: 5),
-          Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 13)),
-        ]),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(AppSpacing.lg),
+          boxShadow: [BoxShadow(color: fg.withOpacity(0.12), blurRadius: 4)],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: fg),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: fg,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -427,42 +470,124 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         decoration: BoxDecoration(
           color: theme.colorScheme.tertiaryContainer,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: theme.colorScheme.tertiary.withOpacity(0.15), blurRadius: 4)],
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.tertiary.withOpacity(0.15),
+              blurRadius: 4,
+            ),
+          ],
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.school, size: 18, color: theme.colorScheme.tertiary),
-          const SizedBox(width: 4),
-          Text('$grade · $subject', style: TextStyle(color: theme.colorScheme.tertiary, fontWeight: FontWeight.w600, fontSize: 13)),
-          const SizedBox(width: 2),
-          Icon(Icons.arrow_drop_down, size: 16, color: theme.colorScheme.tertiary),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.school, size: 18, color: theme.colorScheme.tertiary),
+            const SizedBox(width: 4),
+            Text(
+              '$grade · $subject',
+              style: TextStyle(
+                color: theme.colorScheme.tertiary,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 16,
+              color: theme.colorScheme.tertiary,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _showGradeSubjectPicker() {
     final settings = ref.read(settingsProvider);
-    const grades = ['一年级','二年级','三年级','四年级','五年级','六年级','初一','初二','初三','高一','高二','高三'];
-    const subjects = ['语文','数学','英语','物理','化学','生物','历史','地理','政治','科学','信息技术','通用技术','体育','音乐','美术'];
+    const grades = [
+      '一年级',
+      '二年级',
+      '三年级',
+      '四年级',
+      '五年级',
+      '六年级',
+      '初一',
+      '初二',
+      '初三',
+      '高一',
+      '高二',
+      '高三',
+    ];
+    const subjects = [
+      '语文',
+      '数学',
+      '英语',
+      '物理',
+      '化学',
+      '生物',
+      '历史',
+      '地理',
+      '政治',
+      '科学',
+      '信息技术',
+      '通用技术',
+      '体育',
+      '音乐',
+      '美术',
+    ];
 
-    showDialog(context: context, builder: (ctx) => AlertDialog(
-      title: const Text('切换年级和学科'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        DropdownButtonFormField<String?>(
-          value: settings.currentGrade, isDense: true,
-          decoration: const InputDecoration(labelText: '年级'),
-          items: [const DropdownMenuItem<String?>(value: null, child: Text('不限')), ...grades.map((g) => DropdownMenuItem<String?>(value: g, child: Text(g)))],
-          onChanged: (v) => ref.read(settingsProvider.notifier).setGrade(v),
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String?>(
-          value: settings.currentSubject, isDense: true,
-          decoration: const InputDecoration(labelText: '学科'),
-          items: [const DropdownMenuItem<String?>(value: null, child: Text('不限')), ...subjects.map((s) => DropdownMenuItem<String?>(value: s, child: Text(s)))],
-          onChanged: (v) => ref.read(settingsProvider.notifier).setSubject(v),
-        ),
-      ]),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭'))],
-    ));
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('切换年级和学科'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String?>(
+                  value: settings.currentGrade,
+                  isDense: true,
+                  decoration: const InputDecoration(labelText: '年级'),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('不限'),
+                    ),
+                    ...grades.map(
+                      (g) =>
+                          DropdownMenuItem<String?>(value: g, child: Text(g)),
+                    ),
+                  ],
+                  onChanged:
+                      (v) => ref.read(settingsProvider.notifier).setGrade(v),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String?>(
+                  value: settings.currentSubject,
+                  isDense: true,
+                  decoration: const InputDecoration(labelText: '学科'),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('不限'),
+                    ),
+                    ...subjects.map(
+                      (s) =>
+                          DropdownMenuItem<String?>(value: s, child: Text(s)),
+                    ),
+                  ],
+                  onChanged:
+                      (v) => ref.read(settingsProvider.notifier).setSubject(v),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('关闭'),
+              ),
+            ],
+          ),
+    );
   }
 }

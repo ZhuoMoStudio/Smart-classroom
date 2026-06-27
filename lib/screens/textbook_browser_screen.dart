@@ -81,11 +81,12 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PdfReaderScreen(
-          title: item.name,
-          networkUrl: item.downloadUrl, // 传入原始 URL，缓存管理会自动使用代理
-          initialPage: 1,
-        ),
+        builder:
+            (_) => PdfReaderScreen(
+              title: item.name,
+              networkUrl: item.downloadUrl, // 传入原始 URL，缓存管理会自动使用代理
+              initialPage: 1,
+            ),
       ),
     );
   }
@@ -119,50 +120,53 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('正在加载教材目录...'),
-                ],
-              ),
-            )
-          : _errorMessage.isNotEmpty
+      body:
+          _isLoading
+              ? const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('正在加载教材目录...'),
+                  ],
+                ),
+              )
+              : _errorMessage.isNotEmpty
               ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.cloud_off, size: 48, color: Colors.grey),
-                      const SizedBox(height: 12),
-                      Text(_errorMessage,
-                          style: TextStyle(color: Colors.grey[600])),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('重试'),
-                        onPressed: () => _loadDirectory(_currentPath),
-                      ),
-                    ],
-                  ),
-                )
-              : _items.isEmpty
-                  ? const Center(child: Text('此目录为空'))
-                  : ListView.builder(
-                      itemCount: _items.length,
-                      itemBuilder: (context, index) {
-                        final item = _items[index];
-                        if (item.type == 'dir') {
-                          return _buildDirectoryItem(item, theme);
-                        } else if (item.isPdf && !item.isSplitFile) {
-                          return _buildPdfItem(item, theme);
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.cloud_off, size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    Text(
+                      _errorMessage,
+                      style: TextStyle(color: Colors.grey[600]),
                     ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('重试'),
+                      onPressed: () => _loadDirectory(_currentPath),
+                    ),
+                  ],
+                ),
+              )
+              : _items.isEmpty
+              ? const Center(child: Text('此目录为空'))
+              : ListView.builder(
+                itemCount: _items.length,
+                itemBuilder: (context, index) {
+                  final item = _items[index];
+                  if (item.type == 'dir') {
+                    return _buildDirectoryItem(item, theme);
+                  } else if (item.isPdf && !item.isSplitFile) {
+                    return _buildPdfItem(item, theme);
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
     );
   }
 
@@ -171,8 +175,10 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ListTile(
         leading: Icon(Icons.folder, color: Colors.amber.shade700, size: 32),
-        title: Text(item.name,
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+        title: Text(
+          item.name,
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+        ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => _navigateInto(item),
       ),
@@ -180,9 +186,10 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
   }
 
   Widget _buildPdfItem(TextbookItem item, ThemeData theme) {
-    final sizeText = item.size != null
-        ? '${(item.size! / 1024 / 1024).toStringAsFixed(1)} MB'
-        : '';
+    final sizeText =
+        item.size != null
+            ? '${(item.size! / 1024 / 1024).toStringAsFixed(1)} MB'
+            : '';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -194,13 +201,20 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
             color: Colors.red.shade50,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.picture_as_pdf, color: Colors.red.shade700, size: 24),
+          child: Icon(
+            Icons.picture_as_pdf,
+            color: Colors.red.shade700,
+            size: 24,
+          ),
         ),
-        title: Text(item.name,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-        subtitle: sizeText.isNotEmpty
-            ? Text(sizeText, style: const TextStyle(fontSize: 12))
-            : null,
+        title: Text(
+          item.name,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        subtitle:
+            sizeText.isNotEmpty
+                ? Text(sizeText, style: const TextStyle(fontSize: 12))
+                : null,
         trailing: const Icon(Icons.download, color: Colors.blue),
         onTap: () => _openPdf(item),
       ),
@@ -222,9 +236,7 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
       );
       if (pdfs.isEmpty) {
         // Tree API 失败时降级到 Contents API 逐层方式
-        pdfs = await TextbookRepoService.fetchAllPdfs(
-          onProgress: (count) {},
-        );
+        pdfs = await TextbookRepoService.fetchAllPdfs(onProgress: (count) {});
       }
       TextbookRepoService.clearCache();
 
@@ -276,9 +288,10 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
                       itemCount: pdfs.length,
                       itemBuilder: (ctx, index) {
                         final item = pdfs[index];
-                        final sizeText = item.size != null
-                            ? '${(item.size! / 1024 / 1024).toStringAsFixed(1)} MB'
-                            : '';
+                        final sizeText =
+                            item.size != null
+                                ? '${(item.size! / 1024 / 1024).toStringAsFixed(1)} MB'
+                                : '';
                         return ListTile(
                           leading: Container(
                             width: 36,
@@ -287,12 +300,18 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
                               color: Colors.red.shade50,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Icon(Icons.picture_as_pdf,
-                                color: Colors.red.shade700, size: 20),
+                            child: Icon(
+                              Icons.picture_as_pdf,
+                              color: Colors.red.shade700,
+                              size: 20,
+                            ),
                           ),
                           title: Text(
                             item.name,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           subtitle: Text(
                             '${item.path}$sizeText',

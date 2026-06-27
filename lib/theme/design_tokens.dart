@@ -52,17 +52,38 @@ class AppColors {
 // ==================== 字体系统 ====================
 class AppTypography {
   // 标题层级
-  static const TextStyle h1 = TextStyle(fontSize: 34, fontWeight: FontWeight.bold, height: 1.2);
-  static const TextStyle h2 = TextStyle(fontSize: 26, fontWeight: FontWeight.w600, height: 1.25);
-  static const TextStyle h3 = TextStyle(fontSize: 20, fontWeight: FontWeight.w600, height: 1.3);
+  static const TextStyle h1 = TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.bold,
+    height: 1.2,
+  );
+  static const TextStyle h2 = TextStyle(
+    fontSize: 26,
+    fontWeight: FontWeight.w600,
+    height: 1.25,
+  );
+  static const TextStyle h3 = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
+  );
   // 正文
   static const TextStyle bodyLarge = TextStyle(fontSize: 16, height: 1.6);
   static const TextStyle bodyMedium = TextStyle(fontSize: 15, height: 1.6);
   static const TextStyle bodySmall = TextStyle(fontSize: 13, height: 1.5);
   // 标签/辅助
-  static const TextStyle label = TextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.4);
+  static const TextStyle label = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.4,
+  );
   static const TextStyle caption = TextStyle(fontSize: 12, height: 1.4);
-  static const TextStyle overline = TextStyle(fontSize: 10, fontWeight: FontWeight.w500, letterSpacing: 1.0, height: 1.3);
+  static const TextStyle overline = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 1.0,
+    height: 1.3,
+  );
 }
 
 // ==================== 间距系统（4px 基准） ====================
@@ -78,8 +99,14 @@ class AppSpacing {
   // 常用间距
   static const EdgeInsets pagePadding = EdgeInsets.all(lg);
   static const EdgeInsets cardPadding = EdgeInsets.all(md);
-  static const EdgeInsets itemPadding = EdgeInsets.symmetric(horizontal: md, vertical: sm);
-  static const EdgeInsets inputPadding = EdgeInsets.symmetric(horizontal: lg, vertical: 14);
+  static const EdgeInsets itemPadding = EdgeInsets.symmetric(
+    horizontal: md,
+    vertical: sm,
+  );
+  static const EdgeInsets inputPadding = EdgeInsets.symmetric(
+    horizontal: lg,
+    vertical: 14,
+  );
 }
 
 // ==================== 圆角系统 ====================
@@ -100,13 +127,25 @@ class AppRadius {
 // ==================== 阴影系统 ====================
 class AppShadows {
   static List<BoxShadow> get level1 => [
-    BoxShadow(color: AppColors.neutral900.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2)),
+    BoxShadow(
+      color: AppColors.neutral900.withOpacity(0.08),
+      blurRadius: 4,
+      offset: const Offset(0, 2),
+    ),
   ];
   static List<BoxShadow> get level2 => [
-    BoxShadow(color: AppColors.neutral900.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 4)),
+    BoxShadow(
+      color: AppColors.neutral900.withOpacity(0.12),
+      blurRadius: 8,
+      offset: const Offset(0, 4),
+    ),
   ];
   static List<BoxShadow> get level3 => [
-    BoxShadow(color: AppColors.neutral900.withOpacity(0.16), blurRadius: 16, offset: const Offset(0, 8)),
+    BoxShadow(
+      color: AppColors.neutral900.withOpacity(0.16),
+      blurRadius: 16,
+      offset: const Offset(0, 8),
+    ),
   ];
 }
 
@@ -122,10 +161,16 @@ class AppBreakpoints {
   static const double tablet = 768;
   static const double desktop = 1200;
 
-  static bool isMobile(BuildContext context) => MediaQuery.of(context).size.width < tablet;
-  static bool isTablet(BuildContext context) => MediaQuery.of(context).size.width >= tablet && MediaQuery.of(context).size.width < desktop;
-  static bool isDesktop(BuildContext context) => MediaQuery.of(context).size.width >= desktop;
-  static bool isLandscape(BuildContext context) => MediaQuery.of(context).size.width > MediaQuery.of(context).size.height && MediaQuery.of(context).size.width >= tablet;
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < tablet;
+  static bool isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= tablet &&
+      MediaQuery.of(context).size.width < desktop;
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= desktop;
+  static bool isLandscape(BuildContext context) =>
+      MediaQuery.of(context).size.width > MediaQuery.of(context).size.height &&
+      MediaQuery.of(context).size.width >= tablet;
 }
 
 // ==================== 动效时间 ====================

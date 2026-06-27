@@ -126,7 +126,10 @@ class _FullLeaderboardDialogState extends ConsumerState<FullLeaderboardDialog>
             leading: CircleAvatar(
               backgroundColor: _rankColor(rank),
               foregroundColor: Colors.white,
-              child: Text('$rank', style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                '$rank',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             title: Text(member.name),
             subtitle: groupName != null ? Text('小组: $groupName') : null,
@@ -167,119 +170,157 @@ class _FullLeaderboardDialogState extends ConsumerState<FullLeaderboardDialog>
         _AddMemberForm(classroom: classroom),
         const Divider(),
         Expanded(
-          child: classroom.groups.isEmpty
-              ? const Center(child: Text('暂无小组，请先创建小组'))
-              : ListView(
-                  children: classroom.groups
-                      .expand((group) => [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.group,
-                                      size: 16,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    group.name,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall
-                                        ?.copyWith(
-                                            fontWeight: FontWeight.w600),
+          child:
+              classroom.groups.isEmpty
+                  ? const Center(child: Text('暂无小组，请先创建小组'))
+                  : ListView(
+                    children:
+                        classroom.groups
+                            .expand(
+                              (group) => [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                    horizontal: 8,
                                   ),
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline,
-                                        size: 16, color: Colors.red),
-                                    tooltip: '删除小组',
-                                    visualDensity: VisualDensity.compact,
-                                    onPressed: () {
-                                      _confirmDelete(context, '小组「${group.name}」',
-                                          () {
-                                        ref
-                                            .read(classProvider.notifier)
-                                            .deleteGroup(
-                                                classroom.uid, group.uid);
-                                        AudioEngine().playDeleteMember();
-                                      });
-                                    },
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    '${group.memberCount} 人 | ${group.totalScore.toStringAsFixed(1)} 分',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.group,
+                                        size: 16,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        group.name,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          size: 16,
+                                          color: Colors.red,
+                                        ),
+                                        tooltip: '删除小组',
+                                        visualDensity: VisualDensity.compact,
+                                        onPressed: () {
+                                          _confirmDelete(
+                                            context,
+                                            '小组「${group.name}」',
+                                            () {
+                                              ref
+                                                  .read(classProvider.notifier)
+                                                  .deleteGroup(
+                                                    classroom.uid,
+                                                    group.uid,
+                                                  );
+                                              AudioEngine().playDeleteMember();
+                                            },
+                                          );
+                                        },
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        '${group.memberCount} 人 | ${group.totalScore.toStringAsFixed(1)} 分',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall?.copyWith(
                                           color: Theme.of(context)
                                               .colorScheme
                                               .onSurface
                                               .withOpacity(0.6),
                                         ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            ...group.members.map((member) => ListTile(
-                                  dense: true,
-                                  title: Text(member.name),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      RankBadge(score: member.score),
-                                      const SizedBox(width: 4),
-                                      ScoreButton(
-                                        label: '+1',
-                                        onTap: () {
-                                          ref
-                                              .read(classProvider.notifier)
-                                              .changeScore(classroom.uid,
-                                                  group.uid, member.uid, 1);
-                                          AudioEngine().playScoreUp();
-                                        },
-                                      ),
-                                      const SizedBox(width: 2),
-                                      ScoreButton(
-                                        label: '-1',
-                                        onTap: () {
-                                          ref
-                                              .read(classProvider.notifier)
-                                              .changeScore(classroom.uid,
-                                                  group.uid, member.uid, -1);
-                                          AudioEngine().playScoreDown();
-                                        },
-                                      ),
-                                      const SizedBox(width: 4),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            size: 14, color: Colors.red),
-                                        tooltip: '删除成员',
-                                        visualDensity: VisualDensity.compact,
-                                        onPressed: () {
-                                          _confirmDelete(context,
-                                              '成员「${member.name}」', () {
-                                            ref
-                                                .read(classProvider.notifier)
-                                                .deleteMember(classroom.uid,
-                                                    group.uid, member.uid);
-                                            AudioEngine().playDeleteMember();
-                                          });
-                                        },
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
                                       ),
                                     ],
                                   ),
-                                )),
-                          ])
-                      .toList(),
-                ),
+                                ),
+                                ...group.members.map(
+                                  (member) => ListTile(
+                                    dense: true,
+                                    title: Text(member.name),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        RankBadge(score: member.score),
+                                        const SizedBox(width: 4),
+                                        ScoreButton(
+                                          label: '+1',
+                                          onTap: () {
+                                            ref
+                                                .read(classProvider.notifier)
+                                                .changeScore(
+                                                  classroom.uid,
+                                                  group.uid,
+                                                  member.uid,
+                                                  1,
+                                                );
+                                            AudioEngine().playScoreUp();
+                                          },
+                                        ),
+                                        const SizedBox(width: 2),
+                                        ScoreButton(
+                                          label: '-1',
+                                          onTap: () {
+                                            ref
+                                                .read(classProvider.notifier)
+                                                .changeScore(
+                                                  classroom.uid,
+                                                  group.uid,
+                                                  member.uid,
+                                                  -1,
+                                                );
+                                            AudioEngine().playScoreDown();
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            size: 14,
+                                            color: Colors.red,
+                                          ),
+                                          tooltip: '删除成员',
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () {
+                                            _confirmDelete(
+                                              context,
+                                              '成员「${member.name}」',
+                                              () {
+                                                ref
+                                                    .read(
+                                                      classProvider.notifier,
+                                                    )
+                                                    .deleteMember(
+                                                      classroom.uid,
+                                                      group.uid,
+                                                      member.uid,
+                                                    );
+                                                AudioEngine()
+                                                    .playDeleteMember();
+                                              },
+                                            );
+                                          },
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                            .toList(),
+                  ),
         ),
       ],
     );
@@ -295,72 +336,85 @@ class _FullLeaderboardDialogState extends ConsumerState<FullLeaderboardDialog>
         _AddGroupForm(classroom: classroom),
         const Divider(),
         Expanded(
-          child: groups.isEmpty
-              ? const Center(child: Text('暂无小组，请点击上方添加'))
-              : ListView.builder(
-                  itemCount: groups.length,
-                  itemBuilder: (context, index) {
-                    final group = groups[index];
-                    final rank = index + 1;
+          child:
+              groups.isEmpty
+                  ? const Center(child: Text('暂无小组，请点击上方添加'))
+                  : ListView.builder(
+                    itemCount: groups.length,
+                    itemBuilder: (context, index) {
+                      final group = groups[index];
+                      final rank = index + 1;
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 2),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: _rankColor(rank),
-                          foregroundColor: Colors.white,
-                          child: Text('$rank',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: _rankColor(rank),
+                            foregroundColor: Colors.white,
+                            child: Text(
+                              '$rank',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(group.name),
+                          subtitle: Text(
+                            '人数: ${group.memberCount} | 总分: ${group.totalScore.toStringAsFixed(1)}',
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                              size: 18,
+                            ),
+                            tooltip: '删除小组',
+                            onPressed: () {
+                              _confirmDelete(context, '小组「${group.name}」', () {
+                                ref
+                                    .read(classProvider.notifier)
+                                    .deleteGroup(classroom.uid, group.uid);
+                                AudioEngine().playDeleteMember();
+                              });
+                            },
+                          ),
                         ),
-                        title: Text(group.name),
-                        subtitle: Text(
-                            '人数: ${group.memberCount} | 总分: ${group.totalScore.toStringAsFixed(1)}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: Colors.red, size: 18),
-                          tooltip: '删除小组',
-                          onPressed: () {
-                            _confirmDelete(context, '小组「${group.name}」', () {
-                              ref.read(classProvider.notifier).deleteGroup(
-                                  classroom.uid, group.uid);
-                              AudioEngine().playDeleteMember();
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
         ),
       ],
     );
   }
 
   void _confirmDelete(
-      BuildContext context, String itemName, VoidCallback onConfirm) {
+    BuildContext context,
+    String itemName,
+    VoidCallback onConfirm,
+  ) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除 $itemName 吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('确认删除'),
+            content: Text('确定要删除 $itemName 吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  onConfirm();
+                },
+                child: const Text('删除'),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              onConfirm();
-            },
-            child: const Text('删除'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -400,9 +454,7 @@ class _AddMemberFormState extends ConsumerState<_AddMemberForm> {
         padding: const EdgeInsets.all(8.0),
         child: Text(
           '请先在"小组管理"标签页创建小组',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.outline,
-          ),
+          style: TextStyle(color: Theme.of(context).colorScheme.outline),
         ),
       );
     }
@@ -417,8 +469,10 @@ class _AddMemberFormState extends ConsumerState<_AddMemberForm> {
               decoration: const InputDecoration(
                 labelText: '成员姓名',
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
               ),
               onSubmitted: (_) => _addMember(),
             ),
@@ -429,10 +483,13 @@ class _AddMemberFormState extends ConsumerState<_AddMemberForm> {
             hint: const Text('小组'),
             isDense: true,
             underline: const SizedBox(),
-            items: groups
-                .map((g) =>
-                    DropdownMenuItem(value: g.uid, child: Text(g.name)))
-                .toList(),
+            items:
+                groups
+                    .map(
+                      (g) =>
+                          DropdownMenuItem(value: g.uid, child: Text(g.name)),
+                    )
+                    .toList(),
             onChanged: (v) => setState(() => _selectedGroupUid = v),
           ),
           IconButton(
@@ -449,9 +506,7 @@ class _AddMemberFormState extends ConsumerState<_AddMemberForm> {
     final name = _nameController.text.trim();
     if (name.isEmpty || _selectedGroupUid == null) return;
 
-    ref
-        .read(classProvider.notifier)
-        .addMember(_selectedGroupUid!, name);
+    ref.read(classProvider.notifier).addMember(_selectedGroupUid!, name);
     _nameController.clear();
     AudioEngine().playAddMember();
   }
@@ -487,8 +542,10 @@ class _AddGroupFormState extends ConsumerState<_AddGroupForm> {
               decoration: const InputDecoration(
                 labelText: '小组名称',
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
               ),
               onSubmitted: (_) => _addGroup(),
             ),

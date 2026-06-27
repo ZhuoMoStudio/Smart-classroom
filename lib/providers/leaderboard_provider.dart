@@ -5,14 +5,23 @@ class LeaderboardState {
   final bool showGroupBoard;
   const LeaderboardState({this.lockedMemberUid, this.showGroupBoard = false});
   LeaderboardState copyWith({String? lockedMemberUid, bool? showGroupBoard}) =>
-      LeaderboardState(lockedMemberUid: lockedMemberUid ?? this.lockedMemberUid,
-          showGroupBoard: showGroupBoard ?? this.showGroupBoard);
+      LeaderboardState(
+        lockedMemberUid: lockedMemberUid ?? this.lockedMemberUid,
+        showGroupBoard: showGroupBoard ?? this.showGroupBoard,
+      );
 }
 
 class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
   LeaderboardNotifier() : super(const LeaderboardState());
-  void toggleBoard() => state = state.copyWith(showGroupBoard: !state.showGroupBoard);
-  void lockMember(String uid) => state = state.copyWith(lockedMemberUid: state.lockedMemberUid == uid ? null : uid);
+  void toggleBoard() =>
+      state = state.copyWith(showGroupBoard: !state.showGroupBoard);
+  void lockMember(String uid) =>
+      state = state.copyWith(
+        lockedMemberUid: state.lockedMemberUid == uid ? null : uid,
+      );
 }
 
-final leaderboardProvider = StateNotifierProvider<LeaderboardNotifier, LeaderboardState>((ref) => LeaderboardNotifier());
+final leaderboardProvider =
+    StateNotifierProvider<LeaderboardNotifier, LeaderboardState>(
+      (ref) => LeaderboardNotifier(),
+    );

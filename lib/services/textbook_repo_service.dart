@@ -32,18 +32,21 @@ class TextbookItem {
       name: json['name']?.toString() ?? '',
       path: json['path']?.toString() ?? '',
       type: json['type']?.toString() ?? 'file',
-      size: json['size'] is int ? json['size'] : int.tryParse(json['size']?.toString() ?? ''),
+      size:
+          json['size'] is int
+              ? json['size']
+              : int.tryParse(json['size']?.toString() ?? ''),
       downloadUrl: json['download_url']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'path': path,
-        'type': type,
-        'size': size,
-        'download_url': downloadUrl,
-      };
+    'name': name,
+    'path': path,
+    'type': type,
+    'size': size,
+    'download_url': downloadUrl,
+  };
 }
 
 /// ChinaTextbook 教材仓库服务
@@ -94,9 +97,12 @@ class TextbookRepoService {
       }
 
       final List<dynamic> jsonList = jsonDecode(response.body);
-      final items = jsonList
-          .map((item) => TextbookItem.fromJson(item as Map<String, dynamic>))
-          .toList();
+      final items =
+          jsonList
+              .map(
+                (item) => TextbookItem.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
 
       // 排序：目录在前，文件在后；同类按名称排序
       items.sort((a, b) {
@@ -140,7 +146,13 @@ class TextbookRepoService {
         pdfs.add(item);
         onProgress?.call(pdfs.length);
       } else if (item.type == 'dir') {
-        await _fetchPdfsRecursive(item.path, pdfs, depth + 1, maxDepth, onProgress);
+        await _fetchPdfsRecursive(
+          item.path,
+          pdfs,
+          depth + 1,
+          maxDepth,
+          onProgress,
+        );
       }
     }
   }
@@ -175,24 +187,27 @@ class TextbookRepoService {
       final body = jsonDecode(response.body);
       final List<dynamic> tree = body['tree'] ?? [];
 
-      final items = tree
-          .where((item) => item['type'] == 'blob' || item['type'] == 'tree')
-          .map((item) {
-        final path = item['path']?.toString() ?? '';
-        final name = path.split('/').last;
-        final type = item['type'] == 'tree' ? 'dir' : 'file';
-        final size = item['size'] as int?;
-        final downloadUrl = type == 'file'
-            ? 'https://raw.githubusercontent.com/$_owner/$_repo/$_ref/$path'
-            : null;
-        return TextbookItem(
-          name: name,
-          path: path,
-          type: type,
-          size: size,
-          downloadUrl: downloadUrl,
-        );
-      }).toList();
+      final items =
+          tree
+              .where((item) => item['type'] == 'blob' || item['type'] == 'tree')
+              .map((item) {
+                final path = item['path']?.toString() ?? '';
+                final name = path.split('/').last;
+                final type = item['type'] == 'tree' ? 'dir' : 'file';
+                final size = item['size'] as int?;
+                final downloadUrl =
+                    type == 'file'
+                        ? 'https://raw.githubusercontent.com/$_owner/$_repo/$_ref/$path'
+                        : null;
+                return TextbookItem(
+                  name: name,
+                  path: path,
+                  type: type,
+                  size: size,
+                  downloadUrl: downloadUrl,
+                );
+              })
+              .toList();
 
       _allFilesCache = items;
       return items;
@@ -203,21 +218,23 @@ class TextbookRepoService {
 
   /// 从全量树中按路径前缀过滤出指定目录的直接子项
   static Future<List<TextbookItem>> fetchContentsFromTree(
-      String dirPath) async {
+    String dirPath,
+  ) async {
     final allItems = await _fetchFullTree();
     if (allItems.isEmpty) {
       return fetchContents(dirPath);
     }
 
     final prefix = dirPath.isEmpty ? '' : '$dirPath/';
-    final directChildren = allItems.where((item) {
-      if (item.path == dirPath) return false;
-      if (prefix.isEmpty) {
-        return !item.path.contains('/');
-      }
-      return item.path.startsWith(prefix) &&
-          item.path.substring(prefix.length).split('/').length == 1;
-    }).toList();
+    final directChildren =
+        allItems.where((item) {
+          if (item.path == dirPath) return false;
+          if (prefix.isEmpty) {
+            return !item.path.contains('/');
+          }
+          return item.path.startsWith(prefix) &&
+              item.path.substring(prefix.length).split('/').length == 1;
+        }).toList();
 
     directChildren.sort((a, b) {
       if (a.type == b.type) return a.name.compareTo(b.name);
@@ -237,12 +254,15 @@ class TextbookRepoService {
       return fetchAllPdfs(onProgress: onProgress);
     }
 
-    final pdfs = allItems
-        .where((item) =>
-            item.type == 'file' &&
-            item.name.toLowerCase().endsWith('.pdf') &&
-            !item.name.contains('.pdf.'))
-        .toList();
+    final pdfs =
+        allItems
+            .where(
+              (item) =>
+                  item.type == 'file' &&
+                  item.name.toLowerCase().endsWith('.pdf') &&
+                  !item.name.contains('.pdf.'),
+            )
+            .toList();
 
     onProgress?.call(pdfs.length);
     return pdfs;

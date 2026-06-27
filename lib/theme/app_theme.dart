@@ -44,7 +44,9 @@ class AppTheme {
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: AppTouchTarget.buttonMinSize),
+        style: OutlinedButton.styleFrom(
+          minimumSize: AppTouchTarget.buttonMinSize,
+        ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(minimumSize: AppTouchTarget.buttonMinSize),

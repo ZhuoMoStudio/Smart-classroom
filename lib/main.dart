@@ -14,9 +14,7 @@ void main() async {
   await storage.init();
   runApp(
     ProviderScope(
-      overrides: [
-        storageServiceProvider.overrideWith((ref) => storage),
-      ],
+      overrides: [storageServiceProvider.overrideWith((ref) => storage)],
       child: const SmartClassroomApp(),
     ),
   );

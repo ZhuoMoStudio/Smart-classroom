@@ -24,7 +24,8 @@ class GhProxyService {
       // 不是 GitHub raw 链接，直接返回
       return rawUrl;
     }
-    final mirror = _proxyMirrors[mirrorIndex.clamp(0, _proxyMirrors.length - 1)];
+    final mirror =
+        _proxyMirrors[mirrorIndex.clamp(0, _proxyMirrors.length - 1)];
     return '$mirror$rawUrl';
   }
 

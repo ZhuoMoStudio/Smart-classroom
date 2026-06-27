@@ -90,12 +90,9 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
     }
     if (parentGroup == null) return;
 
-    ref.read(classProvider.notifier).changeScore(
-      cls.uid,
-      parentGroup.uid,
-      _drawnMemberObj!.uid,
-      delta,
-    );
+    ref
+        .read(classProvider.notifier)
+        .changeScore(cls.uid, parentGroup.uid, _drawnMemberObj!.uid, delta);
 
     if (delta > 0) {
       AudioEngine().playScoreUp();
@@ -148,9 +145,12 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
               ),
               if (_drawnMemberName != null) ...[
                 const SizedBox(height: 6),
-                Text(_drawnMemberName!,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                        color: theme.colorScheme.primary)),
+                Text(
+                  _drawnMemberName!,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
                 if (_drawnMemberObj != null)
                   Text(
                     '当前积分: ${_drawnMemberObj!.score.toStringAsFixed(1)}',
@@ -225,9 +225,12 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
               ),
               if (_drawnGroupName != null) ...[
                 const SizedBox(height: 6),
-                Text(_drawnGroupName!,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                        color: theme.colorScheme.secondary)),
+                Text(
+                  _drawnGroupName!,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
               ],
               const SizedBox(height: 8),
               if (drawState.lockedGroupUid != null)
@@ -236,9 +239,12 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
                   children: [
                     const Icon(Icons.lock, size: 14, color: Colors.orange),
                     const SizedBox(width: 4),
-                    Text('已锁定小组',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: Colors.orange)),
+                    Text(
+                      '已锁定小组',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.orange,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     TextButton.icon(
                       icon: const Icon(Icons.lock_open, size: 16),
@@ -256,7 +262,9 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
                     if (_drawnGroupObj != null) {
                       notifier.lockGroup(_drawnGroupObj!.uid);
                       ToastOverlay.show(
-                          context, '已锁定: ${_drawnGroupObj!.name}');
+                        context,
+                        '已锁定: ${_drawnGroupObj!.name}',
+                      );
                     } else {
                       ToastOverlay.show(context, '请先抽取一个小组再锁定');
                     }
@@ -270,7 +278,11 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
   }
 
   Widget _drawButton(
-      String text, Color backgroundColor, Color borderColor, VoidCallback onTap) {
+    String text,
+    Color backgroundColor,
+    Color borderColor,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -293,9 +305,9 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
           child: Text(
             text,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: borderColor,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: borderColor,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

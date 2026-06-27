@@ -58,24 +58,29 @@ class _CentralConsoleState extends ConsumerState<CentralConsole> {
   void _deleteClassDialog(String uid, String name) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('删除班级'),
-        content: Text('确定要删除班级「$name」吗？\n该班级下的所有小组和成员数据将被移除。'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
-            onPressed: () {
-              ref.read(classProvider.notifier).deleteClass(uid);
-              Navigator.pop(ctx);
-              AudioEngine().playDeleteMember();
-              ToastOverlay.show(context, '已删除班级: $name');
-            },
-            child: const Text('删除'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('删除班级'),
+            content: Text('确定要删除班级「$name」吗？\n该班级下的所有小组和成员数据将被移除。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: () {
+                  ref.read(classProvider.notifier).deleteClass(uid);
+                  Navigator.pop(ctx);
+                  AudioEngine().playDeleteMember();
+                  ToastOverlay.show(context, '已删除班级: $name');
+                },
+                child: const Text('删除'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -113,14 +118,21 @@ class _CentralConsoleState extends ConsumerState<CentralConsole> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Flexible(
-                            child: Text(c.name, overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              c.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           if (classrooms.length > 1)
                             GestureDetector(
                               onTap: () => _deleteClassDialog(c.uid, c.name),
                               child: const Padding(
                                 padding: EdgeInsets.only(left: 6),
-                                child: Icon(Icons.close, size: 14, color: Colors.red),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Colors.red,
+                                ),
                               ),
                             ),
                         ],
@@ -150,17 +162,20 @@ class _CentralConsoleState extends ConsumerState<CentralConsole> {
                   decoration: const InputDecoration(
                     hintText: '班级名称',
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                   ),
                   onSubmitted: (_) => _addClass(),
                 ),
               ),
             const SizedBox(width: 4),
             Container(
-                width: 1,
-                height: 24,
-                color: theme.colorScheme.outline.withOpacity(0.2)),
+              width: 1,
+              height: 24,
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
             // 主要功能按钮
             _btn(Icons.folder_open, '选择文件夹', widget.onPickFolder),
             _btn(Icons.save, '保存', widget.onSave),
@@ -168,9 +183,10 @@ class _CentralConsoleState extends ConsumerState<CentralConsole> {
             _btn(Icons.cloud_sync, '同步', widget.onSync),
             _btn(Icons.settings, '设置', widget.onSettings),
             Container(
-                width: 1,
-                height: 24,
-                color: theme.colorScheme.outline.withOpacity(0.2)),
+              width: 1,
+              height: 24,
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
             // 更多菜单
             IconButton(
               icon: Icon(_showMenu ? Icons.close : Icons.more_horiz, size: 20),

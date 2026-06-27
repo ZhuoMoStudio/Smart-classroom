@@ -14,14 +14,25 @@ class CloudStorageService {
   CloudStorageService(this._ref, this._wd);
 
   SyncEngine get _engine {
-    _se ??= SyncEngine(_ref, _ref.read(fileServiceProvider), _ref.read(storageServiceProvider), _wd);
+    _se ??= SyncEngine(
+      _ref,
+      _ref.read(fileServiceProvider),
+      _ref.read(storageServiceProvider),
+      _wd,
+    );
     return _se!;
   }
 
   Future<bool> testConnection() async {
     final st = _ref.read(settingsProvider);
-    final pw = await _ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
-    return _wd.connect(url: st.webdavUrl, username: st.webdavUsername, password: pw);
+    final pw =
+        await _ref.read(storageServiceProvider).getSecure('webdav_password') ??
+        '';
+    return _wd.connect(
+      url: st.webdavUrl,
+      username: st.webdavUsername,
+      password: pw,
+    );
   }
 
   Future<bool> sync() => _engine.performSync();

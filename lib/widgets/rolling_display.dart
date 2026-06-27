@@ -28,10 +28,7 @@ class RollingDisplayState extends State<RollingDisplay>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         widget.onFinish?.call();
@@ -75,8 +72,8 @@ class RollingDisplayState extends State<RollingDisplay>
           child: Text(
             widget.items[_currentIndex],
             key: ValueKey('${widget.items[_currentIndex]}_$_currentIndex'),
-            style: widget.textStyle ??
-                Theme.of(context).textTheme.headlineMedium,
+            style:
+                widget.textStyle ?? Theme.of(context).textTheme.headlineMedium,
           ),
         ),
       ),

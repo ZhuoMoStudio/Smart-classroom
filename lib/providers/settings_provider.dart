@@ -41,11 +41,24 @@ class SettingsState {
     String? localeTag,
     String? currentGrade,
     String? currentSubject,
-    bool? is24Hour, bool? isDarkMode, bool? soundEnabled, bool? autoSync, bool? autoSave,
-    String? wallpaperSource, String? wallpaperUrl, int? wallpaperInterval,
-    String? layoutMode, List<int>? timerPresets,
-    String? cloudServiceType, String? webdavUrl, String? webdavUsername, String? remoteFolder,
-    int? autoSyncInterval, String? syncStrategy, String? conflictStrategy, int? autoSaveInterval,
+    bool? is24Hour,
+    bool? isDarkMode,
+    bool? soundEnabled,
+    bool? autoSync,
+    bool? autoSave,
+    String? wallpaperSource,
+    String? wallpaperUrl,
+    int? wallpaperInterval,
+    String? layoutMode,
+    List<int>? timerPresets,
+    String? cloudServiceType,
+    String? webdavUrl,
+    String? webdavUsername,
+    String? remoteFolder,
+    int? autoSyncInterval,
+    String? syncStrategy,
+    String? conflictStrategy,
+    int? autoSaveInterval,
     String? usbDataPath,
   }) => SettingsState(
     localeTag: localeTag ?? this.localeTag,
@@ -74,10 +87,14 @@ class SettingsState {
 }
 
 class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier([SettingsState? initial]) : super(initial ?? const SettingsState());
+  SettingsNotifier([SettingsState? initial])
+    : super(initial ?? const SettingsState());
   void update(SettingsState newState) => state = newState;
   void setGrade(String? grade) => state = state.copyWith(currentGrade: grade);
-  void setSubject(String? subject) => state = state.copyWith(currentSubject: subject);
+  void setSubject(String? subject) =>
+      state = state.copyWith(currentSubject: subject);
 }
 
-final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) => SettingsNotifier());
+final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
+  (ref) => SettingsNotifier(),
+);

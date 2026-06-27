@@ -15,7 +15,10 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 1,
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.xs,
+      ),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
       child: InkWell(
         onTap: onTap,
@@ -40,13 +43,20 @@ class SectionTitle extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(children: [
-        if (icon != null) ...[
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 6),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: theme.colorScheme.primary),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            title,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
-        Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-      ]),
+      ),
     );
   }
 }
@@ -58,7 +68,14 @@ class EmptyState extends StatelessWidget {
   final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
-  const EmptyState({super.key, required this.icon, required this.title, this.subtitle, this.actionLabel, this.onAction});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.actionLabel,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,19 +83,38 @@ class EmptyState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 48, color: theme.colorScheme.outline),
-          const SizedBox(height: AppSpacing.md),
-          Text(title, style: AppTypography.bodyLarge.copyWith(color: theme.colorScheme.outline), textAlign: TextAlign.center),
-          if (subtitle != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(subtitle!, style: AppTypography.bodySmall.copyWith(color: theme.colorScheme.outline.withOpacity(0.7)), textAlign: TextAlign.center),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: theme.colorScheme.outline),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              title,
+              style: AppTypography.bodyLarge.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                subtitle!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: theme.colorScheme.outline.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              OutlinedButton.icon(
+                icon: Icon(icon, size: 16),
+                label: Text(actionLabel!),
+                onPressed: onAction,
+              ),
+            ],
           ],
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: AppSpacing.lg),
-            OutlinedButton.icon(icon: Icon(icon, size: 16), label: Text(actionLabel!), onPressed: onAction),
-          ],
-        ]),
+        ),
       ),
     );
   }
@@ -93,24 +129,38 @@ class LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        SizedBox(width: 48, height: 48,
-          child: CircularProgressIndicator(
-            value: progress,
-            strokeWidth: 3,
-            color: Theme.of(context).colorScheme.primary,
-          )),
-        if (message != null) ...[
-          const SizedBox(height: AppSpacing.lg),
-          Text(message!, style: AppTypography.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 3,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          if (message != null) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              message!,
+              style: AppTypography.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ],
+          if (progress != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '${(progress! * 100).toStringAsFixed(0)}%',
+              style: AppTypography.caption.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ],
         ],
-        if (progress != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text('${(progress! * 100).toStringAsFixed(0)}%',
-            style: AppTypography.caption.copyWith(color: Theme.of(context).colorScheme.outline)),
-        ],
-      ]),
+      ),
     );
   }
 }
@@ -126,19 +176,28 @@ class ErrorState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 56),
-          const SizedBox(height: AppSpacing.md),
-          Text(message, style: AppTypography.bodyMedium.copyWith(color: AppColors.neutral500), textAlign: TextAlign.center),
-          if (onRetry != null) ...[
-            const SizedBox(height: AppSpacing.lg),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('重试'),
-              onPressed: onRetry,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.error, size: 56),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              message,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.neutral500,
+              ),
+              textAlign: TextAlign.center,
             ),
+            if (onRetry != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('重试'),
+                onPressed: onRetry,
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -152,7 +211,15 @@ class ConfirmDialog extends StatelessWidget {
   final String cancelLabel;
   final Color? confirmColor;
   final VoidCallback onConfirm;
-  const ConfirmDialog({super.key, required this.title, required this.content, required this.onConfirm, this.confirmLabel = '确认', this.cancelLabel = '取消', this.confirmColor});
+  const ConfirmDialog({
+    super.key,
+    required this.title,
+    required this.content,
+    required this.onConfirm,
+    this.confirmLabel = '确认',
+    this.cancelLabel = '取消',
+    this.confirmColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -160,10 +227,19 @@ class ConfirmDialog extends StatelessWidget {
       title: Text(title),
       content: Text(content),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(cancelLabel)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(cancelLabel),
+        ),
         FilledButton(
-          style: confirmColor != null ? FilledButton.styleFrom(backgroundColor: confirmColor) : null,
-          onPressed: () { Navigator.pop(context); onConfirm(); },
+          style:
+              confirmColor != null
+                  ? FilledButton.styleFrom(backgroundColor: confirmColor)
+                  : null,
+          onPressed: () {
+            Navigator.pop(context);
+            onConfirm();
+          },
           child: Text(confirmLabel),
         ),
       ],

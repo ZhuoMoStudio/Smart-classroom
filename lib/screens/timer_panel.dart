@@ -23,12 +23,9 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
   @override
   void initState() {
     super.initState();
-    _clockTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (mounted) setState(() => _currentTime = DateTime.now());
-      },
-    );
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _currentTime = DateTime.now());
+    });
   }
 
   @override
@@ -56,7 +53,8 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
 
     final minutes = timerState.remainingSeconds ~/ 60;
     final seconds = timerState.remainingSeconds % 60;
-    final isLowTime = timerState.remainingSeconds <= 10 &&
+    final isLowTime =
+        timerState.remainingSeconds <= 10 &&
         timerState.remainingSeconds > 0 &&
         timerState.isRunning;
 
@@ -105,18 +103,20 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: EdgeInsets.all(isLowTime ? 12 : 8),
-          decoration: isLowTime
-              ? BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red, width: 2),
-                )
-              : null,
+          decoration:
+              isLowTime
+                  ? BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red, width: 2),
+                  )
+                  : null,
           child: TweenAnimationBuilder<double>(
             duration: const Duration(milliseconds: 500),
             tween: Tween(begin: 1.0, end: isLowTime ? 1.1 : 1.0),
-            builder: (_, scale, child) =>
-                Transform.scale(scale: scale, child: child),
+            builder:
+                (_, scale, child) =>
+                    Transform.scale(scale: scale, child: child),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -154,9 +154,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
             width: 200,
             child: LinearProgressIndicator(
               value: timerState.remainingSeconds / timerState.totalSeconds,
-              color: isLowTime
-                  ? Colors.red
-                  : theme.colorScheme.primary,
+              color: isLowTime ? Colors.red : theme.colorScheme.primary,
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
             ),
           ),
@@ -166,13 +164,15 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
         Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: settings.timerPresets.map((minutes) {
-            return ActionChip(
-              label: Text('$minutes 分钟'),
-              avatar: Icon(Icons.timer, size: 16),
-              onPressed: () => ref.read(timerProvider.notifier).setTimer(minutes),
-            );
-          }).toList(),
+          children:
+              settings.timerPresets.map((minutes) {
+                return ActionChip(
+                  label: Text('$minutes 分钟'),
+                  avatar: Icon(Icons.timer, size: 16),
+                  onPressed:
+                      () => ref.read(timerProvider.notifier).setTimer(minutes),
+                );
+              }).toList(),
         ),
         const SizedBox(height: 4),
         // 自定义分钟输入
@@ -186,7 +186,10 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                 decoration: const InputDecoration(
                   labelText: '分钟',
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 onSubmitted: (value) {
@@ -218,9 +221,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             FilledButton.tonalIcon(
-              icon: Icon(
-                timerState.isRunning ? Icons.pause : Icons.play_arrow,
-              ),
+              icon: Icon(timerState.isRunning ? Icons.pause : Icons.play_arrow),
               label: Text(timerState.isRunning ? '暂停' : '开始'),
               onPressed: () {
                 if (timerState.isRunning) {
