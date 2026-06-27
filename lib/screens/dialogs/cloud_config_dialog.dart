@@ -48,34 +48,29 @@ class _CloudConfigDialogState extends ConsumerState<CloudConfigDialog> {
               value: _l.cloudServiceType,
               decoration: const InputDecoration(labelText: '云服务'),
               items: cloudPresets
-                  .map((p) =>
-                      DropdownMenuItem(value: p.name, child: Text(p.name)))
+                  .map((p) => DropdownMenuItem(value: p.name, child: Text(p.name)))
                   .toList(),
               onChanged: (v) {
-                final ps =
-                    cloudPresets.firstWhere((p) => p.name == v);
-                setState(() => _l = _l.copyWith(
-                    cloudServiceType: v!, webdavUrl: ps.defaultUrl));
+                final ps = cloudPresets.firstWhere((p) => p.name == v);
+                setState(() =>
+                    _l = _l.copyWith(cloudServiceType: v!, webdavUrl: ps.defaultUrl));
               },
             ),
             TextFormField(
               initialValue: _l.webdavUrl,
-              decoration:
-                  const InputDecoration(labelText: 'WebDAV 地址'),
-              onChanged: (v) =>
-                  setState(() => _l = _l.copyWith(webdavUrl: v)),
+              decoration: const InputDecoration(labelText: 'WebDAV 地址'),
+              onChanged: (v) => setState(() => _l = _l.copyWith(webdavUrl: v)),
             ),
             TextFormField(
               initialValue: _l.webdavUsername,
               decoration: const InputDecoration(labelText: '用户名'),
-              onChanged: (v) =>
-                  setState(() => _l = _l.copyWith(webdavUsername: v)),
+              onChanged: (v) => setState(() => _l = _l.copyWith(webdavUsername: v)),
             ),
             TextFormField(
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: '密码'),
-              onChanged: (v) => _savePassword(v),
+              onChanged: _savePassword,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -85,13 +80,10 @@ class _CloudConfigDialogState extends ConsumerState<CloudConfigDialog> {
                   final svc = WebdavPlusSyncService(ref);
                   final ok = await svc.testConnection();
                   if (mounted) {
-                    ToastOverlay.show(
-                        ctx, ok ? '连接成功 ✓' : '连接失败，请检查地址和密码');
+                    ToastOverlay.show(ctx, ok ? '连接成功 ✓' : '连接失败，请检查地址和密码');
                   }
                 } catch (e) {
-                  if (mounted) {
-                    ToastOverlay.show(ctx, '连接失败: $e');
-                  }
+                  if (mounted) ToastOverlay.show(ctx, '连接失败: $e');
                 }
               },
               child: const Text('测试连接'),
@@ -100,10 +92,7 @@ class _CloudConfigDialogState extends ConsumerState<CloudConfigDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('取消'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
         FilledButton(
           onPressed: () {
             ref.read(settingsProvider.notifier).update(_l);

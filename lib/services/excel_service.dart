@@ -36,21 +36,19 @@ class ExcelService {
     final sheet = excel.tables.keys.first;
     final table = excel.tables[sheet]!;
     final classMap = <String, Classroom>{};
-    // 使用可变列表暂存成员，避免 Group 的 const members 不可变
-    final groupMembers = <String, Map<String, List<Member>>>{};
+    final classMembers = <String, Map<String, List<Member>>>{};
     for (int i = 0; i < table.maxRows; i++) {
       if (i == 0) { final fc = _cell(table,i,0); if (fc.contains('班级')||fc.contains('班')||fc.contains('Class')) continue; }
       final cn = _cell(table,i,0).trim(), gn = _cell(table,i,1).trim(), mn = _cell(table,i,2).trim();
       if (cn.isEmpty||mn.isEmpty) continue;
       final gnf = gn.isEmpty?'默认小组':gn;
-      if (!classMap.containsKey(cn)) { classMap[cn]=Classroom(uid:_uid(), name:cn); groupMembers[cn]={}; }
-      if (!groupMembers[cn]!.containsKey(gnf)) { groupMembers[cn]![gnf]=[]; }
-      groupMembers[cn]![gnf]!.add(Member(uid:_uid(), name:mn));
+      if (!classMap.containsKey(cn)) { classMap[cn]=Classroom(uid:_uid(), name:cn); classMembers[cn]={}; }
+      if (!classMembers[cn]!.containsKey(gnf)) { classMembers[cn]![gnf]=[]; }
+      classMembers[cn]![gnf]!.add(Member(uid:_uid(), name:mn));
     }
-    // 使用不可变 List 构建 Group/Classroom
     return classMap.entries.map((e){
       final cn = e.key;
-      final groups = (groupMembers[cn] ?? {}).entries.map((ge) =>
+      final groups = (classMembers[cn] ?? {}).entries.map((ge) =>
         Group(uid: _uid(), name: ge.key, members: List.unmodifiable(ge.value))
       ).toList();
       return e.value.copyWith(groups: groups);
