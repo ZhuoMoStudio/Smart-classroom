@@ -90,15 +90,14 @@ jobs:
           Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
 
-      - name: Add MSVC compatibility flags
+      - name: Set MSVC compatibility environment variable
         shell: pwsh
         run: |
-          # Suppress experimental coroutine deprecation (VS 2025+)
-          $cmakePath = "windows\CMakeLists.txt"
-          $content = Get-Content $cmakePath -Raw
-          $newContent = $content -replace 'set\(CMAKE_CXX_STANDARD 17\)', "set(CMAKE_CXX_STANDARD 17)`n`n# Suppress MSVC experimental coroutine deprecation`nadd_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)"
-          Set-Content $cmakePath $newContent
-          Write-Host "Added MSVC compatibility flags to windows/CMakeLists.txt"
+          # _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS must be defined
+          # for audioplayers_windows plugin which uses deprecated <experimental/coroutine>.
+          # The CL env var is read by MSVC (cl.exe) and adds global compiler flags.
+          echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Set CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS"
 
       - name: Get dependencies
         run: flutter pub get
