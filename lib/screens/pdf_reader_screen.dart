@@ -67,7 +67,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
   }
 
   Future<void> _openLocal() async {
-    final r = await FilePicker.platform.pickFiles(type:FileType.custom, allowedExtensions:['pdf']);
+    final r = await FilePicker.pickFiles(type:FileType.custom, allowedExtensions:['pdf']);
     if(r==null||r.files.isEmpty) return;
     final p = r.files.single.path; if(p==null) return;
     setState((){ _fp=p; _loading=false; });
@@ -84,7 +84,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
 
   Widget _pdfView() => GestureDetector(
     onTap:_resetHide,
-    child: PdfViewer.data(_fileBytes!, controller:_ctrl, initialPageNumber:widget.initialPage,
+    child: PdfViewer.data(_fileBytes!, sourceName: widget.title ?? 'document.pdf', controller:_ctrl, initialPageNumber:widget.initialPage,
       params: PdfViewerParams(
         scrollByMouseWheel:true,
         onViewerReady:(doc,ctrl){
@@ -97,18 +97,76 @@ class _State extends ConsumerState<PdfReaderScreen> {
     ),
   );
 
-  Widget _topBar(BuildContext ctx) => Positioned(top:0,left:0,right:0, child:AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.black87,Colors.black54,Colors.transparent], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(top:MediaQuery.of(ctx).padding.top+4,left:8,right:8,bottom:8), child:Row(children:[
-    IconButton(icon:const Icon(Icons.arrow_back,color:Colors.white,size:28), onPressed:()=>Navigator.pop(ctx)),
-    const SizedBox(width:8),
-    Expanded(child:Text(widget.title??'教材阅读', style:const TextStyle(color:Colors.white,fontSize:18,fontWeight:FontWeight.w500), overflow:TextOverflow.ellipsis)),
-    IconButton(icon:const Icon(Icons.folder_open,color:Colors.white70,size:24), onPressed:_openLocal),
-  ])))));
+  Widget _topBar(BuildContext ctx) {
+    return Positioned(
+      top: 0, left: 0, right: 0,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: _showCtrl ? 1 : 0,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.black87, Colors.black54, Colors.transparent],
+              begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            ),
+          ),
+          padding: EdgeInsets.only(top: MediaQuery.of(ctx).padding.top + 4, left: 8, right: 8, bottom: 8),
+          child: Row(children: [
+            IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28), onPressed: () => Navigator.pop(ctx)),
+            const SizedBox(width: 8),
+            Expanded(child: Text(widget.title ?? '教材阅读', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+            IconButton(icon: const Icon(Icons.folder_open, color: Colors.white70, size: 24), onPressed: _openLocal),
+          ]),
+        ),
+      ),
+    );
+  }
 
-  Widget _bottomBar(BuildContext ctx) => Positioned(bottom:0,left:0,right:0, child:AnimatedOpacity(duration:const Duration(milliseconds:300), opacity:_showCtrl?1:0, child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Colors.transparent,Colors.black54,Colors.black87], begin:Alignment.topCenter, end:Alignment.bottomCenter)), padding:EdgeInsets.only(left:12,right:12,top:8,bottom:MediaQuery.of(ctx).padding.bottom+8), child:Row(mainAxisAlignment:MainAxisAlignment.center, children:[
-    IconButton(icon:const Icon(Icons.arrow_left,color:Colors.white,size:28), onPressed:(){ if(_cur>1) _ctrl.goToPage(pageNumber:_cur-1); _resetHide(); }),
-    GestureDetector(onTap:(){ _pageInput.text=_cur.toString(); showDialog(context:ctx, builder:(c)=>AlertDialog(title:const Text('跳转到页码'), content:TextField(autofocus:true, keyboardType:TextInputType.number, controller:_pageInput, decoration:InputDecoration(hintText:'输入页码 (1-$_total)', border:const OutlineInputBorder()), onSubmitted:(_){ Navigator.pop(c); _goPage(); }), actions:[TextButton(onPressed:()=>Navigator.pop(c), child:const Text('取消')), FilledButton(onPressed:(){ Navigator.pop(c); _goPage(); }, child:const Text('跳转'))])); }, child:Container(padding:const EdgeInsets.symmetric(horizontal:16,vertical:6), decoration:BoxDecoration(color:Colors.white24, borderRadius:BorderRadius.circular(20)), child:Text('$_cur / $_total', style:const TextStyle(color:Colors.white,fontSize:16,fontWeight:FontWeight.w500)))),
-    IconButton(icon:const Icon(Icons.arrow_right,color:Colors.white,size:28), onPressed:(){ if(_cur<_total) _ctrl.goToPage(pageNumber:_cur+1); _resetHide(); }),
-  ])))));
+  Widget _bottomBar(BuildContext ctx) {
+    return Positioned(
+      bottom: 0, left: 0, right: 0,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: _showCtrl ? 1 : 0,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, Colors.black54, Colors.black87],
+              begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            ),
+          ),
+          padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: MediaQuery.of(ctx).padding.bottom + 8),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            IconButton(icon: const Icon(Icons.arrow_left, color: Colors.white, size: 28), onPressed: () { if (_cur > 1) _ctrl.goToPage(pageNumber: _cur - 1); _resetHide(); }),
+            GestureDetector(
+              onTap: () {
+                _pageInput.text = _cur.toString();
+                showDialog(context: ctx, builder: (c) => AlertDialog(
+                  title: const Text('跳转到页码'),
+                  content: TextField(
+                    autofocus: true, keyboardType: TextInputType.number,
+                    controller: _pageInput,
+                    decoration: InputDecoration(hintText: '输入页码 (1-$_total)', border: const OutlineInputBorder()),
+                    onSubmitted: (_) { Navigator.pop(c); _goPage(); },
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(c), child: const Text('取消')),
+                    FilledButton(onPressed: () { Navigator.pop(c); _goPage(); }, child: const Text('跳转')),
+                  ],
+                ));
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                child: Text('$_cur / $_total', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            IconButton(icon: const Icon(Icons.arrow_right, color: Colors.white, size: 28), onPressed: () { if (_cur < _total) _ctrl.goToPage(pageNumber: _cur + 1); _resetHide(); }),
+          ]),
+        ),
+      ),
+    );
+  }
 
   Widget _loadingView(BuildContext ctx) => Center(child:Column(mainAxisSize:MainAxisSize.min, children:[
     SizedBox(width:48,height:48, child:CircularProgressIndicator(value:_progress>0?_progress:null, color:Colors.white, strokeWidth:3)),

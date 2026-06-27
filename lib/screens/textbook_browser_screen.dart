@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/gh_proxy_service.dart';
 import '../services/textbook_repo_service.dart';
 import '../widgets/toast_overlay.dart';
 import 'pdf_reader_screen.dart';

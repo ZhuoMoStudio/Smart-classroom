@@ -296,7 +296,7 @@ class QuestionPanel extends ConsumerWidget {
   }
 
   Future<void> _import(WidgetRef ref, BuildContext ctx) async {
-    final r = await FilePicker.platform.pickFiles(
+    final r = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
     );
