@@ -63,7 +63,7 @@ class QuestionPanel extends ConsumerWidget { const QuestionPanel({super.key}); @
     ]));
   }
 
-  void _detail(BuildContext ctx, Question q, WidgetRef ref) { showDialog(context:ctx, builder:(_)=>QuestionDetailDialog(question:q)).then((_){ final qs=ref.read(questionProvider); for(final b in qs.banks){ if(b.questions.any((x)=>x.uid==q.uid)){ ref.read(questionProvider.notifier).markUsed(b.uid,q.uid); break; } } }); }
+  void _detail(BuildContext ctx, Question q, WidgetRef ref) { showDialog<bool>(context:ctx, builder:(_)=>QuestionDetailDialog(question:q)).then((marked){ if(marked==true){ final qs=ref.read(questionProvider); for(final b in qs.banks){ if(b.questions.any((x)=>x.uid==q.uid)){ ref.read(questionProvider.notifier).markUsed(b.uid,q.uid); break; } } } }); }
 
   Future<void> _import(WidgetRef ref, BuildContext ctx) async { final r=await FilePicker.platform.pickFiles(type:FileType.custom, allowedExtensions:['xlsx','xls']); if(r==null||r.files.isEmpty) return; final p=r.files.single.path; if(p==null) return; try { final bn=p.split(Platform.pathSeparator).last.replaceAll(RegExp(r'\.(xlsx|xls)$'),''); final bank=await ExcelService.parseQuestionBank(p,bn); ref.read(questionProvider.notifier).addBank(bank); ToastOverlay.show(ctx,'导入成功: ${bank.name} (${bank.questions.length} 题)'); } catch(e){ ToastOverlay.show(ctx,'导入失败: $e'); } }
 

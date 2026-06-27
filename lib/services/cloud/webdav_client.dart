@@ -80,6 +80,20 @@ class WebDavClientService {
     }
   }
 
+  /// 解析 HTTP 日期格式（如 "Thu, 01 Jan 2024 12:00:00 GMT"）为 DateTime
+  DateTime? _parseHttpDate(String dateStr) {
+    try {
+      // 处理格式: "Thu, 01 Jan 2024 12:00:00 GMT"
+      final cleaned = dateStr.trim();
+      // 去掉星期前缀和尾部的时区
+      final withoutDay = cleaned.replaceFirst(RegExp(r'^[A-Z][a-z]{2},\s*'), '');
+      final withoutTz = withoutDay.replaceAll(RegExp(r'\s+[A-Z]{2,5}$'), '');
+      return DateTime.tryParse(withoutTz);
+    } catch (_) {
+      return null;
+    }
+  }
+
   List<WebDavFile> _parseMultiStatus(String xml, String basePath) {
     final files = <WebDavFile>[];
     final responses = xml.split('<D:response>').skip(1);
@@ -100,7 +114,7 @@ class WebDavClientService {
       final size = int.tryParse(sizeMatch?.group(1) ?? '0') ?? 0;
       DateTime lm = DateTime.now();
       if (dateMatch != null) {
-        lm = DateTime.tryParse(dateMatch.group(1)!) ?? DateTime.now();
+        lm = _parseHttpDate(dateMatch.group(1)!) ?? DateTime.now();
       }
       files.add(WebDavFile(
         name: name,

@@ -8,6 +8,7 @@ import '../../services/cloud/cloud_presets.dart';
 import '../../services/cloud/webdav_plus_sync.dart';
 import '../../services/storage_service.dart';
 import '../../services/update_service.dart';
+import '../../services/cloud/cloud_storage_service.dart';
 import '../../widgets/toast_overlay.dart';
 import '../open_source_screen.dart';
 
@@ -94,7 +95,18 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             }),
             const Spacer(),
             TextButton.icon(icon: const Icon(Icons.sync, size: 16), label: const Text('立即同步'),
-              onPressed: () { ref.read(syncProvider.notifier).startSync(); Future.delayed(const Duration(seconds: 2), () { ref.read(syncProvider.notifier).syncComplete(); ToastOverlay.show(context, '同步完成'); }); }),
+              onPressed: () async {
+                ref.read(syncProvider.notifier).startSync();
+                try {
+                  final cloudService = ref.read(cloudStorageServiceProvider);
+                  final success = await cloudService.sync();
+                  if (mounted) {
+                    ToastOverlay.show(context, success ? '同步完成' : '同步失败，请检查配置');
+                  }
+                } catch (e) {
+                  if (mounted) ToastOverlay.show(context, '同步异常: $e');
+                }
+              }),
           ]),
           SwitchListTile(title: const Text('自动同步'), value: _local.autoSync, dense: true, onChanged: (v) => setState(() => _local = _local.copyWith(autoSync: v))),
           DropdownButtonFormField<int>(value: _local.autoSyncInterval, decoration: const InputDecoration(labelText: '同步间隔', isDense: true), items: const [
