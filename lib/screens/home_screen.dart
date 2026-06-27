@@ -139,7 +139,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   // ===================== Excel/Roster 导入 =====================
   Future<void> _importRoster() async {
     try {
-      final r = await FilePicker.pickFiles(
+      final r = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx', 'xls'],
       );
