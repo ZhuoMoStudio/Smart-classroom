@@ -86,7 +86,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
     onTap:_resetHide,
     child: PdfViewer.data(_fileBytes!, sourceName: widget.title ?? 'document.pdf', controller:_ctrl, initialPageNumber:widget.initialPage,
       params: PdfViewerParams(
-        scrollByMouseWheel:true,
+        scrollByMouseWheel:1.0,
         onViewerReady:(doc,ctrl){
           WidgetsBinding.instance.addPostFrameCallback((_){
             if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
