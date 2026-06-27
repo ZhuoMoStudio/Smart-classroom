@@ -42,6 +42,9 @@ jobs:
           echo "flutter.sdk=${FLUTTER_ROOT}" > android/local.properties
           echo "flutter.buildMode=release" >> android/local.properties
 
+      - name: Clean stale build artifacts
+        run: flutter clean
+
       - name: Get dependencies
         run: flutter pub get
 
