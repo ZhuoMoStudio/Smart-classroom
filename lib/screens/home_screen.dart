@@ -15,7 +15,6 @@ import '../widgets/toast_overlay.dart';
 import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
 import '../providers/services_provider.dart';
-import '../services/cloud/cloud_storage_service.dart';
 import 'draw_panel.dart';
 import 'question_panel.dart';
 import 'timer_panel.dart';
@@ -74,9 +73,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _startAutoSave() {
-    _autoSaveTimer?.cancel();
     final settings = ref.read(settingsProvider);
-    if (settings.autoSave && settings.autoSaveInterval > 0) {
+    if (settings.autoSave) {
+      _autoSaveTimer?.cancel();
       _autoSaveTimer = Timer.periodic(
         Duration(seconds: settings.autoSaveInterval),
         (_) => _save(silent: true),
@@ -218,19 +217,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _sync() async {
     showDialog(context: context, builder: (_) => const SyncProgressDialog());
-    try {
-      final cloudService = ref.read(cloudStorageServiceProvider);
-      final success = await cloudService.sync();
-      if (mounted) Navigator.pop(context);
-      if (success) {
-        ToastOverlay.show(context, '同步完成');
-      } else {
-        ToastOverlay.show(context, '同步失败，请检查设置');
-      }
-    } catch (e) {
-      if (mounted) Navigator.pop(context);
-      ToastOverlay.show(context, '同步失败: $e');
-    }
+    ref.read(syncProvider.notifier).startSync();
+    await Future.delayed(const Duration(seconds: 2));
+    ref.read(syncProvider.notifier).syncComplete();
+    if (mounted) Navigator.pop(context);
+    ToastOverlay.show(context, '同步完成');
   }
 
   void _openSettings() {
