@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../models/class_model.dart';
+import '../theme/design_tokens.dart';
 import '../theme/responsive.dart';
 import '../widgets/rank_badge.dart';
 import '../widgets/score_button.dart';

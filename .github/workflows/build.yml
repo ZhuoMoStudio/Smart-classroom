@@ -18,6 +18,10 @@ permissions:
   contents: write
   actions: read
 
+env:
+  APP_NAME: SmartClassroom
+  APP_VERSION: 1.0.0
+
 jobs:
   build-android:
     name: Android Build
@@ -55,23 +59,35 @@ jobs:
       - name: Build split APKs
         run: flutter build apk --release --split-per-abi
 
+      - name: Rename arm64 APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
       - name: Upload arm64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-arm64-v8a-release.apk
-          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
+          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
 
+      - name: Rename armeabi APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
       - name: Upload armeabi APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-armeabi-v7a-release.apk
-          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
+          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
 
+      - name: Rename x86_64 APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
+             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
       - name: Upload x86_64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-x86_64-release.apk
-          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
+          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
+          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
 
   build-windows:
     name: Windows Build
@@ -100,9 +116,6 @@ jobs:
       - name: Set MSVC compatibility environment variable
         shell: pwsh
         run: |
-          # _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS must be defined
-          # for audioplayers_windows plugin which uses deprecated <experimental/coroutine>.
-          # The CL env var is read by MSVC (cl.exe) and adds global compiler flags.
           echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Set CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS"
 
@@ -113,15 +126,18 @@ jobs:
         shell: pwsh
         run: flutter build windows --release
 
-      - name: Package ZIP
+      - name: Package Windows ZIP with versioned name
         shell: pwsh
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath smart_classroom_windows.zip
+        run: |
+          $zipName = "${env:APP_NAME}_v${env:APP_VERSION}_windows.zip"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $zipName
+          echo "ZIP_NAME=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Upload Windows ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: smart_classroom_windows.zip
-          path: smart_classroom_windows.zip
+          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
+          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
 
   release:
     needs: [build-android, build-windows]
@@ -129,30 +145,19 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Download arm64 APK
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: app-arm64-v8a-release.apk
-      - name: Download armeabi APK
-        uses: actions/download-artifact@v4
-        with:
-          name: app-armeabi-v7a-release.apk
-      - name: Download x86_64 APK
-        uses: actions/download-artifact@v4
-        with:
-          name: app-x86_64-release.apk
-      - name: Download Windows ZIP
-        uses: actions/download-artifact@v4
-        with:
-          name: smart_classroom_windows.zip
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -la release-assets/
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            app-arm64-v8a-release.apk
-            app-armeabi-v7a-release.apk
-            app-x86_64-release.apk
-            smart_classroom_windows.zip
+          files: release-assets/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

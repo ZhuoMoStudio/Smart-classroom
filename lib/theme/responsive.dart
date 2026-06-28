@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'design_tokens.dart';
 
 /// 响应式布局工具
 /// 基于屏幕宽度判断布局模式，不依赖 Platform 平台类型
@@ -41,9 +42,4 @@ class TeachingScale {
       isTeaching ? mobileSize * 1.67 : mobileSize;
 }
 
-/// 教学模式下获取触控热区便捷方法
-extension TeachingSize on BuildContext {
-  double get teachingTouchTarget => AppTouchTarget.minSize(isTeachingLayout);
-  double get teachingSpacing => AppSpacing.lg * (isTeachingLayout ? 2.0 : 1.0);
-  double get teachingIconSize => isTeachingLayout ? 48.0 : 20.0;
-}
+

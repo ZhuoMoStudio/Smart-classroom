@@ -64,7 +64,7 @@ class AppTheme {
         labelLarge: AppTypography.teachingLabel,
         labelSmall: AppTypography.teachingBodySmall,
       ),
-      visualDensity: VisualDensity.minimum,
+      visualDensity: VisualDensity.standard,
       // 大屏卡片
       cardTheme: CardThemeData(
         elevation: 2,
