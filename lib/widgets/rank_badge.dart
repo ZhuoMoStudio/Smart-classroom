@@ -5,71 +5,45 @@ import '../theme/design_tokens.dart';
 class RankBadge extends StatefulWidget {
   final double score;
   final bool animate;
-  const RankBadge({super.key, required this.score, this.animate = false});
+  final bool teaching;
+  const RankBadge({super.key, required this.score, this.animate = false, this.teaching = false});
   @override
   State<RankBadge> createState() => _RankBadgeState();
 }
 
-class _RankBadgeState extends State<RankBadge>
-    with SingleTickerProviderStateMixin {
+class _RankBadgeState extends State<RankBadge> with SingleTickerProviderStateMixin {
   late AnimationController _c;
   late Animation<double> _a;
 
   @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    _a = Tween(
-      begin: 1.0,
-      end: 1.3,
-    ).animate(CurvedAnimation(parent: _c, curve: Curves.elasticOut));
-    if (widget.animate) _t();
-  }
+  void initState() { super.initState(); _c = AnimationController(duration: const Duration(milliseconds: 400), vsync: this); _a = Tween(begin: 1.0, end: 1.3).animate(CurvedAnimation(parent: _c, curve: Curves.elasticOut)); if (widget.animate) _t(); }
 
   @override
-  void didUpdateWidget(covariant RankBadge old) {
-    super.didUpdateWidget(old);
-    if (widget.score != old.score && widget.animate) _t();
-  }
+  void didUpdateWidget(covariant RankBadge old) { super.didUpdateWidget(old); if (widget.score != old.score && widget.animate) _t(); }
 
-  void _t() {
-    _c.forward().then((_) => _c.reverse());
-  }
+  void _t() { _c.forward().then((_) => _c.reverse()); }
 
   @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
+  void dispose() { _c.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext ctx) {
     final (name, lv) = RankSystem.getRank(widget.score);
     final cs = _rc(lv);
+    final teaching = widget.teaching;
     return AnimatedBuilder(
       animation: _a,
-      builder:
-          (_, child) => Transform.scale(
-            scale: _a.value,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: cs),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+      builder: (_, child) => Transform.scale(
+        scale: _a.value,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: teaching ? 16 : 6, vertical: teaching ? 8 : 2),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: cs),
+            borderRadius: BorderRadius.circular(teaching ? 12 : 4),
           ),
+          child: Text(name, style: TextStyle(color: Colors.white, fontSize: teaching ? 24 : 10, fontWeight: FontWeight.bold)),
+        ),
+      ),
     );
   }
 

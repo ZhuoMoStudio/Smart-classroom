@@ -11,6 +11,8 @@ class SettingsState {
   final int wallpaperInterval, autoSyncInterval, autoSaveInterval;
   final List<int> timerPresets;
   final String? usbDataPath;
+  /// 教学/备课模式切换（true=课堂大屏模式，false=备课/普通模式）
+  final bool teachingMode;
 
   const SettingsState({
     this.localeTag = 'zh',
@@ -35,6 +37,7 @@ class SettingsState {
     this.autoSave = true,
     this.autoSaveInterval = 30,
     this.usbDataPath,
+    this.teachingMode = false,
   });
 
   SettingsState copyWith({
@@ -60,6 +63,7 @@ class SettingsState {
     String? conflictStrategy,
     int? autoSaveInterval,
     String? usbDataPath,
+    bool? teachingMode,
   }) => SettingsState(
     localeTag: localeTag ?? this.localeTag,
     currentGrade: currentGrade ?? this.currentGrade,
@@ -83,6 +87,7 @@ class SettingsState {
     autoSave: autoSave ?? this.autoSave,
     autoSaveInterval: autoSaveInterval ?? this.autoSaveInterval,
     usbDataPath: usbDataPath ?? this.usbDataPath,
+    teachingMode: teachingMode ?? this.teachingMode,
   );
 }
 
@@ -93,6 +98,9 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void setGrade(String? grade) => state = state.copyWith(currentGrade: grade);
   void setSubject(String? subject) =>
       state = state.copyWith(currentSubject: subject);
+  void toggleTeachingMode() =>
+      state = state.copyWith(teachingMode: !state.teachingMode);
+  void setTeachingMode(bool v) => state = state.copyWith(teachingMode: v);
 }
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
