@@ -64,13 +64,27 @@ class WebdavPlusSyncService {
     return client;
   }
 
-  /// 测试连接
+  /// 测试连接（自动尝试创建远程目录）
   Future<bool> testConnection({
     required SettingsState settings,
     required String password,
   }) async {
     try {
       final client = await createClient(settings, password);
+      // 先测试根目录连通性
+      try {
+        await client.list('/');
+      } catch (_) {
+        // 根目录都无法访问，连接失败
+        return false;
+      }
+      // 尝试创建目标目录（如果已存在不会报错）
+      try {
+        await client.createDirectory(settings.remoteFolder);
+      } catch (_) {
+        // 目录可能已存在，忽略
+      }
+      // 列出目标目录验证
       await client.list(settings.remoteFolder);
       return true;
     } catch (_) {

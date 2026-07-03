@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sync_provider.dart';
@@ -357,15 +358,27 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                     ],
                     onChanged: (v) => setState(() => _local = _local.copyWith(autoSaveInterval: v!)),
                   ),
-                  TextFormField(
-                    initialValue: _local.usbDataPath ?? '',
-                    decoration: const InputDecoration(
-                      labelText: 'U盘数据路径（留空自动检测）',
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    style: const TextStyle(fontSize: 14),
-                    onChanged: (v) => setState(() => _local = _local.copyWith(usbDataPath: v.isEmpty ? null : v)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _local.usbDataPath ?? 'U盘数据路径（未设置，自动检测）',
+                          style: TextStyle(fontSize: 13, color: _local.usbDataPath != null ? theme.colorScheme.onSurface : theme.colorScheme.outline),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.folder_open, size: 16),
+                        label: const Text('选择文件夹', style: TextStyle(fontSize: 12)),
+                        onPressed: () async {
+                          final path = await FilePicker.platform.getDirectoryPath();
+                          if (path != null) {
+                            setState(() => _local = _local.copyWith(usbDataPath: path));
+                          }
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   const Divider(height: 1),
