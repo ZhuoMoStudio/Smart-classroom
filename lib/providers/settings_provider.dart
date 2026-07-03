@@ -4,7 +4,7 @@ class SettingsState {
   final String localeTag;
   final String? currentGrade;
   final String? currentSubject;
-  final bool is24Hour, isDarkMode, soundEnabled, autoSync, autoSave;
+  final bool is24Hour, isDarkMode, soundEnabled, hapticFeedback, autoSync, autoSave;
   final String wallpaperSource, layoutMode, cloudServiceType, webdavUrl;
   final String webdavUsername, remoteFolder, syncStrategy, conflictStrategy;
   final String? wallpaperUrl;
@@ -21,6 +21,7 @@ class SettingsState {
     this.is24Hour = true,
     this.isDarkMode = false,
     this.soundEnabled = true,
+    this.hapticFeedback = true,
     this.wallpaperSource = 'none',
     this.wallpaperUrl,
     this.wallpaperInterval = 0,
@@ -47,6 +48,7 @@ class SettingsState {
     bool? is24Hour,
     bool? isDarkMode,
     bool? soundEnabled,
+    bool? hapticFeedback,
     bool? autoSync,
     bool? autoSave,
     String? wallpaperSource,
@@ -71,6 +73,7 @@ class SettingsState {
     is24Hour: is24Hour ?? this.is24Hour,
     isDarkMode: isDarkMode ?? this.isDarkMode,
     soundEnabled: soundEnabled ?? this.soundEnabled,
+    hapticFeedback: hapticFeedback ?? this.hapticFeedback,
     wallpaperSource: wallpaperSource ?? this.wallpaperSource,
     wallpaperUrl: wallpaperUrl ?? this.wallpaperUrl,
     wallpaperInterval: wallpaperInterval ?? this.wallpaperInterval,

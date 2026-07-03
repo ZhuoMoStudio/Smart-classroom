@@ -17,6 +17,7 @@ import '../widgets/toast_overlay.dart';
 import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
 import '../providers/services_provider.dart';
+import '../services/audio_engine.dart';
 import '../services/cloud/cloud_storage_service.dart';
 import 'draw_panel.dart';
 import 'question_panel.dart';
@@ -659,8 +660,9 @@ class _TeachingDockButtonState extends State<_TeachingDockButton>
   }
 
   void _handleTap() {
+    // 触感反馈 + 背景闪烁
+    AudioEngine().hapticHeavy();
     widget.onTap();
-    // 背景闪烁：亮起→渐回原色
     _flashController.forward(from: 0.0);
   }
 
