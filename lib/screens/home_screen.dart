@@ -246,23 +246,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _moreTile(Icons.folder_open, '选择文件夹', _pickFolder),
-          _moreTile(Icons.save_alt, '保存数据', () => _save()),
-          _moreTile(Icons.file_open, '加载数据', _load),
-          _moreTile(Icons.cloud_sync, '同步', _sync),
-          _moreTile(Icons.person_add_alt, '导入名单', _importRoster),
-          _moreTile(Icons.upload, '导入积分', _importScores),
-          _moreTile(Icons.download, '导出积分', _exportScores),
-          _moreTile(Icons.note_add, '导出名单模板', _exportMemberTemplate),
-          _moreTile(Icons.quiz_outlined, '导出题库模板', _exportQuestionTemplate),
-          _moreTile(Icons.settings, '设置', _openSettings),
-          const SizedBox(height: 16),
-          _moreTile(Icons.menu_book, '教材', () {
-            Navigator.push(context, slideFadePageRoute(const TextbookBrowserScreen()));
-          }),
-          _moreTile(Icons.favorite, '开源', () {
-            Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
-          }),
+          // 数据管理组
+          Card(
+            child: Column(children: [
+              _moreTile(Icons.folder_open, '选择文件夹', _pickFolder),
+              _moreTile(Icons.save_alt, '保存数据', () => _save()),
+              _moreTile(Icons.file_open, '加载数据', _load),
+            ]),
+          ),
+          const SizedBox(height: 8),
+          // 同步
+          Card(
+            child: _moreTile(Icons.cloud_sync, '云端同步', _sync),
+          ),
+          const SizedBox(height: 8),
+          // 导入/导出
+          Card(
+            child: Column(children: [
+              _moreTile(Icons.person_add_alt, '导入名单', _importRoster),
+              _moreTile(Icons.upload_file, '导入积分', _importScores),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              _moreTile(Icons.download, '导出积分', _exportScores),
+              _moreTile(Icons.note_add, '导出名单模板', _exportMemberTemplate),
+              _moreTile(Icons.quiz_outlined, '导出题库模板', _exportQuestionTemplate),
+            ]),
+          ),
+          const SizedBox(height: 8),
+          // 工具
+          Card(
+            child: Column(children: [
+              _moreTile(Icons.menu_book, '教材仓库', () {
+                Navigator.push(context, slideFadePageRoute(const TextbookBrowserScreen()));
+              }),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              _moreTile(Icons.settings, '设置', _openSettings),
+              const Divider(height: 1, indent: 56, endIndent: 16),
+              _moreTile(Icons.favorite, '开源说明', () {
+                Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
+              }),
+            ]),
+          ),
         ],
       ),
     );
