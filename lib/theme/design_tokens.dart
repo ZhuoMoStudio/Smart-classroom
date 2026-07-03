@@ -31,6 +31,14 @@ class AppColors {
   static const Color frostLight = Color(0xB3F2F2F7);
   static const Color frostBorder = Color(0x4D8E8E93);
 
+  // 中性色阶（兼容旧引用）
+  static const Color neutral200 = Color(0xFFE8E8ED);
+  static const Color neutral300 = Color(0xFFD1D1D6);
+  static const Color neutral400 = Color(0xFFAEAEB2);
+  static const Color neutral500 = Color(0xFF8E8E93);
+  static const Color neutral600 = Color(0xFF636366);
+  static const Color neutral700 = Color(0xFF48484A);
+
   // 卡片浅投影
   static Color cardShadow = Colors.black.withOpacity(0.04);
 
