@@ -1,7 +1,7 @@
 name: smart_classroom
 description: 灵动课堂 - 课堂互动管理工具（非商业用途）
 publish_to: 'none'
-version: 1.0.2+1
+version: 1.0.3+1
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
