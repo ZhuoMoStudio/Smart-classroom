@@ -83,41 +83,23 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _section('教学信息'),
+                  _section('下载源'),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Expanded(
-                        child: DropdownButtonFormField<String?>(
-                          value: _local.currentGrade,
-                          isDense: true,
+                        child: DropdownButtonFormField<String>(
+                          value: _local.downloadSource,
                           decoration: const InputDecoration(
-                            labelText: '年级',
+                            labelText: '教材/更新下载源',
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
-                          items: [
-                            const DropdownMenuItem<String?>(value: null, child: Text('不限', style: TextStyle(fontSize: 14))),
-                            ..._grades.map((g) => DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(fontSize: 14)))),
+                          items: const [
+                            DropdownMenuItem(value: 'github', child: Text('GitHub 官方源', style: TextStyle(fontSize: 14))),
+                            DropdownMenuItem(value: 'mirror', child: Text('国内镜像加速', style: TextStyle(fontSize: 14))),
                           ],
-                          onChanged: (v) => setState(() => _local = _local.copyWith(currentGrade: v)),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: DropdownButtonFormField<String?>(
-                          value: _local.currentSubject,
-                          isDense: true,
-                          decoration: const InputDecoration(
-                            labelText: '学科',
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          ),
-                          items: [
-                            const DropdownMenuItem<String?>(value: null, child: Text('不限', style: TextStyle(fontSize: 14))),
-                            ..._subjects.map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 14)))),
-                          ],
-                          onChanged: (v) => setState(() => _local = _local.copyWith(currentSubject: v)),
+                          onChanged: (v) => setState(() => _local = _local.copyWith(downloadSource: v!)),
                         ),
                       ),
                     ],
@@ -164,14 +146,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                     contentPadding: EdgeInsets.zero,
                     onChanged: (v) => setState(() => _local = _local.copyWith(isDarkMode: v)),
                   ),
-                  SwitchListTile.adaptive(
-                    title: const Text('课堂大屏模式', style: TextStyle(fontSize: 14)),
-                    subtitle: const Text('超大按钮、高对比度、沉浸全屏', style: TextStyle(fontSize: 12)),
-                    value: _local.teachingMode,
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    onChanged: (v) => setState(() => _local = _local.copyWith(teachingMode: v)),
-                  ),
+
                   DropdownButtonFormField<String>(
                     value: _local.layoutMode,
                     decoration: const InputDecoration(
@@ -389,7 +364,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Text('灵动课堂 v1.0.5', style: TextStyle(fontSize: 13)),
+                      const Text('灵动课堂 v1.0.6', style: TextStyle(fontSize: 13)),
                       const Spacer(),
                       TextButton.icon(
                         icon: const Icon(Icons.help_outline, size: 14),
