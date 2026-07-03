@@ -375,7 +375,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Text('灵动课堂 v1.0.2', style: TextStyle(fontSize: 13)),
+                      const Text('灵动课堂 v1.0.3', style: TextStyle(fontSize: 13)),
                       const Spacer(),
                       TextButton.icon(
                         icon: const Icon(Icons.code, size: 14),
@@ -438,9 +438,10 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
   );
 
   Future<void> _testConnection() async {
-    final svc = WebdavPlusSyncService(ref);
+    const svc = WebdavPlusSyncService();
+    final pw = await ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
     ToastOverlay.show(context, '正在测试连接...');
-    final ok = await svc.testConnection();
+    final ok = await svc.testConnection(settings: _local, password: pw);
     if (mounted) {
       ToastOverlay.show(context, ok ? '连接成功 ✓' : '连接失败，请检查地址和密码');
     }

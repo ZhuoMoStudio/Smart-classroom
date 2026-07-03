@@ -80,21 +80,33 @@ class FileService {
   }
 
   // ==================== Excel 模板导出 ====================
-  /// 导出学生名单模板到工作目录
-  Future<File> exportMemberTemplate() async {
-    final dir = await getWorkingDir();
-    final d = Directory(dir);
-    if (!await d.exists()) await d.create(recursive: true);
-    final path = '$dir/学生名单模板.xlsx';
+  /// 导出学生名单模板 — 用户选择保存位置
+  Future<File?> exportMemberTemplate() async {
+    final path = await FilePicker.platform.saveFile(
+      dialogTitle: '保存学生名单模板',
+      fileName: '学生名单模板.xlsx',
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+    if (path == null) return null;
+    // 确保目录存在
+    final dir = Directory(path).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
     return ExcelService.exportMemberTemplate(path);
   }
 
-  /// 导出题库模板到工作目录
-  Future<File> exportQuestionTemplate() async {
-    final dir = await getWorkingDir();
-    final d = Directory(dir);
-    if (!await d.exists()) await d.create(recursive: true);
-    final path = '$dir/题库模板.xlsx';
+  /// 导出题库模板 — 用户选择保存位置
+  Future<File?> exportQuestionTemplate() async {
+    final path = await FilePicker.platform.saveFile(
+      dialogTitle: '保存题库模板',
+      fileName: '题库模板.xlsx',
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+    if (path == null) return null;
+    // 确保目录存在
+    final dir = Directory(path).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
     return ExcelService.exportQuestionTemplate(path);
   }
 

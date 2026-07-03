@@ -16,13 +16,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pc = PageController();
   int _page = 0;
 
-  // 3张壁纸（依次对应前3页的背景）
-  static const _wallpapers = [
-    'assets/wallpapers/wallpaper_1.png',
-    'assets/wallpapers/wallpaper_2.jpg',
-    'assets/wallpapers/wallpaper_3.jpg',
-  ];
-
   static const _pages = <_Page>[
     _Page(
       title: '欢迎使用灵动课堂',
@@ -33,7 +26,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           '支持对接开源教材仓库\n\n'
           '本软件采用 CC BY-NC 4.0 协议\n'
           '仅供非商业用途使用',
-      hasWallpaper: true,
     ),
     _Page(
       title: '配置云同步',
@@ -43,7 +35,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           '在坚果云中创建第三方应用专用密码\n'
           '填入设置即可启用自动同步\n\n'
           '数据按年级、学科、班级自动分类存储',
-      hasWallpaper: true,
       showRegisterButton: true,
     ),
     _Page(
@@ -55,7 +46,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           '系统会自动识别年级班级\n'
           '相同班级的名单只保留最新版本\n\n'
           '支持一键切换年级和学科',
-      hasWallpaper: true,
     ),
     _Page(
       title: '导入题库与教材',
@@ -66,7 +56,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           '可浏览 GitHub 开源教材仓库\n'
           '通过国内加速节点直接下载阅读\n'
           '教材会自动缓存，二次打开无需下载',
-      hasWallpaper: false,
     ),
     _Page(
       title: '开始使用',
@@ -77,7 +66,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           '右上角：状态指示器\n\n'
           '数据自动保存，支持 U 盘一键备份\n'
           '现在就开始您的第一堂课吧！',
-      hasWallpaper: false,
     ),
   ];
 
@@ -175,120 +163,87 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildPage(_Page p, int index) {
     final theme = Theme.of(context);
 
-    return Stack(
-      children: [
-        // 壁纸背景（前三页）
-        if (p.hasWallpaper && index < _wallpapers.length)
-          Positioned.fill(
-            child: ClipRRect(
-              child: Image.asset(
-                _wallpapers[index],
-                fit: BoxFit.cover,
-                opacity: const AlwaysStoppedAnimation(0.15),
-              ),
-            ),
-          ),
-        // 渐变遮罩，保证文字可读
-        if (p.hasWallpaper)
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.surface.withOpacity(0.85),
-                    theme.colorScheme.surface.withOpacity(0.6),
-                    theme.colorScheme.surface.withOpacity(0.85),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 图标：最后一页显示应用图标
+            if (index == _pages.length - 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  'assets/wallpapers/app_icon.jpg',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorForIndex(index).withOpacity(0.15),
+                      _colorForIndex(index).withOpacity(0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: _colorForIndex(index).withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  _iconForIndex(index),
+                  size: 56,
+                  color: _colorForIndex(index),
                 ),
               ),
+            const SizedBox(height: 32),
+            Text(
+              p.title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-        // 内容
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 图标：最后一页显示应用图标
-                if (index == _pages.length - 1)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      'assets/wallpapers/app_icon.png',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          _colorForIndex(index).withOpacity(0.15),
-                          _colorForIndex(index).withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      border: Border.all(
-                        color: _colorForIndex(index).withOpacity(0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: Icon(
-                      _iconForIndex(index),
-                      size: 56,
-                      color: _colorForIndex(index),
-                    ),
-                  ),
-                const SizedBox(height: 32),
-                Text(
-                  p.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  p.desc,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (p.showRegisterButton) ...[
-                  const SizedBox(height: 20),
-                  FilledButton.tonalIcon(
-                    icon: const Icon(Icons.open_in_new, size: 16),
-                    label: const Text('注册坚果云账号'),
-                    onPressed: () => launchUrl(
-                      Uri.parse('https://www.jianguoyun.com/signup'),
-                      mode: LaunchMode.externalApplication,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '注册后在「安全设置」中创建第三方应用密码',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ],
-              ],
+            const SizedBox(height: 16),
+            Text(
+              p.desc,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
+            if (p.showRegisterButton) ...[
+              const SizedBox(height: 20),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.open_in_new, size: 16),
+                label: const Text('注册坚果云账号'),
+                onPressed: () => launchUrl(
+                  Uri.parse('https://www.jianguoyun.com/signup'),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '注册后在「安全设置」中创建第三方应用密码',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+            ],
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -318,13 +273,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 class _Page {
   final String title;
   final String desc;
-  final bool hasWallpaper;
   final bool showRegisterButton;
 
   const _Page({
     required this.title,
     required this.desc,
-    this.hasWallpaper = false,
     this.showRegisterButton = false,
   });
 }

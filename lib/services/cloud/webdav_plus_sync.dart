@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webdav_plus/webdav_plus.dart';
 import '../../providers/settings_provider.dart';
 import '../storage_service.dart';
@@ -9,58 +8,69 @@ import '../storage_service.dart';
 /// WebDAV Plus 云同步服务
 ///
 /// 使用 webdav_plus (MIT) 替代自行实现的 dio 方案。
-/// 同步子目录结构：/<应用名称>/<年级>/<学科>/<班级>/
-/// 或简化：/<应用名称>/data/
+/// 不持有 Ref，所有数据通过参数传入。
+/// 这样避免 ProviderRef / WidgetRef 类型不兼容问题。
 class WebdavPlusSyncService {
-  final Ref _ref;
+  const WebdavPlusSyncService();
 
-  const WebdavPlusSyncService(this._ref);
-
-  /// 安全的文件名：移除 \ / : * ? " < > |
+  /// 安全的文件名：移除 \\ / : * ? " < > |
   static String safeName(String name) {
-    return name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_').trim();
+    return name.replaceAll(RegExp(r'[\\\\/:*?\"<>|]'), '_').trim();
   }
 
-  /// 构建远程路径
-  /// 结构：/SmartClassroom/<grade>/<subject>/<className>/
-  Future<String> _remotePath(String fileName) async {
-    final settings = _ref.read(settingsProvider);
+  /// 中文年级 → 英文目录名
+  static const _gradeMap = <String, String>{
+    '一年级': 'grade-1', '二年级': 'grade-2', '三年级': 'grade-3',
+    '四年级': 'grade-4', '五年级': 'grade-5', '六年级': 'grade-6',
+    '初一': 'grade-7', '初二': 'grade-8', '初三': 'grade-9',
+    '高一': 'grade-10', '高二': 'grade-11', '高三': 'grade-12',
+  };
+
+  /// 中文学科 → 英文目录名
+  static const _subjectMap = <String, String>{
+    '语文': 'chinese', '数学': 'math', '英语': 'english',
+    '物理': 'physics', '化学': 'chemistry', '生物': 'biology',
+    '历史': 'history', '地理': 'geography', '政治': 'politics',
+    '科学': 'science', '信息技术': 'it', '通用技术': 'technology',
+    '体育': 'pe', '音乐': 'music', '美术': 'art',
+  };
+
+  /// 构建远程路径（全英文，避免 WebDAV 中文编码问题）
+  static String remotePath(SettingsState settings, String fileName) {
     final base = settings.remoteFolder.replaceAll(RegExp(r'/+$'), '');
     final parts = <String>[base];
 
     if (settings.currentGrade != null && settings.currentGrade!.isNotEmpty) {
-      parts.add(safeName(settings.currentGrade!));
+      parts.add(_gradeMap[settings.currentGrade] ?? safeName(settings.currentGrade!));
     }
     if (settings.currentSubject != null &&
         settings.currentSubject!.isNotEmpty) {
-      parts.add(safeName(settings.currentSubject!));
+      parts.add(_subjectMap[settings.currentSubject] ?? safeName(settings.currentSubject!));
     }
     parts.add(safeName(fileName));
     return parts.join('/');
   }
 
   /// 创建 WebDAV 客户端
-  Future<WebdavClient> _createClient() async {
-    final settings = _ref.read(settingsProvider);
-    final password =
-        await _ref.read(storageServiceProvider).getSecure('webdav_password') ??
-        '';
-
+  static Future<WebdavClient> createClient(
+    SettingsState settings,
+    String password,
+  ) async {
     final client = WebdavClient.withCredentials(
       settings.webdavUsername,
       password,
     );
     client.setBaseUrl(settings.webdavUrl);
-
     return client;
   }
 
   /// 测试连接
-  Future<bool> testConnection() async {
+  Future<bool> testConnection({
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final settings = _ref.read(settingsProvider);
-      // 尝试列出远程目录
+      final client = await createClient(settings, password);
       await client.list(settings.remoteFolder);
       return true;
     } catch (_) {
@@ -69,10 +79,15 @@ class WebdavPlusSyncService {
   }
 
   /// 上传文件到 WebDAV
-  Future<bool> uploadFile(String localPath, String fileName) async {
+  Future<bool> uploadFile({
+    required String localPath,
+    required String fileName,
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final remotePath = await _remotePath(fileName);
+      final client = await createClient(settings, password);
+      final remotePath = WebdavPlusSyncService.remotePath(settings, fileName);
       final file = File(localPath);
       if (!await file.exists()) return false;
 
@@ -85,10 +100,14 @@ class WebdavPlusSyncService {
   }
 
   /// 从 WebDAV 下载文件
-  Future<Uint8List?> downloadFile(String remoteFileName) async {
+  Future<Uint8List?> downloadFile({
+    required String fileName,
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final remotePath = await _remotePath(remoteFileName);
+      final client = await createClient(settings, password);
+      final remotePath = WebdavPlusSyncService.remotePath(settings, fileName);
       final bytes = await client.get(remotePath);
       return bytes;
     } catch (_) {
@@ -97,10 +116,12 @@ class WebdavPlusSyncService {
   }
 
   /// 列出远程文件
-  Future<List<DavResource>> listFiles() async {
+  Future<List<DavResource>> listFiles({
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final settings = _ref.read(settingsProvider);
+      final client = await createClient(settings, password);
       return await client.list(settings.remoteFolder);
     } catch (_) {
       return [];
@@ -108,10 +129,13 @@ class WebdavPlusSyncService {
   }
 
   /// 创建远程目录
-  Future<bool> createRemoteDir(String dirPath) async {
+  Future<bool> createRemoteDir({
+    required String dirPath,
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final settings = _ref.read(settingsProvider);
+      final client = await createClient(settings, password);
       final fullPath =
           '${settings.remoteFolder.replaceAll(RegExp(r'/+$'), '')}/$dirPath';
       await client.createDirectory(fullPath);
@@ -122,24 +146,19 @@ class WebdavPlusSyncService {
   }
 
   /// 删除远程文件
-  Future<bool> deleteRemoteFile(String fileName) async {
+  Future<bool> deleteRemoteFile({
+    required String fileName,
+    required SettingsState settings,
+    required String password,
+  }) async {
     try {
-      final client = await _createClient();
-      final remotePath = await _remotePath(fileName);
+      final client = await createClient(settings, password);
+      final remotePath =
+          WebdavPlusSyncService.remotePath(settings, fileName);
       await client.delete(remotePath);
       return true;
     } catch (_) {
       return false;
     }
-  }
-
-  /// 同步：上传本地最新存档
-  Future<bool> syncUpload(String localFilePath, String fileName) async {
-    return uploadFile(localFilePath, fileName);
-  }
-
-  /// 同步：下载远程最新存档
-  Future<Uint8List?> syncDownload(String fileName) async {
-    return downloadFile(fileName);
   }
 }

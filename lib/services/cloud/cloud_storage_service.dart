@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/services_provider.dart';
 import '../file_service.dart';
 import '../storage_service.dart';
 import 'webdav_plus_sync.dart';
 import 'sync_engine.dart';
 
-/// 云存储服务 — 统一使用 webdav_plus 包
+/// 云存储服务
 class CloudStorageService {
   final Ref _ref;
   final WebdavPlusSyncService _wd;
@@ -23,9 +24,12 @@ class CloudStorageService {
     return _se!;
   }
 
-  /// 测试连接 — 委托给 webdav_plus
+  /// 测试连接
   Future<bool> testConnection() async {
-    return _wd.testConnection();
+    final st = _ref.read(settingsProvider);
+    final pw =
+        await _ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
+    return _wd.testConnection(settings: st, password: pw);
   }
 
   /// 执行同步

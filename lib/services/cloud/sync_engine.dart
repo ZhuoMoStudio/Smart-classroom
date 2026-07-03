@@ -6,7 +6,7 @@ import '../file_service.dart';
 import '../storage_service.dart';
 import 'webdav_plus_sync.dart';
 
-/// 同步引擎 — 统一使用 webdav_plus 包
+/// 同步引擎 — 使用 webdav_plus 包
 class SyncEngine {
   final Ref _ref;
   final FileService _fs;
@@ -20,6 +20,8 @@ class SyncEngine {
     sn.startSync();
     try {
       final st = _ref.read(settingsProvider);
+      final pw =
+          await _ss.getSecure('webdav_password') ?? '';
       sn.updateProgress(0.1, '已连接云端');
 
       final ld = await _fs.getWorkingDir();
@@ -27,12 +29,21 @@ class SyncEngine {
 
       if (lfs.isNotEmpty && st.syncStrategy != 'download') {
         sn.updateProgress(0.3, '正在上传...');
-        await _wd.uploadFile(lfs.first.path, 'data.json');
+        await _wd.uploadFile(
+          localPath: lfs.first.path,
+          fileName: 'data.json',
+          settings: st,
+          password: pw,
+        );
       }
 
       // 下载远程文件
       if (st.syncStrategy != 'upload') {
-        final data = await _wd.downloadFile('data.json');
+        final data = await _wd.downloadFile(
+          fileName: 'data.json',
+          settings: st,
+          password: pw,
+        );
         if (data != null) {
           sn.updateProgress(0.6, '正在下载...');
           await File('$ld/remote_backup.json').writeAsBytes(data);
