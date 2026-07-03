@@ -65,10 +65,9 @@ android {
             signingConfig = (keystoreProperties.getProperty('keyAlias', null) != null)
                 ? signingConfigs.release
                 : signingConfigs.debug
-            // 启用 R8 代码压缩和资源缩减，减少 APK 体积
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Flutter 已通过 --split-per-abi 优化体积，R8 会导致 Play Core 缺失
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }

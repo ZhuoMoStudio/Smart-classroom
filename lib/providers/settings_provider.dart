@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SettingsState {
   final String localeTag;
-  final String? currentGrade;
-  final String? currentSubject;
   final bool is24Hour, isDarkMode, soundEnabled, hapticFeedback, autoSync, autoSave;
   final String wallpaperSource, layoutMode, cloudServiceType, webdavUrl;
   final String webdavUsername, remoteFolder, syncStrategy, conflictStrategy;
@@ -11,13 +9,11 @@ class SettingsState {
   final int wallpaperInterval, autoSyncInterval, autoSaveInterval;
   final List<int> timerPresets;
   final String? usbDataPath;
-  /// 教学/备课模式切换（true=课堂大屏模式，false=备课/普通模式）
-  final bool teachingMode;
+  /// 下载源：'github' 或 'mirror'（国内镜像）
+  final String downloadSource;
 
   const SettingsState({
     this.localeTag = 'zh',
-    this.currentGrade,
-    this.currentSubject,
     this.is24Hour = true,
     this.isDarkMode = false,
     this.soundEnabled = true,
@@ -38,13 +34,11 @@ class SettingsState {
     this.autoSave = true,
     this.autoSaveInterval = 30,
     this.usbDataPath,
-    this.teachingMode = false,
+    this.downloadSource = 'mirror',
   });
 
   SettingsState copyWith({
     String? localeTag,
-    String? currentGrade,
-    String? currentSubject,
     bool? is24Hour,
     bool? isDarkMode,
     bool? soundEnabled,
@@ -65,11 +59,9 @@ class SettingsState {
     String? conflictStrategy,
     int? autoSaveInterval,
     String? usbDataPath,
-    bool? teachingMode,
+    String? downloadSource,
   }) => SettingsState(
     localeTag: localeTag ?? this.localeTag,
-    currentGrade: currentGrade ?? this.currentGrade,
-    currentSubject: currentSubject ?? this.currentSubject,
     is24Hour: is24Hour ?? this.is24Hour,
     isDarkMode: isDarkMode ?? this.isDarkMode,
     soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -90,7 +82,7 @@ class SettingsState {
     autoSave: autoSave ?? this.autoSave,
     autoSaveInterval: autoSaveInterval ?? this.autoSaveInterval,
     usbDataPath: usbDataPath ?? this.usbDataPath,
-    teachingMode: teachingMode ?? this.teachingMode,
+    downloadSource: downloadSource ?? this.downloadSource,
   );
 }
 
@@ -98,12 +90,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   SettingsNotifier([SettingsState? initial])
     : super(initial ?? const SettingsState());
   void update(SettingsState newState) => state = newState;
-  void setGrade(String? grade) => state = state.copyWith(currentGrade: grade);
-  void setSubject(String? subject) =>
-      state = state.copyWith(currentSubject: subject);
-  void toggleTeachingMode() =>
-      state = state.copyWith(teachingMode: !state.teachingMode);
-  void setTeachingMode(bool v) => state = state.copyWith(teachingMode: v);
 }
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
