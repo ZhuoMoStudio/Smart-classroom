@@ -77,23 +77,6 @@ class _State extends ConsumerState<PdfReaderScreen> {
     setState((){ _fp=p; _loading=false; });
   }
 
-  // ==================== 标注手势处理 ====================
-  void _onPanStart(DragStartDetails d) {
-    if (!_annotMode) return;
-    _annotCtrl.setPage(_cur);
-    _annotCtrl.startStroke(d.localPosition);
-  }
-
-  void _onPanUpdate(DragUpdateDetails d) {
-    if (!_annotMode || _annotCtrl.currentDrawingStroke == null) return;
-    _annotCtrl.addPoint(d.localPosition);
-  }
-
-  void _onPanEnd(DragEndDetails d) {
-    if (!_annotMode) return;
-    _annotCtrl.endStroke();
-  }
-
   @override Widget build(BuildContext ctx) {
     return Scaffold(backgroundColor:Colors.black, body:Stack(children:[
       if(_loading) _loadingView(ctx) else if(_fp!=null && _fileBytes!=null) _pdfView() else _errorView(ctx),
@@ -120,9 +103,11 @@ class _State extends ConsumerState<PdfReaderScreen> {
           initialPageNumber:widget.initialPage,
           params: PdfViewerParams(
             scrollByMouseWheel:1.0,
-            pagePaintCallbacks: (pageNumber, canvas, size) {
-              _renderAnnotations(pageNumber, canvas, size);
-            },
+            pagePaintCallbacks: [
+              (Canvas canvas, Rect rect, PdfPage page) {
+                _renderAnnotations(page.pageNumber, canvas, rect.size);
+              },
+            ],
             onViewerReady:(doc,ctrl){
               WidgetsBinding.instance.addPostFrameCallback((_){
                 if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
