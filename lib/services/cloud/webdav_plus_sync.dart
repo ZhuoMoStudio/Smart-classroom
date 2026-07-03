@@ -12,7 +12,7 @@ import '../storage_service.dart';
 /// 同步子目录结构：/<应用名称>/<年级>/<学科>/<班级>/
 /// 或简化：/<应用名称>/data/
 class WebdavPlusSyncService {
-  final WidgetRef _ref;
+  final Ref _ref;
 
   const WebdavPlusSyncService(this._ref);
 
