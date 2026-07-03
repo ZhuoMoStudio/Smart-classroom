@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/audio_engine.dart';
 import '../theme/responsive.dart';
 
 /// 积分按钮 — 按压时触发缩放反馈动画
@@ -44,6 +45,8 @@ class _ScoreButtonState extends State<ScoreButton>
   }
 
   void _handleTap() {
+    // 触感反馈
+    AudioEngine().hapticClick();
     // 按下缩放
     _controller.forward().then((_) {
       if (!mounted) return;

@@ -1,15 +1,18 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/sync_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../file_service.dart';
 import '../storage_service.dart';
-import 'webdav_client.dart';
+import 'webdav_plus_sync.dart';
 
+/// 同步引擎 — 统一使用 webdav_plus 包
 class SyncEngine {
   final Ref _ref;
   final FileService _fs;
   final StorageService _ss;
-  final WebDavClientService _wd;
+  final WebdavPlusSyncService _wd;
+
   SyncEngine(this._ref, this._fs, this._ss, this._wd);
 
   Future<bool> performSync() async {
@@ -24,22 +27,15 @@ class SyncEngine {
 
       if (lfs.isNotEmpty && st.syncStrategy != 'download') {
         sn.updateProgress(0.3, '正在上传...');
-        await _wd.uploadFile(
-          lfs.first.path,
-          '${st.remoteFolder}${lfs.first.path.split('/').last}',
-        );
+        await _wd.uploadFile(lfs.first.path, 'data.json');
       }
 
-      final cfs = await _wd.listFiles(st.remoteFolder);
-      if (cfs.isNotEmpty && st.syncStrategy != 'upload') {
-        final rjs = cfs.where((f) => f.name.endsWith('.json')).toList();
-        rjs.sort((a, b) => b.lastModified.compareTo(a.lastModified));
-        if (rjs.isNotEmpty) {
+      // 下载远程文件
+      if (st.syncStrategy != 'upload') {
+        final data = await _wd.downloadFile('data.json');
+        if (data != null) {
           sn.updateProgress(0.6, '正在下载...');
-          await _wd.downloadFile(
-            '${st.remoteFolder}${rjs.first.name}',
-            '$ld/${rjs.first.name}',
-          );
+          await File('$ld/remote_backup.json').writeAsBytes(data);
         }
       }
 

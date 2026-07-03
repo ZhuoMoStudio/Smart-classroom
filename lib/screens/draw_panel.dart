@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/draw_provider.dart';
 import '../providers/class_provider.dart';
 import '../models/class_model.dart';
+import 'package:flutter/services.dart';
 import '../services/audio_engine.dart';
 import '../theme/responsive.dart';
 import '../widgets/score_button.dart';
@@ -223,8 +224,9 @@ class _PulseButtonState extends State<_PulseButton>
   }
 
   void _handleTap() {
+    // 触感反馈 + 脉冲动画
+    AudioEngine().hapticHeavy();
     widget.onTap();
-    // 脉冲动画：缩小→弹回
     _controller.forward().then((_) {
       if (mounted) _controller.reverse();
     });

@@ -1,13 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/file_service.dart';
 import '../services/storage_service.dart';
-import '../services/cloud/webdav_client.dart';
+import '../services/cloud/webdav_plus_sync.dart';
 import '../services/cloud/cloud_storage_service.dart';
 
 final fileServiceProvider = Provider<FileService>((ref) => FileService());
-final webdavClientProvider = Provider<WebDavClientService>(
-  (ref) => WebDavClientService(),
+
+final webdavSyncServiceProvider = Provider<WebdavPlusSyncService>(
+  (ref) => WebdavPlusSyncService(ref),
 );
+
 final cloudStorageServiceProvider = Provider<CloudStorageService>((ref) {
-  return CloudStorageService(ref, ref.watch(webdavClientProvider));
+  return CloudStorageService(ref, ref.watch(webdavSyncServiceProvider));
 });
