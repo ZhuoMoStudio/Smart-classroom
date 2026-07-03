@@ -93,10 +93,12 @@ class _State extends ConsumerState<PdfReaderScreen> {
 
   Widget _pdfView() => Stack(
     children: [
-      // PDF 页面
-      GestureDetector(
-        onTap: _annotMode ? null : _resetHide,
-        child: PdfViewer.data(
+      // PDF 页面（标注模式下禁止手势穿透）
+      AbsorbPointer(
+        absorbing: _annotMode,
+        child: GestureDetector(
+          onTap: _annotMode ? null : _resetHide,
+          child: PdfViewer.data(
           _fileBytes!,
           sourceName: widget.title ?? 'document.pdf',
           controller:_ctrl,
@@ -115,6 +117,8 @@ class _State extends ConsumerState<PdfReaderScreen> {
             },
             onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); _annotCtrl.setPage(pn??1); },
           ),
+        ),
+      ),
         ),
       ),
       // 标注手势层（透明捕获）

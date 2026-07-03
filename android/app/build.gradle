@@ -65,8 +65,10 @@ android {
             signingConfig = (keystoreProperties.getProperty('keyAlias', null) != null)
                 ? signingConfigs.release
                 : signingConfigs.debug
-            minifyEnabled false
-            shrinkResources false
+            // 启用 R8 代码压缩和资源缩减，减少 APK 体积
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
