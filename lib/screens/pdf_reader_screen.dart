@@ -8,8 +8,10 @@ import 'package:pdfrx/pdfrx.dart';
 import '../services/pdf_cache_manager.dart';
 import '../services/pdf_merge_service.dart';
 import '../widgets/toast_overlay.dart';
+import '../widgets/pdf_annotation.dart';
 import '../theme/design_tokens.dart';
 
+/// PDF 阅读器 — 支持标注（笔刷/橡皮擦）
 class PdfReaderScreen extends ConsumerStatefulWidget {
   final String? title;
   final int initialPage;
@@ -22,6 +24,7 @@ class PdfReaderScreen extends ConsumerStatefulWidget {
 class _State extends ConsumerState<PdfReaderScreen> {
   final PdfViewerController _ctrl = PdfViewerController();
   final TextEditingController _pageInput = TextEditingController();
+  final AnnotationController _annotCtrl = AnnotationController();
   String? _fp;
   Uint8List? _fileBytes;
   bool _loading = true;
@@ -30,10 +33,11 @@ class _State extends ConsumerState<PdfReaderScreen> {
   int _total = 0;
   int _cur = 1;
   bool _showCtrl = true;
+  bool _annotMode = false;
   Timer? _hideTimer;
 
   @override void initState() { super.initState(); _load(); }
-  @override void dispose() { _pageInput.dispose(); _hideTimer?.cancel(); super.dispose(); }
+  @override void dispose() { _pageInput.dispose(); _hideTimer?.cancel(); _annotCtrl.dispose(); super.dispose(); }
 
   void _resetHide() { _hideTimer?.cancel(); setState(() => _showCtrl = true); _hideTimer = Timer(const Duration(seconds:5), () { if(mounted) setState(() => _showCtrl=false); }); }
 
@@ -73,29 +77,121 @@ class _State extends ConsumerState<PdfReaderScreen> {
     setState((){ _fp=p; _loading=false; });
   }
 
+  // ==================== 标注手势处理 ====================
+  void _onPanStart(DragStartDetails d) {
+    if (!_annotMode) return;
+    _annotCtrl.setPage(_cur);
+    _annotCtrl.startStroke(d.localPosition);
+  }
+
+  void _onPanUpdate(DragUpdateDetails d) {
+    if (!_annotMode || _annotCtrl.currentDrawingStroke == null) return;
+    _annotCtrl.addPoint(d.localPosition);
+  }
+
+  void _onPanEnd(DragEndDetails d) {
+    if (!_annotMode) return;
+    _annotCtrl.endStroke();
+  }
+
   @override Widget build(BuildContext ctx) {
     return Scaffold(backgroundColor:Colors.black, body:Stack(children:[
       if(_loading) _loadingView(ctx) else if(_fp!=null && _fileBytes!=null) _pdfView() else _errorView(ctx),
       if(_showCtrl&&!_loading) _topBar(ctx),
       if(_showCtrl&&!_loading) _bottomBar(ctx),
       if(!_showCtrl) Positioned.fill(child:GestureDetector(behavior:HitTestBehavior.translucent, onTap:_resetHide)),
+      // 标注模式工具栏
+      if(_annotMode && !_loading)
+        Positioned(top: 80, left: 0, right: 0, child: Center(
+          child: AnnotationToolbar(controller: _annotCtrl, onClose: () => setState(() => _annotMode = false)),
+        )),
     ]));
   }
 
-  Widget _pdfView() => GestureDetector(
-    onTap:_resetHide,
-    child: PdfViewer.data(_fileBytes!, sourceName: widget.title ?? 'document.pdf', controller:_ctrl, initialPageNumber:widget.initialPage,
-      params: PdfViewerParams(
-        scrollByMouseWheel:1.0,
-        onViewerReady:(doc,ctrl){
-          WidgetsBinding.instance.addPostFrameCallback((_){
-            if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
-          });
-        },
-        onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); },
+  Widget _pdfView() => Stack(
+    children: [
+      // PDF 页面
+      GestureDetector(
+        onTap: _annotMode ? null : _resetHide,
+        child: PdfViewer.data(
+          _fileBytes!,
+          sourceName: widget.title ?? 'document.pdf',
+          controller:_ctrl,
+          initialPageNumber:widget.initialPage,
+          params: PdfViewerParams(
+            scrollByMouseWheel:1.0,
+            pagePaintCallbacks: (pageNumber, canvas, size) {
+              _renderAnnotations(pageNumber, canvas, size);
+            },
+            onViewerReady:(doc,ctrl){
+              WidgetsBinding.instance.addPostFrameCallback((_){
+                if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
+              });
+            },
+            onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); _annotCtrl.setPage(pn??1); },
+          ),
+        ),
       ),
-    ),
+      // 标注手势层（透明捕获）
+      if (_annotMode)
+        Positioned.fill(
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (e) {
+              if (_annotMode) {
+                _annotCtrl.setPage(_cur);
+                _annotCtrl.startStroke(e.position);
+              }
+            },
+            onPointerMove: (e) {
+              if (_annotMode && _annotCtrl.currentDrawingStroke != null) {
+                _annotCtrl.addPoint(e.position);
+              }
+            },
+            onPointerUp: (e) {
+              if (_annotMode) _annotCtrl.endStroke();
+            },
+          ),
+        ),
+      // 标注模式提示
+      if (_annotMode)
+        Positioned(
+          top: 60, left: 0, right: 0,
+          child: IgnorePointer(
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _annotCtrl.isEraser ? '🧹 橡皮擦模式' : '✏️ 标注模式（${_annotCtrl.penThickness.toStringAsFixed(1)}px）',
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ),
+          ),
+        ),
+    ],
   );
+
+  /// 使用 pagePaintCallbacks 渲染标注
+  void _renderAnnotations(int pageNumber, Canvas canvas, Size size) {
+    final strokes = _annotCtrl.getStrokesForPage(pageNumber);
+    for (final stroke in strokes) {
+      if (stroke.points.length < 2) continue;
+      final paint = Paint()
+        ..color = stroke.color
+        ..strokeWidth = stroke.thickness
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+      for (int i = 0; i < stroke.points.length - 1; i++) {
+        canvas.drawLine(stroke.points[i], stroke.points[i + 1], paint);
+      }
+    }
+  }
 
   Widget _topBar(BuildContext ctx) {
     return Positioned(
@@ -115,6 +211,12 @@ class _State extends ConsumerState<PdfReaderScreen> {
             IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28), onPressed: () => Navigator.pop(ctx)),
             const SizedBox(width: 8),
             Expanded(child: Text(widget.title ?? '教材阅读', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+            // 标注切换按钮
+            IconButton(
+              icon: Icon(_annotMode ? Icons.edit_off : Icons.edit, color: _annotMode ? Colors.yellowAccent : Colors.white70, size: 24),
+              tooltip: _annotMode ? '退出标注' : '标注',
+              onPressed: () { setState(() => _annotMode = !_annotMode); _resetHide(); },
+            ),
             IconButton(icon: const Icon(Icons.folder_open, color: Colors.white70, size: 24), onPressed: _openLocal),
           ]),
         ),
