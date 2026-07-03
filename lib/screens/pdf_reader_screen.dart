@@ -67,7 +67,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
   }
 
   Future<void> _openLocal() async {
-    final r = await FilePicker.pickFiles(type:FileType.custom, allowedExtensions:['pdf']);
+    final r = await FilePicker.platform.pickFiles(type:FileType.custom, allowedExtensions:['pdf']);
     if(r==null||r.files.isEmpty) return;
     final p = r.files.single.path; if(p==null) return;
     setState((){ _fp=p; _loading=false; });

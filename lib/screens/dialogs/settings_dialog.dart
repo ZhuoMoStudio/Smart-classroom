@@ -160,6 +160,17 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                       () => _local = _local.copyWith(soundEnabled: v),
                     ),
               ),
+              // 教学模式切换（非依赖 Platform，纯 UI 开关）
+              SwitchListTile(
+                title: const Text('课堂大屏模式'),
+                subtitle: const Text('启用大屏布局：超大按钮、高对比度、沉浸全屏'),
+                value: _local.teachingMode,
+                dense: true,
+                onChanged:
+                    (v) => setState(
+                      () => _local = _local.copyWith(teachingMode: v),
+                    ),
+              ),
               DropdownButtonFormField<String>(
                 value: _local.layoutMode,
                 decoration: const InputDecoration(

@@ -44,7 +44,7 @@ class FileService {
   }
 
   Future<String?> pickFolder() async {
-    final r = await FilePicker.getDirectoryPath();
+    final r = await FilePicker.platform.getDirectoryPath();
     if (r != null) await setWorkingDir(r);
     return r;
   }
@@ -69,7 +69,7 @@ class FileService {
   }
 
   Future<AppData?> pickAndLoadJson() async {
-    final r = await FilePicker.pickFiles(
+    final r = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
@@ -104,7 +104,7 @@ class FileService {
 
   /// 从 Excel 导入积分
   Future<Map<String, Map<String, Map<String, double>>>> importScores() async {
-    final r = await FilePicker.pickFiles(
+    final r = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
     );
