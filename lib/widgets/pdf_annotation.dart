@@ -40,6 +40,18 @@ class AnnotationController extends ChangeNotifier {
   double penThickness = 3.0;
   bool isEraser = false;
 
+  // 节流优化：最多每20ms通知一次，减少频繁重绘
+  int _lastNotify = 0;
+  static const int _throttleMs = 20;
+
+  @override
+  void notifyListeners() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastNotify < _throttleMs && _currentStroke != null) return;
+    _lastNotify = now;
+    super.notifyListeners();
+  }
+
   // 预设笔刷粗细
   static const List<double> thicknessPresets = [1.0, 2.0, 3.0, 5.0, 8.0];
 
@@ -92,7 +104,9 @@ class AnnotationController extends ChangeNotifier {
       strokes: strokes,
     );
     _currentStroke = null;
-    notifyListeners();
+    // 结束时强制刷新
+    _lastNotify = 0;
+    super.notifyListeners();
   }
 
   void _eraseAt(Offset point) {
@@ -168,7 +182,7 @@ class AnnotationToolbar extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceElevated,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             boxShadow: AppShadows.level2,
           ),
