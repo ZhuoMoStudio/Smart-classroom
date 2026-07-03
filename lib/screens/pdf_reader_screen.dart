@@ -94,34 +94,57 @@ class _State extends ConsumerState<PdfReaderScreen> {
   Widget _pdfView() => Stack(
     children: [
       // PDF 页面（标注模式下禁止手势穿透）
-      AbsorbPointer(
-        absorbing: _annotMode,
-        child: GestureDetector(
-          onTap: _annotMode ? null : _resetHide,
-          child: PdfViewer.data(
+      if (_annotMode)
+        Positioned.fill(
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (e) {
+              _annotCtrl.setPage(_cur);
+              _annotCtrl.startStroke(e.position);
+            },
+            onPointerMove: (e) {
+              if (_annotCtrl.currentDrawingStroke != null) {
+                _annotCtrl.addPoint(e.position);
+              }
+            },
+            onPointerUp: (e) {
+              _annotCtrl.endStroke();
+            },
+          ),
+        ),
+      GestureDetector(
+        onTap: _annotMode ? null : _resetHide,
+        child: PdfViewer.data(
           _fileBytes!,
           sourceName: widget.title ?? 'document.pdf',
-          controller:_ctrl,
-          initialPageNumber:widget.initialPage,
+          controller: _ctrl,
+          initialPageNumber: widget.initialPage,
           params: PdfViewerParams(
-            scrollByMouseWheel:1.0,
+            scrollByMouseWheel: 1.0,
             pagePaintCallbacks: [
               (Canvas canvas, Rect rect, PdfPage page) {
                 _renderAnnotations(page.pageNumber, canvas, rect.size);
               },
             ],
-            onViewerReady:(doc,ctrl){
-              WidgetsBinding.instance.addPostFrameCallback((_){
-                if(mounted){ setState((){ _total=doc.pages.length; _cur=ctrl.pageNumber??widget.initialPage; }); if(widget.initialPage>1) ctrl.goToPage(pageNumber:widget.initialPage); _resetHide(); }
+            onViewerReady: (doc, ctrl) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  setState(() {
+                    _total = doc.pages.length;
+                    _cur = ctrl.pageNumber ?? widget.initialPage;
+                  });
+                  if (widget.initialPage > 1) ctrl.goToPage(pageNumber: widget.initialPage);
+                  _resetHide();
+                }
               });
             },
-            onPageChanged:(pn){ if(mounted) setState(()=>_cur=pn??1); _annotCtrl.setPage(pn??1); },
+            onPageChanged: (pn) {
+              if (mounted) setState(() => _cur = pn ?? 1);
+              _annotCtrl.setPage(pn ?? 1);
+            },
           ),
         ),
       ),
-        ),
-      ),
-      // 标注手势层（透明捕获）
       if (_annotMode)
         Positioned.fill(
           child: Listener(
