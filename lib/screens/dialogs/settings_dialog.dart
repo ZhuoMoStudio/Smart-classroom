@@ -12,6 +12,7 @@ import '../../services/update_service.dart';
 import '../../providers/services_provider.dart';
 import '../../services/cloud/cloud_storage_service.dart';
 import '../../widgets/toast_overlay.dart';
+import '../usage_guide_screen.dart';
 import '../open_source_screen.dart';
 
 class SettingsDialog extends ConsumerStatefulWidget {
@@ -388,12 +389,12 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Text('灵动课堂 v1.0.3', style: TextStyle(fontSize: 13)),
+                      const Text('灵动课堂 v1.0.5', style: TextStyle(fontSize: 13)),
                       const Spacer(),
                       TextButton.icon(
-                        icon: const Icon(Icons.code, size: 14),
-                        label: const Text('开源说明', style: TextStyle(fontSize: 13)),
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OpenSourceScreen())),
+                        icon: const Icon(Icons.help_outline, size: 14),
+                        label: const Text('使用指南', style: TextStyle(fontSize: 13)),
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UsageGuideScreen())),
                       ),
                     ],
                   ),
