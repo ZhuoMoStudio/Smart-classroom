@@ -18,17 +18,34 @@ class WebdavPlusSyncService {
     return name.replaceAll(RegExp(r'[\\\\/:*?\"<>|]'), '_').trim();
   }
 
-  /// 构建远程路径
+  /// 中文年级 → 英文目录名
+  static const _gradeMap = <String, String>{
+    '一年级': 'grade-1', '二年级': 'grade-2', '三年级': 'grade-3',
+    '四年级': 'grade-4', '五年级': 'grade-5', '六年级': 'grade-6',
+    '初一': 'grade-7', '初二': 'grade-8', '初三': 'grade-9',
+    '高一': 'grade-10', '高二': 'grade-11', '高三': 'grade-12',
+  };
+
+  /// 中文学科 → 英文目录名
+  static const _subjectMap = <String, String>{
+    '语文': 'chinese', '数学': 'math', '英语': 'english',
+    '物理': 'physics', '化学': 'chemistry', '生物': 'biology',
+    '历史': 'history', '地理': 'geography', '政治': 'politics',
+    '科学': 'science', '信息技术': 'it', '通用技术': 'technology',
+    '体育': 'pe', '音乐': 'music', '美术': 'art',
+  };
+
+  /// 构建远程路径（全英文，避免 WebDAV 中文编码问题）
   static String remotePath(SettingsState settings, String fileName) {
     final base = settings.remoteFolder.replaceAll(RegExp(r'/+$'), '');
     final parts = <String>[base];
 
     if (settings.currentGrade != null && settings.currentGrade!.isNotEmpty) {
-      parts.add(safeName(settings.currentGrade!));
+      parts.add(_gradeMap[settings.currentGrade] ?? safeName(settings.currentGrade!));
     }
     if (settings.currentSubject != null &&
         settings.currentSubject!.isNotEmpty) {
-      parts.add(safeName(settings.currentSubject!));
+      parts.add(_subjectMap[settings.currentSubject] ?? safeName(settings.currentSubject!));
     }
     parts.add(safeName(fileName));
     return parts.join('/');

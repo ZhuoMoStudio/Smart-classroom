@@ -160,13 +160,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   }
 
   Future<void> _exportMemberTemplate() async {
-    try { await ref.read(fileServiceProvider).exportMemberTemplate(); ToastOverlay.show(context, '名单模板已导出到工作目录'); }
-    catch (e) { ToastOverlay.show(context, '模板导出失败: $e'); }
+    try {
+      final result = await ref.read(fileServiceProvider).exportMemberTemplate();
+      if (result != null) {
+        ToastOverlay.show(context, '名单模板已导出');
+      }
+    } catch (e) { ToastOverlay.show(context, '模板导出失败: $e'); }
   }
 
   Future<void> _exportQuestionTemplate() async {
-    try { await ref.read(fileServiceProvider).exportQuestionTemplate(); ToastOverlay.show(context, '题库模板已导出到工作目录'); }
-    catch (e) { ToastOverlay.show(context, '模板导出失败: $e'); }
+    try {
+      final result = await ref.read(fileServiceProvider).exportQuestionTemplate();
+      if (result != null) {
+        ToastOverlay.show(context, '题库模板已导出');
+      }
+    } catch (e) { ToastOverlay.show(context, '模板导出失败: $e'); }
   }
 
   Future<void> _sync() async {
