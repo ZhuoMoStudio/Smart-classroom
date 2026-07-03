@@ -162,23 +162,112 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
     );
   }
 
+  /// 抽取按钮 — 按压脉冲动画（缩小→弹回）
   Widget _drawButton(String text, Color backgroundColor, Color borderColor, VoidCallback onTap) {
     final t = _isTeaching;
     final size = t ? 120.0 : 80.0;
-    return GestureDetector(
+    return _PulseButton(
+      size: size,
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      text: text,
+      teaching: t,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: size, height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: backgroundColor,
-          border: Border.all(color: borderColor, width: t ? 4 : 2),
-          boxShadow: [BoxShadow(color: borderColor.withOpacity(0.3), blurRadius: t ? 16 : 8, offset: const Offset(0, 4))],
+    );
+  }
+}
+
+/// 脉冲按钮组件 — 点击时先缩小再弹回，配合弹性曲线
+class _PulseButton extends StatefulWidget {
+  final double size;
+  final Color backgroundColor;
+  final Color borderColor;
+  final String text;
+  final bool teaching;
+  final VoidCallback onTap;
+
+  const _PulseButton({
+    required this.size,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.text,
+    required this.teaching,
+    required this.onTap,
+  });
+
+  @override
+  State<_PulseButton> createState() => _PulseButtonState();
+}
+
+class _PulseButtonState extends State<_PulseButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    widget.onTap();
+    // 脉冲动画：缩小→弹回
+    _controller.forward().then((_) {
+      if (mounted) _controller.reverse();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: AnimatedBuilder(
+        animation: _scale,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scale.value,
+            child: child,
+          );
+        },
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.backgroundColor,
+            border: Border.all(color: widget.borderColor, width: widget.teaching ? 4 : 2),
+            boxShadow: [
+              BoxShadow(
+                color: widget.borderColor.withOpacity(0.3),
+                blurRadius: widget.teaching ? 16 : 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              widget.text,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontSize: TeachingScale.fontSize(widget.teaching, 24),
+                color: widget.borderColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ),
-        child: Center(child: Text(text, style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontSize: TeachingScale.fontSize(t, 24), color: borderColor, fontWeight: FontWeight.bold,
-        ))),
       ),
     );
   }

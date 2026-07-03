@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/gh_proxy_service.dart';
 import '../services/textbook_repo_service.dart';
 import '../widgets/toast_overlay.dart';
+import '../theme/route_utils.dart';
 import 'pdf_reader_screen.dart';
 
 /// 教材仓库浏览器
@@ -81,13 +82,12 @@ class _TextbookBrowserScreenState extends ConsumerState<TextbookBrowserScreen> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder:
-            (_) => PdfReaderScreen(
-              title: item.name,
-              networkUrl: item.downloadUrl, // 传入原始 URL，缓存管理会自动使用代理
-              initialPage: 1,
-            ),
+      slideFadePageRoute(
+        PdfReaderScreen(
+          title: item.name,
+          networkUrl: item.downloadUrl,
+          initialPage: 1,
+        ),
       ),
     );
   }

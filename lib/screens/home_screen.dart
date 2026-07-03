@@ -11,6 +11,7 @@ import '../services/file_service.dart';
 import '../services/excel_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/responsive.dart';
+import '../theme/route_utils.dart';
 import '../widgets/central_console.dart';
 import '../widgets/toast_overlay.dart';
 import '../widgets/auto_save_indicator.dart';
@@ -197,14 +198,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   ];
 
   Widget _mobileBody() {
-    switch (_mobileTabIndex) {
-      case 0: return const DrawPanel();
-      case 1: return const QuestionPanel();
-      case 2: return const TimerPanel();
-      case 3: return const LeaderboardPanel();
-      case 4: return _mobileMorePanel();
-      default: return const DrawPanel();
-    }
+    final tabWidget = () {
+      switch (_mobileTabIndex) {
+        case 0: return const DrawPanel();
+        case 1: return const QuestionPanel();
+        case 2: return const TimerPanel();
+        case 3: return const LeaderboardPanel();
+        case 4: return _mobileMorePanel();
+        default: return const DrawPanel();
+      }
+    }();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: Tween<double>(begin: 0.3, end: 1.0).animate(animation),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 0.05),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey('mobile_tab_$_mobileTabIndex'),
+        child: tabWidget,
+      ),
+    );
   }
 
   Widget _mobileMorePanel() {
@@ -225,10 +249,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           _moreTile(Icons.settings, '设置', _openSettings),
           const SizedBox(height: 16),
           _moreTile(Icons.menu_book, '教材', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TextbookBrowserScreen()));
+            Navigator.push(context, slideFadePageRoute(const TextbookBrowserScreen()));
           }),
           _moreTile(Icons.favorite, '开源', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const OpenSourceScreen()));
+            Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
           }),
         ],
       ),
@@ -396,7 +420,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
             _teachingDockBtn(Icons.person_add_alt, '名单', _importRoster),
             _teachingDockBtn(Icons.settings, '设置', _openSettings),
             _teachingDockBtn(Icons.menu_book, '教材', () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const TextbookBrowserScreen()));
+              Navigator.push(context, slideFadePageRoute(const TextbookBrowserScreen()));
             }),
             // 教学/备课模式切换
             _teachingDockBtn(Icons.tv, '课堂', () {
@@ -410,37 +434,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   }
 
   Widget _teachingDockBtn(IconData icon, String label, VoidCallback onTap) {
-    // 大屏按钮：大触控区域 + 背景闪烁反馈（无悬停、无涟漪）
-    return GestureDetector(
-      onTap: () {
-        onTap();
-        _teachingButtonFlash(context);
-      },
-      child: AnimatedContainer(
-        duration: AppDuration.teachingFeedback,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.teachingSurface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.teachingBorder, width: 2),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 48, color: AppColors.neutral700),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.neutral700)),
-          ],
-        ),
-      ),
+    return _TeachingDockButton(
+      icon: icon,
+      label: label,
+      onTap: onTap,
     );
-  }
-
-  /// 大屏点击反馈：背景色闪烁（150ms）
-  void _teachingButtonFlash(BuildContext ctx) {
-    // 在 dock 按钮上通过 Overlay 实现一个短暂的闪烁效果
-    // 简单的实现：在父级用状态控制
-    // 这里仅示意，实际在大屏上可见
   }
 
   // ===================== 主构建 =====================
@@ -498,7 +496,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       );
     }
 
-    // 手机端：底部导航栏
+    // 手机端：底部导航栏（带 AnimatedSwitcher 标签页过渡）
     return Scaffold(
       body: Stack(
         children: [
@@ -533,13 +531,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       mainAxisSize: MainAxisSize.min,
       children: [
         _chip(Icons.menu_book, '教材', theme.colorScheme.primaryContainer, theme.colorScheme.primary, () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const TextbookBrowserScreen()));
+          Navigator.push(context, slideFadePageRoute(const TextbookBrowserScreen()));
         }),
         const SizedBox(width: 6),
         _gradeSubjectChip(settings),
         const SizedBox(width: 6),
         _chip(Icons.favorite, '开源', theme.colorScheme.errorContainer, theme.colorScheme.error, () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const OpenSourceScreen()));
+          Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
         }),
       ],
     );
@@ -609,6 +607,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       ]),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭'))],
     ));
+  }
+}
+
+/// 教学大屏 Dock 按钮 — 带背景闪烁反馈动画
+class _TeachingDockButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _TeachingDockButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  State<_TeachingDockButton> createState() => _TeachingDockButtonState();
+}
+
+class _TeachingDockButtonState extends State<_TeachingDockButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _flashController;
+  late Animation<Color?> _flashColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _flashController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _flashColor = ColorTween(
+      begin: AppColors.teachingSurface,
+      end: AppColors.brandPrimary.withOpacity(0.15),
+    ).animate(CurvedAnimation(
+      parent: _flashController,
+      curve: Curves.easeInOut,
+    ));
+    _flashController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _flashController.reverse();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _flashController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    widget.onTap();
+    // 背景闪烁：亮起→渐回原色
+    _flashController.forward(from: 0.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: AnimatedBuilder(
+        animation: _flashColor,
+        builder: (context, child) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: _flashColor.value ?? AppColors.teachingSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.teachingBorder, width: 2),
+            ),
+            child: child,
+          );
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.icon, size: 48, color: AppColors.neutral700),
+            const SizedBox(height: 4),
+            Text(
+              widget.label,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: AppColors.neutral700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
