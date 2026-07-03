@@ -6,8 +6,9 @@ import '../services/cloud/cloud_storage_service.dart';
 
 final fileServiceProvider = Provider<FileService>((ref) => FileService());
 
+/// WebdavPlusSyncService 是无状态的常量服务，无需 Provider 包裹
 final webdavSyncServiceProvider = Provider<WebdavPlusSyncService>(
-  (ref) => WebdavPlusSyncService(ref),
+  (ref) => const WebdavPlusSyncService(),
 );
 
 final cloudStorageServiceProvider = Provider<CloudStorageService>((ref) {

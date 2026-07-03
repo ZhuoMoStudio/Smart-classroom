@@ -94,8 +94,9 @@ class _CloudConfigDialogState extends ConsumerState<CloudConfigDialog> {
                 onPressed: () async {
                   ToastOverlay.show(ctx, '正在测试连接...');
                   try {
-                    final svc = WebdavPlusSyncService(ref);
-                    final ok = await svc.testConnection();
+                    const svc = WebdavPlusSyncService();
+                    final pw = _passwordController.text;
+                    final ok = await svc.testConnection(settings: _l, password: pw);
                     if (mounted) {
                       ToastOverlay.show(ctx, ok ? '连接成功 ✓' : '连接失败，请检查地址和密码');
                     }
