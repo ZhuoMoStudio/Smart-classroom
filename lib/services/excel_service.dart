@@ -145,26 +145,34 @@ class ExcelService {
 
   // ========== 模板导出 ==========
   static Future<File> exportMemberTemplate(String outputPath) async {
+    // 确保目录存在
+    final dir = Directory(outputPath).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
     final excel = Excel.createExcel();
     final sheet = excel['学生名单'];
     sheet.appendRow(<dynamic>['班级', '小组', '姓名']);
     sheet.appendRow(<dynamic>['三年级1班', '第一组', '张三']);
     sheet.appendRow(<dynamic>['三年级1班', '第一组', '李四']);
-    final b = excel.encode()!;
+    final bytes = excel.encode();
+    if (bytes == null) throw Exception('Excel 编码失败');
     final f = File(outputPath);
-    await f.writeAsBytes(b);
+    await f.writeAsBytes(bytes);
     return f;
   }
 
   static Future<File> exportQuestionTemplate(String outputPath) async {
+    // 确保目录存在
+    final dir = Directory(outputPath).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
     final excel = Excel.createExcel();
     final sheet = excel['题库'];
     sheet.appendRow(<dynamic>['题目', '答案', '是否为风险题']);
     sheet.appendRow(<dynamic>['1+1等于几？', '2', '否']);
     sheet.appendRow(<dynamic>['中国的首都是哪里？', '北京', '是']);
-    final b = excel.encode()!;
+    final bytes = excel.encode();
+    if (bytes == null) throw Exception('Excel 编码失败');
     final f = File(outputPath);
-    await f.writeAsBytes(b);
+    await f.writeAsBytes(bytes);
     return f;
   }
 

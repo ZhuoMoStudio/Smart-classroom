@@ -30,7 +30,7 @@ class SettingsState {
     this.cloudServiceType = '坚果云',
     this.webdavUrl = 'https://dav.jianguoyun.com/dav/',
     this.webdavUsername = '',
-    this.remoteFolder = '/灵动课堂数据/',
+    this.remoteFolder = '/SmartClassroomData/',
     this.autoSync = false,
     this.autoSyncInterval = 0,
     this.syncStrategy = 'bidirectional',
