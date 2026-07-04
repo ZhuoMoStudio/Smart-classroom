@@ -1,7 +1,6 @@
 # ============================================================
 # Android + Windows CI Build Workflow
-# 基于 GitHub Actions 官方文档标准模板
-# 使用官方最新 Action 版本
+# 产出：Android APK (3 ABIs) + Windows ZIP + Windows Setup.exe
 # ============================================================
 name: Build & Release
 
@@ -17,6 +16,7 @@ on:
 permissions:
   contents: write
   actions: read
+  id-token: write  # 用于 Sigstore 签名
 
 env:
   APP_NAME: SmartClassroom
@@ -64,32 +64,29 @@ jobs:
             --build-name=${{ env.APP_VERSION }} \
             --build-number=1
 
-      - name: Rename arm64 APK
+      - name: Rename & Upload arm64 APK
         run: |
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
              ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
-      - name: Upload arm64 APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
           path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
 
-      - name: Rename armeabi APK
+      - name: Rename & Upload armeabi APK
         run: |
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
              ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
-      - name: Upload armeabi APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
           path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
 
-      - name: Rename x86_64 APK
+      - name: Rename & Upload x86_64 APK
         run: |
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
              ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
-      - name: Upload x86_64 APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
           path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
@@ -118,11 +115,10 @@ jobs:
           Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
           flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
 
-      - name: Set MSVC compatibility environment variable
+      - name: Set MSVC compatibility
         shell: pwsh
         run: |
           echo "CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "Set CL=/D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS"
 
       - name: Get dependencies
         run: flutter pub get
@@ -131,18 +127,67 @@ jobs:
         shell: pwsh
         run: flutter build windows --release
 
-      - name: Package Windows ZIP with versioned name
+      # ----- 产物 1：绿色版 ZIP -----
+      - name: Package Windows ZIP
         shell: pwsh
         run: |
-          $zipName = "${env:APP_NAME}_v${env:APP_VERSION}_windows.zip"
+          $zipName = "${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $zipName
-          echo "ZIP_NAME=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "ZIP_PATH=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Upload Windows ZIP
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
           path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
+
+      # ----- 产物 2：Inno Setup 安装包 -----
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress 2>&1 | Out-Null
+          # 验证安装
+          $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue
+          if ($iscc) {
+            Write-Host "ISCC found: $($iscc.Source)"
+          } else {
+            Write-Host "ISCC not in PATH, searching..."
+            $paths = @(
+              "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe",
+              "${env:ProgramFiles}\Inno Setup 6\iscc.exe",
+              "${env:LOCALAPPDATA}\Programs\Inno Setup 6\iscc.exe"
+            )
+            foreach ($p in $paths) {
+              if (Test-Path $p) {
+                Write-Host "Found ISCC at: $p"
+                echo "ISCC_PATH=$p" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+                break
+              }
+            }
+          }
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          # 复制安装脚本到工作目录
+          Copy-Item installer/setup.iss setup.iss -Force
+          
+          # 编译
+          $iscc = $env:ISCC_PATH
+          if (-not $iscc) { $iscc = "iscc.exe" }
+          
+          & $iscc setup.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed" }
+          
+          # 重命名安装包
+          $setupName = "${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe"
+          Copy-Item build/installer/*.exe $setupName -Force
+          echo "SETUP_PATH=$setupName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Installer created: $setupName"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe
+          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe
 
   release:
     needs: [build-android, build-windows]

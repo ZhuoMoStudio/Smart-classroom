@@ -39,10 +39,15 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
     _loadLocalIndex();
   }
 
-  /// 加载本地索引
+  /// 加载本地索引，首次自动拉取远程目录
   Future<void> _loadLocalIndex() async {
     await TextbookIndexService.loadIndex();
     _refreshContents();
+    // 首次进入且索引为空时自动刷新
+    final (dirs, files) = TextbookIndexService.getContents('');
+    if (dirs.isEmpty && files.isEmpty && mounted) {
+      _updateIndex();
+    }
   }
 
   /// 刷新当前目录内容
