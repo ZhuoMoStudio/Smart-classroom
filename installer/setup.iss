@@ -36,7 +36,6 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupIconFile=windows\runner\resources\app_icon.ico
 
 [Languages]
-Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
