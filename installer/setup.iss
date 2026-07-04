@@ -1,6 +1,9 @@
 ; Smart Classroom Windows Installer
 ; Inno Setup Script for v1.20.0
 ; Generates a single-file setup.exe with auto-uninstall
+;
+; 注意：此文件在 CI 中被复制到仓库根目录后编译（Copy-Item installer/setup.iss setup.iss）
+; 所有路径均相对于仓库根目录
 
 #define MyAppName "灵动课堂 Smart Classroom"
 #define MyAppVersion "1.20.0"
@@ -20,7 +23,7 @@ DefaultDirName={autopf}\SmartClassroom
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE
-OutputDir=..\build\installer
+OutputDir=build\installer
 OutputBaseFilename=SmartClassroom_v{#MyAppVersion}_Setup
 Compression=lzma2/max
 SolidCompression=yes
@@ -30,7 +33,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
-SetupIconFile=..\windows\runner\resources\app_icon.ico
+SetupIconFile=windows\runner\resources\app_icon.ico
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
@@ -40,10 +43,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "快捷方式："; Flags: checkedonce
 
 [Files]
-Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
