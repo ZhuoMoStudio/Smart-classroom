@@ -10,9 +10,7 @@ class TimerState {
     this.totalSeconds = 0,
   });
   TimerState copyWith({
-    int? remainingSeconds,
-    bool? isRunning,
-    int? totalSeconds,
+    int? remainingSeconds, bool? isRunning, int? totalSeconds,
   }) => TimerState(
     remainingSeconds: remainingSeconds ?? this.remainingSeconds,
     isRunning: isRunning ?? this.isRunning,
@@ -24,11 +22,11 @@ class TimerNotifier extends StateNotifier<TimerState> {
   Timer? _timer;
   TimerNotifier() : super(const TimerState());
 
-  void setTimer(int minutes) {
+  void setTimer(int totalSeconds) {
     _timer?.cancel();
     state = state.copyWith(
-      remainingSeconds: minutes * 60,
-      totalSeconds: minutes * 60,
+      remainingSeconds: totalSeconds,
+      totalSeconds: totalSeconds,
       isRunning: false,
     );
   }
@@ -37,8 +35,7 @@ class TimerNotifier extends StateNotifier<TimerState> {
     if (state.remainingSeconds <= 0) {
       if (state.totalSeconds > 0)
         state = state.copyWith(remainingSeconds: state.totalSeconds);
-      else
-        return;
+      else return;
     }
     _timer?.cancel();
     state = state.copyWith(isRunning: true);
@@ -47,26 +44,14 @@ class TimerNotifier extends StateNotifier<TimerState> {
       if (ns <= 0) {
         t.cancel();
         state = state.copyWith(remainingSeconds: 0, isRunning: false);
-      } else
-        state = state.copyWith(remainingSeconds: ns);
+      } else state = state.copyWith(remainingSeconds: ns);
     });
   }
 
-  void pause() {
-    _timer?.cancel();
-    state = state.copyWith(isRunning: false);
-  }
+  void pause() { _timer?.cancel(); state = state.copyWith(isRunning: false); }
+  void reset() { _timer?.cancel(); state = const TimerState(); }
 
-  void reset() {
-    _timer?.cancel();
-    state = const TimerState();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  @override void dispose() { _timer?.cancel(); super.dispose(); }
 }
 
 final timerProvider = StateNotifierProvider<TimerNotifier, TimerState>(
