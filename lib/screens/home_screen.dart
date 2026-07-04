@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../providers/class_provider.dart';
 import '../providers/question_provider.dart';
-import '../providers/sync_provider.dart';
 import '../providers/settings_provider.dart';
-import '../models/question_bank.dart';
+import '../services/data_service.dart';
 import '../services/file_service.dart';
 import '../services/excel_service.dart';
 import '../theme/design_tokens.dart';
@@ -36,7 +35,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
-  Timer? _autoSaveTimer;
   bool _usbChecked = false;
   int _mobileTabIndex = 0;
 
@@ -44,13 +42,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _startAutoSave();
     _tryAutoLoadUsb();
   }
 
   @override
   void dispose() {
-    _autoSaveTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -61,7 +57,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _tryAutoLoadUsb();
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _save(silent: true);
+      // 应用进入后台时立即保存
+      ref.read(dataServiceProvider).saveImmediate(silent: true);
     }
   }
 
@@ -77,49 +74,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     } catch (_) {}
   }
 
-  void _startAutoSave() {
-    final settings = ref.read(settingsProvider);
-    if (settings.autoSave) {
-      _autoSaveTimer?.cancel();
-      _autoSaveTimer = Timer.periodic(
-        Duration(seconds: settings.autoSaveInterval),
-        (_) => _save(silent: true),
-      );
-    }
-  }
+  // ==================== 数据操作（委托给 DataService） ====================
 
-  Future<void> _save({bool silent = false}) async {
+  Future<void> _save() async {
     try {
-      final cs = ref.read(classProvider);
-      final qs = ref.read(questionProvider);
-      if (!cs.isDirty && !qs.isDirty) return;
-      final data = AppData(
-        classrooms: cs.classrooms,
-        questionBanks: qs.banks,
-        lastModified: DateTime.now().toIso8601String(),
-      );
-      final fileService = ref.read(fileServiceProvider);
-      await fileService.saveJson(data);
-      ref.read(classProvider.notifier).clearDirty();
-      ref.read(questionProvider.notifier).clearDirty();
-      fileService.autoCleanup(await fileService.getWorkingDir());
-      if (!silent) ToastOverlay.show(context, '保存成功', type: ToastType.success);
+      await ref.read(dataServiceProvider).save(silent: false, immediate: true);
+      ToastOverlay.show(context, '保存成功', type: ToastType.success);
     } catch (e) {
-      if (!silent) ToastOverlay.show(context, '保存失败: $e', type: ToastType.error);
+      ToastOverlay.show(context, '保存失败: $e', type: ToastType.error);
     }
   }
 
   Future<void> _load() async {
     try {
-      final data = await ref.read(fileServiceProvider).pickAndLoadJson();
-      if (data != null) {
-        ref.read(classProvider.notifier).loadFromData(
-              data.classrooms,
-              data.classrooms.isNotEmpty ? data.classrooms.first.uid : null,
-            );
-        ref.read(questionProvider.notifier).loadFromData(data.questionBanks);
-        ToastOverlay.show(context, '加载成功', type: ToastType.success);
-      }
+      await ref.read(dataServiceProvider).load();
+      ToastOverlay.show(context, '加载成功', type: ToastType.success);
     } catch (e) {
       ToastOverlay.show(context, '加载失败: $e', type: ToastType.error);
     }
@@ -135,6 +104,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
+  // ==================== 导入导出合并菜单 ====================
+
+  /// 显示统一的导入/导出底部菜单
+  void _showDataImportExportSheet() {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.import_export, size: 20, color: theme.colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text('数据导入/导出', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              _sheetGroup('导入', [
+                _sheetItem(Icons.person_add_alt, '导入学生名单', _importRoster),
+                _sheetItem(Icons.upload_file, '导入积分数据', _importScores),
+              ]),
+              const Divider(height: 1, indent: 56),
+              _sheetGroup('导出', [
+                _sheetItem(Icons.download, '导出积分数据', _exportScores),
+                _sheetItem(Icons.note_add, '导出名单模板', _exportMemberTemplate),
+                _sheetItem(Icons.quiz_outlined, '导出题库模板', _exportQuestionTemplate),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetGroup(String title, List<Widget> items) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20, top: 8, bottom: 4),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
+          ),
+        ),
+        ...items,
+      ],
+    );
+  }
+
+  Widget _sheetItem(IconData icon, String label, VoidCallback? onTap) {
+    return ListTile(
+      leading: Icon(icon, size: 20),
+      title: Text(label, style: const TextStyle(fontSize: 14)),
+      trailing: const Icon(Icons.chevron_right, size: 18),
+      onTap: () {
+        Navigator.pop(context); // 关闭底部菜单
+        onTap?.call();
+      },
+      dense: true,
+    );
+  }
+
+  // ==================== 具体数据操作 ====================
+
   Future<void> _importRoster() async {
     try {
       final r = await FilePicker.platform.pickFiles(
@@ -149,8 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ToastOverlay.show(context, '未能解析到任何班级数据');
         return;
       }
-      ref.read(classProvider.notifier)
-          .loadFromData(classrooms, classrooms.first.uid);
+      ref.read(classProvider.notifier).loadFromData(classrooms, classrooms.first.uid);
       ToastOverlay.show(context, '导入名单成功: ${classrooms.length} 个班级',
           type: ToastType.success);
     } catch (e) {
@@ -207,8 +255,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _exportQuestionTemplate() async {
     try {
-      final result =
-          await ref.read(fileServiceProvider).exportQuestionTemplate();
+      final result = await ref.read(fileServiceProvider).exportQuestionTemplate();
       if (result != null) {
         ToastOverlay.show(context, '题库模板已导出', type: ToastType.success);
       }
@@ -219,12 +266,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _sync() async {
     showDialog(context: context, builder: (_) => const SyncProgressDialog());
-    ref.read(syncProvider.notifier).startSync();
     try {
       final cloudService = ref.read(cloudStorageServiceProvider);
       final success = await cloudService.sync();
       if (mounted) {
-        ref.read(syncProvider.notifier).syncComplete();
         Navigator.pop(context);
         ToastOverlay.show(
           context,
@@ -234,7 +279,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
     } catch (e) {
       if (mounted) {
-        ref.read(syncProvider.notifier).syncError(e.toString());
         Navigator.pop(context);
         ToastOverlay.show(context, '同步异常: $e', type: ToastType.error);
       }
@@ -242,11 +286,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _openSettings() {
-    showDialog(context: context, builder: (_) => const SettingsDialog())
-        .then((_) => _startAutoSave());
+    showDialog(context: context, builder: (_) => const SettingsDialog());
   }
 
   // ===================== 班级选择器 =====================
+
   void _showClassPicker() {
     final cs = ref.read(classProvider);
     showDialog(
@@ -290,6 +334,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // ===================== Tab定义 =====================
+
   static const _mobileTabs = <_TabDef>[
     _TabDef(Icons.casino, '抽取'),
     _TabDef(Icons.quiz, '题库'),
@@ -304,20 +349,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget _mobileBody() {
     final tabWidget = () {
       switch (_mobileTabIndex) {
-        case 0:
-          return const DrawPanel();
-        case 1:
-          return const QuestionPanel();
-        case 2:
-          return const TimerPanel();
-        case 3:
-          return const LeaderboardPanel();
-        case 4:
-          return const TextbookPanel();
-        case 5:
-          return _mobileMorePanel();
-        default:
-          return const DrawPanel();
+        case 0: return const DrawPanel();
+        case 1: return const QuestionPanel();
+        case 2: return const TimerPanel();
+        case 3: return const LeaderboardPanel();
+        case 4: return const TextbookPanel();
+        case 5: return _mobileMorePanel();
+        default: return const DrawPanel();
       }
     }();
 
@@ -350,37 +388,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // iOS风格分组卡片
           _iOSSection('数据管理', [
             _moreTile(Icons.folder_open, '选择文件夹', _pickFolder),
             _moreTile(Icons.save_alt, '保存数据', () => _save()),
             _moreTile(Icons.file_open, '加载数据', _load),
           ]),
           const SizedBox(height: 8),
-          _iOSSection('云端同步', [
-            _moreTile(Icons.cloud_sync, '云端同步', _sync),
+          _iOSSection('数据导入/导出', [
+            _moreTile(Icons.import_export, '导入/导出数据', _showDataImportExportSheet),
           ]),
           const SizedBox(height: 8),
-          _iOSSection('班级管理', [
-            _moreTile(Icons.person_add_alt, '导入名单', _importRoster),
-            _moreTile(Icons.upload_file, '导入积分', _importScores),
-            _moreTile(Icons.download, '导出积分', _exportScores),
-            _moreTile(Icons.note_add, '导出名单模板', _exportMemberTemplate),
-            _moreTile(
-                Icons.quiz_outlined, '导出题库模板', _exportQuestionTemplate),
+          _iOSSection('云端同步', [
+            _moreTile(Icons.cloud_sync, '云端同步', _sync),
           ]),
           const SizedBox(height: 8),
           _iOSSection('其他', [
             _moreTile(Icons.class_, '切换班级', _showClassPicker),
             _moreTile(Icons.favorite, '开源说明', () {
-              Navigator.push(
-                context,
-                slideFadePageRoute(const OpenSourceScreen()),
-              );
+              Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
             }),
-          ]),
-          const SizedBox(height: 8),
-          _iOSSection('设置', [
             _moreTile(Icons.settings, '设置', _openSettings),
           ]),
         ],
@@ -389,6 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _iOSSection(String title, List<Widget> tiles) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -399,10 +426,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
               letterSpacing: 0.5,
             ),
           ),
@@ -410,9 +434,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         Card(
           elevation: 0,
           margin: const EdgeInsets.symmetric(horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: tiles.asMap().entries.map((entry) {
@@ -423,13 +445,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   children: [
                     tile,
                     Divider(
-                      height: 1,
-                      indent: 56,
-                      endIndent: 16,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withOpacity(0.12),
+                      height: 1, indent: 56, endIndent: 16,
+                      color: theme.colorScheme.outline.withOpacity(0.12),
                     ),
                   ],
                 );
@@ -443,14 +460,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _moreTile(IconData icon, String label, VoidCallback onTap) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+      leading: Icon(icon, size: 20, color: theme.colorScheme.primary),
       title: Text(label, style: const TextStyle(fontSize: 15)),
-      trailing: Icon(
-        Icons.chevron_right,
-        size: 18,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-      ),
+      trailing: Icon(Icons.chevron_right, size: 18,
+          color: theme.colorScheme.onSurface.withOpacity(0.3)),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       visualDensity: VisualDensity.compact,
@@ -458,34 +473,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // ===================== 平板端 SplitView 布局 =====================
+
   Widget _tabletBody() {
     final cs = ref.watch(classProvider);
     final theme = Theme.of(context);
 
     return Row(
       children: [
-        // ========== 左侧导航栏 ==========
+        // 左侧导航栏
         SizedBox(
           width: 56,
           child: Column(
             children: [
               const SizedBox(height: 48),
-              // 班级选择
               GestureDetector(
                 onTap: _showClassPicker,
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 40, height: 40,
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.class_,
-                    size: 20,
-                    color: theme.colorScheme.primary,
-                  ),
+                  child: Icon(Icons.class_, size: 20, color: theme.colorScheme.primary),
                 ),
               ),
               const SizedBox(height: 16),
@@ -500,21 +510,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ],
           ),
         ),
-        // 分割线
-        Container(
-          width: 1,
-          color: theme.colorScheme.outline.withOpacity(0.1),
-        ),
-        // ========== 右侧内容区 ==========
-        Expanded(
-          child: _buildTabletContent(theme),
-        ),
+        Container(width: 1, color: theme.colorScheme.outline.withOpacity(0.1)),
+        Expanded(child: _buildTabletContent(theme)),
       ],
     );
   }
 
   Widget _navIcon(IconData icon, String tooltip, int index) {
     final selected = _mobileTabIndex == index;
+    final theme = Theme.of(context);
     return Tooltip(
       message: tooltip,
       child: Padding(
@@ -522,20 +526,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: GestureDetector(
           onTap: () => setState(() => _mobileTabIndex = index),
           child: Container(
-            width: 44,
-            height: 44,
+            width: 44, height: 44,
             decoration: BoxDecoration(
-              color: selected
-                  ? Theme.of(context).colorScheme.primaryContainer
-                  : null,
+              color: selected ? theme.colorScheme.primaryContainer : null,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              icon,
-              size: 22,
+              icon, size: 22,
               color: selected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ),
@@ -545,20 +545,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildTabletContent(ThemeData theme) {
     switch (_mobileTabIndex) {
-      case 0:
-        return const DrawPanel();
-      case 1:
-        return const QuestionPanel();
-      case 2:
-        return const TimerPanel();
-      case 3:
-        return const LeaderboardPanel();
-      case 4:
-        return const TextbookPanel();
-      case 5:
-        return _tabletMorePanel();
-      default:
-        return const DrawPanel();
+      case 0: return const DrawPanel();
+      case 1: return const QuestionPanel();
+      case 2: return const TimerPanel();
+      case 3: return const LeaderboardPanel();
+      case 4: return const TextbookPanel();
+      case 5: return _tabletMorePanel();
+      default: return const DrawPanel();
     }
   }
 
@@ -589,27 +582,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _sectionCard('班级管理', [
-                  _tabletMoreTile(
-                      Icons.person_add_alt, '导入名单', _importRoster),
-                  _tabletMoreTile(
-                      Icons.upload_file, '导入积分', _importScores),
-                  _tabletMoreTile(
-                      Icons.download, '导出积分', _exportScores),
-                  _tabletMoreTile(
-                      Icons.note_add, '名单模板', _exportMemberTemplate),
-                  _tabletMoreTile(
-                      Icons.quiz_outlined, '题库模板', _exportQuestionTemplate),
+                _sectionCard('数据导入/导出', [
+                  _tabletMoreTile(Icons.import_export, '导入/导出数据', _showDataImportExportSheet),
                 ]),
                 const SizedBox(height: 8),
                 _sectionCard('其他', [
                   _tabletMoreTile(Icons.class_, '切换班级', _showClassPicker),
                   _tabletMoreTile(Icons.settings, '设置', _openSettings),
                   _tabletMoreTile(Icons.favorite, '开源说明', () {
-                    Navigator.push(
-                      context,
-                      slideFadePageRoute(const OpenSourceScreen()),
-                    );
+                    Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
                   }),
                 ]),
               ],
@@ -630,17 +611,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           child: Text(
             title,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 13, fontWeight: FontWeight.w600,
               color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ),
         Card(
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: tiles.asMap().entries.map((entry) {
@@ -650,12 +628,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 return Column(
                   children: [
                     tile,
-                    Divider(
-                      height: 1,
-                      indent: 56,
-                      endIndent: 16,
-                      color: theme.colorScheme.outline.withOpacity(0.12),
-                    ),
+                    Divider(height: 1, indent: 56, endIndent: 16,
+                        color: theme.colorScheme.outline.withOpacity(0.12)),
                   ],
                 );
               }
@@ -668,14 +642,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _tabletMoreTile(IconData icon, String label, VoidCallback onTap) {
+    final theme = Theme.of(context);
     return ListTile(
       leading: Icon(icon, size: 20),
       title: Text(label, style: const TextStyle(fontSize: 14)),
-      trailing: Icon(
-        Icons.chevron_right,
-        size: 18,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-      ),
+      trailing: Icon(Icons.chevron_right, size: 18,
+          color: theme.colorScheme.onSurface.withOpacity(0.3)),
       onTap: onTap,
       dense: true,
     );
@@ -687,16 +659,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final screen = context.screenType;
 
+    // 监听自动保存（DataService 的防抖机制）
+    ref.watch(autoSaveProvider);
+
     if (screen == ScreenType.tablet) {
-      // iPad SplitView 风格
       return Scaffold(
         body: Stack(
           children: [
             _tabletBody(),
-            // 顶部安全区状态
-            Positioned(
-              top: 8,
-              right: 16,
+            Positioned(top: 8, right: 16,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -706,10 +677,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ],
               ),
             ),
-            // 桌面控制台
-            Positioned(
-              bottom: 20,
-              right: 20,
+            Positioned(bottom: 20, right: 20,
               child: CentralConsole(
                 onSave: () => _save(),
                 onLoad: _load,
@@ -717,8 +685,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 onSettings: _openSettings,
                 onSync: _sync,
                 onImportRoster: _importRoster,
-                onExportScores: _exportScores,
                 onImportScores: _importScores,
+                onExportScores: _exportScores,
                 onExportMemberTemplate: _exportMemberTemplate,
                 onExportQuestionTemplate: _exportQuestionTemplate,
               ),
@@ -733,13 +701,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Scaffold(
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: _mobileBody(),
-          ),
-          Positioned(
-            top: 2,
-            right: 6,
+          Padding(padding: const EdgeInsets.only(top: 4), child: _mobileBody()),
+          Positioned(top: 2, right: 6,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -760,11 +723,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   label: t.label,
                 ))
             .toList(),
-        // iOS风格：透明背景
-        backgroundColor:
-            Theme.of(context).colorScheme.surface.withOpacity(0.85),
-        indicatorColor:
-            Theme.of(context).colorScheme.primary.withOpacity(0.12),
+        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+        indicatorColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
       ),
       resizeToAvoidBottomInset: true,
     );
