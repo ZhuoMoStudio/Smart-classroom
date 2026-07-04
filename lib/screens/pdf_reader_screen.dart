@@ -93,27 +93,8 @@ class _State extends ConsumerState<PdfReaderScreen> {
 
   Widget _pdfView() => Stack(
     children: [
-      // PDF 页面（标注模式下禁止手势穿透）
-      if (_annotMode)
-        Positioned.fill(
-          child: Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (e) {
-              _annotCtrl.setPage(_cur);
-              _annotCtrl.startStroke(e.position);
-            },
-            onPointerMove: (e) {
-              if (_annotCtrl.currentDrawingStroke != null) {
-                _annotCtrl.addPoint(e.position);
-              }
-            },
-            onPointerUp: (e) {
-              _annotCtrl.endStroke();
-            },
-          ),
-        ),
       GestureDetector(
-        onTap: _annotMode ? null : _resetHide,
+        onTap: _annotMode && _annotCtrl.isArrowMode ? null : _resetHide,
         child: PdfViewer.data(
           _fileBytes!,
           sourceName: widget.title ?? 'document.pdf',
@@ -145,23 +126,22 @@ class _State extends ConsumerState<PdfReaderScreen> {
           ),
         ),
       ),
-      if (_annotMode)
+      // 标注手势层：笔模式下捕获绘制，箭头模式透明让 PDF 滚动
+      if (_annotMode && _annotCtrl.isPenMode)
         Positioned.fill(
           child: Listener(
             behavior: HitTestBehavior.translucent,
             onPointerDown: (e) {
-              if (_annotMode) {
-                _annotCtrl.setPage(_cur);
-                _annotCtrl.startStroke(e.position);
-              }
+              _annotCtrl.setPage(_cur);
+              _annotCtrl.startStroke(e.position);
             },
             onPointerMove: (e) {
-              if (_annotMode && _annotCtrl.currentDrawingStroke != null) {
+              if (_annotCtrl.currentDrawingStroke != null) {
                 _annotCtrl.addPoint(e.position);
               }
             },
             onPointerUp: (e) {
-              if (_annotMode) _annotCtrl.endStroke();
+              _annotCtrl.endStroke();
             },
           ),
         ),
@@ -173,12 +153,11 @@ class _State extends ConsumerState<PdfReaderScreen> {
             child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
                 child: Text(
-                  _annotCtrl.isEraser ? '🧹 橡皮擦模式' : '✏️ 标注模式（${_annotCtrl.penThickness.toStringAsFixed(1)}px）',
+                  _annotCtrl.isPenMode
+                      ? '✏️ 笔模式（${_annotCtrl.penThickness.toStringAsFixed(1)}px）'
+                      : '👆 箭头模式（可滚动）',
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ),

@@ -80,34 +80,50 @@ class FileService {
   }
 
   // ==================== Excel 模板导出 ====================
-  /// 导出学生名单模板 — 用户选择保存位置
+  /// 导出学生名单模板 — 先写入临时文件再让用户选择保存位置
   Future<File?> exportMemberTemplate() async {
-    final path = await FilePicker.platform.saveFile(
+    // 先生成到临时目录（确保文件存在）
+    final tempDir = await _defaultDir;
+    final tempPath = '$tempDir/学生名单模板.xlsx';
+    await Directory(tempDir).create(recursive: true);
+    await ExcelService.exportMemberTemplate(tempPath);
+    // 给用户选择保存位置
+    final savePath = await FilePicker.platform.saveFile(
       dialogTitle: '保存学生名单模板',
       fileName: '学生名单模板.xlsx',
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
     );
-    if (path == null) return null;
-    // 确保目录存在
-    final dir = Directory(path).parent;
-    if (!await dir.exists()) await dir.create(recursive: true);
-    return ExcelService.exportMemberTemplate(path);
+    if (savePath == null) return null;
+    // 复制临时文件到目标位置
+    final source = File(tempPath);
+    if (await source.exists()) {
+      await source.copy(savePath);
+    }
+    return File(savePath);
   }
 
-  /// 导出题库模板 — 用户选择保存位置
+  /// 导出题库模板 — 先写入临时文件再让用户选择保存位置
   Future<File?> exportQuestionTemplate() async {
-    final path = await FilePicker.platform.saveFile(
+    // 先生成到临时目录（确保文件存在）
+    final tempDir = await _defaultDir;
+    final tempPath = '$tempDir/题库模板.xlsx';
+    await Directory(tempDir).create(recursive: true);
+    await ExcelService.exportQuestionTemplate(tempPath);
+    // 给用户选择保存位置
+    final savePath = await FilePicker.platform.saveFile(
       dialogTitle: '保存题库模板',
       fileName: '题库模板.xlsx',
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
     );
-    if (path == null) return null;
-    // 确保目录存在
-    final dir = Directory(path).parent;
-    if (!await dir.exists()) await dir.create(recursive: true);
-    return ExcelService.exportQuestionTemplate(path);
+    if (savePath == null) return null;
+    // 复制临时文件到目标位置
+    final source = File(tempPath);
+    if (await source.exists()) {
+      await source.copy(savePath);
+    }
+    return File(savePath);
   }
 
   // ==================== Excel 积分导入/导出 ====================

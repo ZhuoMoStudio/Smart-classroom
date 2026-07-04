@@ -22,12 +22,6 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
     super.initState();
     // 全屏沉浸式 + 适配状态栏
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUIOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ));
   }
 
   @override

@@ -27,8 +27,12 @@ class SyncEngine {
       final ld = await _fs.getWorkingDir();
       final lfs = await _fs.listArchives(ld);
 
+      // 确保远程目录存在
+      sn.updateProgress(0.2, '准备远程目录...');
+      await _wd.createRemoteDir(dirPath: '', settings: st, password: pw);
+
       if (lfs.isNotEmpty && st.syncStrategy != 'download') {
-        sn.updateProgress(0.3, '正在上传...');
+        sn.updateProgress(0.4, '正在上传...');
         await _wd.uploadFile(
           localPath: lfs.first.path,
           fileName: 'data.json',
@@ -39,13 +43,13 @@ class SyncEngine {
 
       // 下载远程文件
       if (st.syncStrategy != 'upload') {
+        sn.updateProgress(0.6, '正在下载...');
         final data = await _wd.downloadFile(
           fileName: 'data.json',
           settings: st,
           password: pw,
         );
         if (data != null) {
-          sn.updateProgress(0.6, '正在下载...');
           await File('$ld/remote_backup.json').writeAsBytes(data);
         }
       }

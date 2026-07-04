@@ -18,13 +18,25 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
   DateTime _currentTime = DateTime.now();
   Timer? _clockTimer;
   bool _wasTimerRunning = false;
-  final TextEditingController _customMinutesController = TextEditingController();
+  final TextEditingController _customTimeController = TextEditingController();
 
   @override
   void initState() { super.initState(); _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) { if (mounted) setState(() => _currentTime = DateTime.now()); }); }
 
   @override
-  void dispose() { _clockTimer?.cancel(); _customMinutesController.dispose(); super.dispose(); }
+  void dispose() { _clockTimer?.cancel(); _customTimeController.dispose(); super.dispose(); }
+
+  /// 解析 hh:mm:ss 格式为秒数
+  int _parseHms(String input) {
+    try {
+      final parts = input.split(':').map((s) => int.tryParse(s.trim()) ?? 0).toList();
+      if (parts.isEmpty) return 0;
+      if (parts.length == 1) return parts[0] * 60;
+      if (parts.length == 2) return parts[0] * 60 + parts[1];
+      if (parts.length == 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } catch (_) {}
+    return 0;
+  }
 
   Future<void> _syncNetworkTime() async {
     final networkTime = await NetworkTimeService.getNetworkTime();
@@ -98,29 +110,34 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
         return ActionChip(
           label: Text('$min 分钟', style: TextStyle(fontSize: teaching ? 24 : null)),
           avatar: Icon(Icons.timer, size: teaching ? 36 : 16),
-          onPressed: () => ref.read(timerProvider.notifier).setTimer(min),
+          onPressed: () => ref.read(timerProvider.notifier).setTimer(min * 60),
         );
       }).toList()),
       SizedBox(height: teaching ? 12 : 4),
-      // 自定义分钟输入
+      // 自定义时间输入（hh:mm:ss）
       Row(mainAxisSize: MainAxisSize.min, children: [
-        SizedBox(width: teaching ? 180 : 80, child: TextField(
-          controller: _customMinutesController,
+        SizedBox(width: teaching ? 200 : 120, child: TextField(
+          controller: _customTimeController,
           decoration: InputDecoration(
-            labelText: '分钟',
-            labelStyle: TextStyle(fontSize: teaching ? 24 : null),
+            labelText: '时:分:秒 (如 1:30:00)',
+            labelStyle: TextStyle(fontSize: teaching ? 24 : 11),
             isDense: !teaching,
-            contentPadding: EdgeInsets.symmetric(horizontal: teaching ? 24 : 10, vertical: teaching ? 16 : 8),
+            contentPadding: EdgeInsets.symmetric(horizontal: teaching ? 24 : 8, vertical: teaching ? 16 : 8),
           ),
-          keyboardType: TextInputType.number,
-          style: TextStyle(fontSize: teaching ? 28 : null),
-          onSubmitted: (value) { final m = double.tryParse(value); if (m != null && m > 0) { ref.read(timerProvider.notifier).setTimer((m * 60).round()); _customMinutesController.clear(); } },
+          style: TextStyle(fontSize: teaching ? 28 : 13),
+          onSubmitted: (value) {
+            final secs = _parseHms(value);
+            if (secs > 0) { ref.read(timerProvider.notifier).setTimer(secs); _customTimeController.clear(); }
+          },
         )),
-        SizedBox(width: teaching ? 16 : 8),
+        SizedBox(width: teaching ? 16 : 6),
         IconButton.filledTonal(
-          icon: Icon(Icons.check, size: teaching ? 40 : 18),
+          icon: Icon(Icons.check, size: teaching ? 40 : 16),
           iconSize: teaching ? 40 : null,
-          onPressed: () { final m = double.tryParse(_customMinutesController.text); if (m != null && m > 0) { ref.read(timerProvider.notifier).setTimer((m * 60).round()); _customMinutesController.clear(); } },
+          onPressed: () {
+            final secs = _parseHms(_customTimeController.text);
+            if (secs > 0) { ref.read(timerProvider.notifier).setTimer(secs); _customTimeController.clear(); }
+          },
           visualDensity: teaching ? VisualDensity.standard : VisualDensity.compact,
         ),
       ]),
