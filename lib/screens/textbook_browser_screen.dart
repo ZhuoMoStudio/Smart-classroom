@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
+import '../providers/services_provider.dart';
 import '../services/gh_proxy_service.dart';
 import '../services/textbook_repo_service.dart';
 import '../services/file_service.dart';
 import '../widgets/toast_overlay.dart';
 import '../theme/route_utils.dart';
-import '../theme/design_tokens.dart';
 import 'pdf_reader_screen.dart';
 
 /// 教材浏览器 — 自动按年级/学科/版本分类 + 本地优先
