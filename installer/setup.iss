@@ -1,9 +1,9 @@
 ; Smart Classroom Windows Installer
-; Inno Setup Script for v2.0.0
+; Inno Setup Script for v1.20
 ; Generates a single-file setup.exe with auto-uninstall
 
 #define MyAppName "灵动课堂 Smart Classroom"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "1.20"
 #define MyAppPublisher "松庭灼墨 (ZhuoMoStudio)"
 #define MyAppURL "https://github.com/ZhuoMoStudio/Smart-classroom"
 #define MyAppExeName "smart_classroom.exe"
@@ -19,7 +19,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\SmartClassroom
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=../LICENSE
+LicenseFile=LICENSE
 OutputDir=..\build\installer
 OutputBaseFilename=SmartClassroom_v{#MyAppVersion}_Setup
 Compression=lzma2/max
