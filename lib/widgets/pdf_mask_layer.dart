@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' show Canvas, Paint, Path, Rect, Offset, Size;
+import '../theme/design_tokens.dart';
 import 'pdf_annotation.dart';
 
 /// 蒙层渲染层 — 在 PDF 之上绘制半透明蒙层和揭示区域
@@ -151,7 +152,7 @@ class MaskControlPanel extends StatelessWidget {
               // 标题行
               Row(
                 children: [
-                  const Icon(Icons.mask, size: 20, color: Colors.purple),
+                  const Icon(Icons.visibility, size: 20, color: Colors.purple),
                   const SizedBox(width: 8),
                   Text(
                     '蒙层设置',
@@ -304,7 +305,7 @@ class MaskControlPanel extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.mask_off, size: 16),
+                  icon: const Icon(Icons.visibility_off, size: 16),
                   label: const Text('关闭蒙层'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red.shade400,

@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../providers/class_provider.dart';
 import '../providers/question_provider.dart';
 import '../providers/settings_provider.dart';
+import '../models/question_bank.dart';
 import '../services/data_service.dart';
 import '../services/file_service.dart';
 import '../services/excel_service.dart';

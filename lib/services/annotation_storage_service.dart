@@ -51,7 +51,7 @@ class AnnotationStorageService {
       // 与PDF同目录
       final file = File(pdfPath);
       final dir = file.parent.path;
-      final name = '${file.uri.toStringSegments().last}.annot.json';
+      final name = '${file.uri.pathSegments.last}.annot.json';
       return '$dir/$name';
     }
   }
