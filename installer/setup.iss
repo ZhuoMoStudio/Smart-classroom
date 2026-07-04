@@ -6,7 +6,7 @@
 ; 所有路径均相对于仓库根目录
 
 #define MyAppName "灵动课堂 Smart Classroom"
-#define MyAppVersion "1.20.0"
+#define MyAppVersion "1.21.0"
 #define MyAppPublisher "松庭灼墨 (ZhuoMoStudio)"
 #define MyAppURL "https://github.com/ZhuoMoStudio/Smart-classroom"
 #define MyAppExeName "smart_classroom.exe"
