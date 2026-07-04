@@ -1,6 +1,7 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
+    // AGP 9+ 已内置 Kotlin 支持，无需手动 apply kotlin-android 插件
+    // id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 

@@ -5,8 +5,8 @@ import '../models/question_bank.dart';
 import '../providers/class_provider.dart';
 import '../providers/question_provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/services_provider.dart';
 import 'file_service.dart';
-import 'storage_service.dart';
 
 /// 数据管理服务 — 集中化保存/加载逻辑
 ///
@@ -21,7 +21,6 @@ class DataService {
   bool _saving = false;
 
   static const Duration _debounceDuration = Duration(seconds: 5);
-  static const Duration _autoSaveCheckInterval = Duration(seconds: 10);
 
   DataService(this._ref);
 
