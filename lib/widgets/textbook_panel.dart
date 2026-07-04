@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
+import '../services/gh_proxy_service.dart';
 import '../services/textbook_repo_service.dart';
 import '../services/textbook_index_service.dart';
 import '../services/pdf_cache_manager.dart';
@@ -245,7 +246,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
                 const SizedBox(width: 8),
                 Text(
                   _statusMessage,
-                  style: theme.textTheme.caption,
+                  style: theme.textTheme.labelSmall,
                 ),
               ],
             ),
@@ -278,7 +279,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
         const SizedBox(width: 4),
         Text(
           '已下载 $downloaded / $total 本',
-          style: theme.textTheme.caption?.copyWith(
+          style: theme.textTheme.labelSmall?.copyWith(
             fontSize: 11,
             color: Colors.grey,
           ),
@@ -287,7 +288,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
         if (total == 0)
           Text(
             '请点击右上角刷新获取目录',
-            style: theme.textTheme.caption?.copyWith(fontSize: 11),
+            style: theme.textTheme.labelSmall?.copyWith(fontSize: 11),
           ),
       ],
     );
@@ -334,7 +335,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
             const SizedBox(height: 8),
             Text(
               '点击右上角刷新获取教材目录',
-              style: theme.textTheme.caption,
+              style: theme.textTheme.labelSmall,
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

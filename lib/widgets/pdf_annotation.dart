@@ -462,8 +462,14 @@ class AnnotationController extends ChangeNotifier {
     _ensurePage(_currentPage);
     final page = _pages[_currentPage]!;
     bool changed = false;
-    final layers = page.layers.map((layer) {
-      if (layer.locked) return layer;
+    final originalLayers = page.layers;
+    final updatedLayers = <AnnotationLayer>[];
+    for (int li = 0; li < originalLayers.length; li++) {
+      final layer = originalLayers[li];
+      if (layer.locked) {
+        updatedLayers.add(layer);
+        continue;
+      }
       final remaining = <AnnotationStroke>[];
       final erased = <AnnotationStroke>[];
       for (final stroke in layer.strokes) {
@@ -485,18 +491,18 @@ class AnnotationController extends ChangeNotifier {
       if (erased.isNotEmpty) {
         _undoStack.add(_UndoAction(
           pageNumber: _currentPage,
-          layerIndex: layers.indexOf(layer),
+          layerIndex: li,
           previousStrokes: layer.strokes,
           newStrokes: remaining,
         ));
         if (_undoStack.length > _maxUndo) _undoStack.removeAt(0);
         _redoStack.clear();
       }
-      return layer.copyWith(strokes: remaining);
-    }).toList();
+      updatedLayers.add(layer.copyWith(strokes: remaining));
+    }
 
     if (changed) {
-      _pages[_currentPage] = page.copyWith(layers: layers);
+      _pages[_currentPage] = page.copyWith(layers: updatedLayers);
       notifyListeners();
     }
   }
@@ -1171,8 +1177,8 @@ class AnnotationToolbar extends StatelessWidget {
                   // 蒙层
                   _iconBtn(
                     controller.maskState.enabled
-                        ? Icons.mask
-                        : Icons.mask_outlined,
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     controller.maskState.enabled ? '关闭蒙层' : '蒙层',
                     onOpenMask ?? () {},
                     color: controller.maskState.enabled

@@ -23,23 +23,6 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
-      // SF Pro 近似字体系列
-      textTheme: const TextTheme(
-        displaySmall: AppTypography.h1,
-        headlineMedium: AppTypography.h2,
-        titleLarge: AppTypography.h3,
-        titleMedium: AppTypography.label,
-        bodyLarge: AppTypography.bodyLarge,
-        bodyMedium: AppTypography.bodyMedium,
-        bodySmall: AppTypography.bodySmall,
-        labelLarge: AppTypography.label,
-        labelMedium: AppTypography.caption,
-        labelSmall: AppTypography.caption,
-      ),
-      // 视觉密度 — compact 保持紧凑
-      visualDensity: VisualDensity.compact,
-      // 材料类型 — iOS 风格不使用 M3 的强烈阴影
-      useMaterial3: true,
 
       // ========== 卡片 — iOS 磨砂玻璃 ==========
       cardTheme: CardThemeData(
