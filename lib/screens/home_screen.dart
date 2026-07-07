@@ -296,7 +296,80 @@ class _SettingsPlaceholder extends StatelessWidget {
   const _SettingsPlaceholder();
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('设置', style: TextStyle(color: AppColors.textSecondary)));
+    return _SettingsPage();
+  }
+}
+
+class _SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _section('下载源'),
+        const SizedBox(height: 4),
+        Row(children: [
+          Expanded(child: _buildCard(theme, Icons.cloud_download, '下载源设置', '教材/更新下载源选择', () {})),
+        ]),
+        const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
+        _section('交互反馈'),
+        const SizedBox(height: 4),
+        Row(children: [
+          Expanded(child: _buildCard(theme, Icons.volume_up, '音效', '抽取、加减分等音效', () {})),
+          const SizedBox(width: 8),
+          Expanded(child: _buildCard(theme, Icons.vibration, '触感', '按钮振动反馈', () {})),
+        ]),
+        const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
+        _section('数据管理'),
+        const SizedBox(height: 4),
+        _buildCard(theme, Icons.save_alt, '保存数据', '手动保存当前数据', () {}),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(child: _buildCard(theme, Icons.upload_file, '导入数据', '导入名单/积分', () {})),
+          const SizedBox(width: 8),
+          Expanded(child: _buildCard(theme, Icons.download, '导出数据', '导出积分/模板', () {})),
+        ]),
+        const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
+        _section('云端同步'),
+        const SizedBox(height: 4),
+        _buildCard(theme, Icons.cloud_sync, 'WebDAV同步', '坚果云/Nextcloud', () {}),
+        const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
+        _section('关于'),
+        const SizedBox(height: 4),
+        _buildCard(theme, Icons.info_outline, '灵动课堂 v1.24', '版本信息与更新', () {}),
+        const SizedBox(height: 24),
+        SizedBox(width: double.infinity,
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.tune, size: 16),
+            label: const Text('打开完整设置', style: TextStyle(fontSize: 14)),
+            onPressed: () => showDialog(context: context, builder: (_) => const SettingsDialog()),
+          ),
+        ),
+        const SizedBox(height: 40),
+      ]),
+    );
+  }
+
+  Widget _section(String t) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Text(t, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary, fontSize: 14)),
+  );
+
+  Widget _buildCard(ThemeData theme, IconData icon, String title, String subtitle, VoidCallback onTap) {
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        leading: Icon(icon, size: 22, color: theme.colorScheme.primary),
+        title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        trailing: const Icon(Icons.chevron_right, size: 18),
+        onTap: onTap,
+        dense: true,
+      ),
+    );
   }
 }
 
