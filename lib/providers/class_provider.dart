@@ -285,6 +285,27 @@ class ClassNotifier extends StateNotifier<ClassState> {
     );
   }
 
+  /// 批量加减分 (v1.31)
+  void batchChangeScore(String cid, List<String> mids, double delta) {
+    final cls = state.classrooms.firstWhere((c) => c.uid == cid);
+    _up(cid, (c) => c.copyWith(
+      groups: c.groups.map((g) => g.copyWith(
+        members: g.members.map((m) {
+          if (mids.contains(m.uid)) {
+            double ns = m.score + delta;
+            if (ns < 0) ns = 0;
+            state.history.addRecord(ScoreChangeRecord(
+              memberName: m.name, groupName: g.name, className: cls.name,
+              oldScore: m.score, newScore: ns, delta: delta, timestamp: DateTime.now(),
+            ));
+            return m.copyWith(score: ns);
+          }
+          return m;
+        }).toList(),
+      )).toList(),
+    ));
+  }
+
   /// 清除所有积分历史
   void clearHistory() => state.history.clear();
 
