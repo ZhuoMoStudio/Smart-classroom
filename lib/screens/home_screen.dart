@@ -20,6 +20,10 @@ import 'leaderboard_panel.dart';
 import 'dialogs/settings_dialog.dart';
 import 'open_source_screen.dart';
 
+import '../services/excel_service.dart';
+import '../models/question_bank.dart';
+import '../providers/services_provider.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
   @override
@@ -130,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 0: return const _ClassroomView();
       case 1: return const _ClassDataView();
       case 2: return const TextbookPanel();
-      case 3: return const _SettingsPlaceholder();
+      case 3: return const _SettingsPage();
       default: return const _ClassroomView();
     }
   }
@@ -292,58 +296,75 @@ class _ClassDataView extends ConsumerWidget {
 }
 
 // ==================== 设置占位 ====================
-class _SettingsPlaceholder extends StatelessWidget {
-  const _SettingsPlaceholder();
-  @override
-  Widget build(BuildContext context) {
-    return _SettingsPage();
-  }
-}
+class _SettingsPage extends ConsumerWidget {
+  const _SettingsPage();
 
-class _SettingsPage extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final settings = ref.watch(settingsProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _section('下载源', context),
-        const SizedBox(height: 4),
-        Row(children: [
-          Expanded(child: _buildCard(theme, Icons.cloud_download, '下载源设置', '教材/更新下载源选择', () {})),
-        ]),
+        ListTile(
+          leading: Icon(Icons.cloud_download, size: 22, color: theme.colorScheme.primary),
+          title: const Text('教材/更新下载源', style: TextStyle(fontSize: 14)),
+          subtitle: Text(settings.downloadSource == 'github' ? 'GitHub 官方源' : '国内镜像加速', style: const TextStyle(fontSize: 12)),
+          trailing: const Icon(Icons.chevron_right, size: 18),
+          onTap: () => _openFullSettings(context),
+          dense: true,
+        ),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('交互反馈', context),
-        const SizedBox(height: 4),
-        Row(children: [
-          Expanded(child: _buildCard(theme, Icons.volume_up, '音效', '抽取、加减分等音效', () {})),
-          const SizedBox(width: 8),
-          Expanded(child: _buildCard(theme, Icons.vibration, '触感', '按钮振动反馈', () {})),
-        ]),
+        SwitchListTile.adaptive(
+          title: const Text('音效', style: TextStyle(fontSize: 14)),
+          subtitle: const Text('抽取、加减分、计时结束等音效', style: TextStyle(fontSize: 12)),
+          value: settings.soundEnabled, dense: true, contentPadding: EdgeInsets.zero,
+          onChanged: (v) { ref.read(settingsProvider.notifier).update(settings.copyWith(soundEnabled: v)); AudioEngine().setSoundEnabled(v); },
+        ),
+        SwitchListTile.adaptive(
+          title: const Text('触感反馈', style: TextStyle(fontSize: 14)),
+          subtitle: const Text('按钮按压振动', style: TextStyle(fontSize: 12)),
+          value: settings.hapticFeedback, dense: true, contentPadding: EdgeInsets.zero,
+          onChanged: (v) { ref.read(settingsProvider.notifier).update(settings.copyWith(hapticFeedback: v)); AudioEngine().setHapticEnabled(v); },
+        ),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('数据管理', context),
+        _actionTile(theme, Icons.save_alt, '保存数据', '手动保存当前数据', () async {
+          try { await ref.read(dataServiceProvider).save(silent: false, immediate: true);
+            ToastOverlay.show(context, '保存成功', type: ToastType.success);
+          } catch (e) { ToastOverlay.show(context, '保存失败: $e', type: ToastType.error); }
+        }),
         const SizedBox(height: 4),
-        _buildCard(theme, Icons.save_alt, '保存数据', '手动保存当前数据', () {}),
-        const SizedBox(height: 6),
         Row(children: [
-          Expanded(child: _buildCard(theme, Icons.upload_file, '导入数据', '导入名单/积分', () {})),
+          Expanded(child: _actionTile(theme, Icons.folder_open, '选择文件夹', '设置工作目录', () async {
+            final path = await ref.read(fileServiceProvider).pickFolder();
+            if (path != null) ToastOverlay.show(context, '已选择文件夹');
+          })),
           const SizedBox(width: 8),
-          Expanded(child: _buildCard(theme, Icons.download, '导出数据', '导出积分/模板', () {})),
+          Expanded(child: _actionTile(theme, Icons.file_open, '加载数据', '从JSON文件加载', () async {
+            try { await ref.read(dataServiceProvider).load();
+              ToastOverlay.show(context, '加载成功', type: ToastType.success);
+            } catch (e) { ToastOverlay.show(context, '加载失败: $e', type: ToastType.error); }
+          })),
         ]),
+        const SizedBox(height: 4),
+        _actionTile(theme, Icons.import_export, '导入/导出', '名单/积分/模板', () => _showDataImportExportSheet(context, ref)),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('云端同步', context),
-        const SizedBox(height: 4),
-        _buildCard(theme, Icons.cloud_sync, 'WebDAV同步', '坚果云/Nextcloud', () {}),
+        _actionTile(theme, Icons.cloud_sync, 'WebDAV同步', settings.webdavUsername.isNotEmpty ? '已配置' : '未配置', () => _openFullSettings(context)),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('关于', context),
-        const SizedBox(height: 4),
-        _buildCard(theme, Icons.info_outline, '灵动课堂 v1.24', '版本信息与更新', () {}),
+        _actionTile(theme, Icons.info_outline, '灵动课堂 v1.25', '版本信息与开源说明', () {
+          Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
+        }),
         const SizedBox(height: 24),
         SizedBox(width: double.infinity,
           child: OutlinedButton.icon(
             icon: const Icon(Icons.tune, size: 16),
             label: const Text('打开完整设置', style: TextStyle(fontSize: 14)),
-            onPressed: () => showDialog(context: context, builder: (_) => const SettingsDialog()),
+            onPressed: () => _openFullSettings(context),
           ),
         ),
         const SizedBox(height: 40),
@@ -356,7 +377,7 @@ class _SettingsPage extends StatelessWidget {
     child: Text(t, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary, fontSize: 14)),
   );
 
-  Widget _buildCard(ThemeData theme, IconData icon, String title, String subtitle, VoidCallback onTap) {
+  Widget _actionTile(ThemeData theme, IconData icon, String title, String subtitle, VoidCallback onTap) {
     return Card(
       elevation: 0,
       color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
@@ -366,14 +387,118 @@ class _SettingsPage extends StatelessWidget {
         title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         trailing: const Icon(Icons.chevron_right, size: 18),
-        onTap: onTap,
-        dense: true,
+        onTap: onTap, dense: true,
       ),
     );
   }
 }
 
-// ==================== 生命周期观察者 ====================
+void _openFullSettings(BuildContext context) {
+  showDialog(context: context, builder: (_) => const SettingsDialog());
+}
+
+void _showDataImportExportSheet(BuildContext context, WidgetRef ref) {
+  final theme = Theme.of(context);
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(children: [
+              Icon(Icons.import_export, size: 20, color: theme.colorScheme.primary),
+              const SizedBox(width: 8),
+              Text('数据导入/导出', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            ]),
+          ),
+          const Divider(height: 1),
+          _impExpGroup(theme, '导入', [
+            _impExpItem(theme, Icons.person_add_alt, '导入学生名单', () { Navigator.pop(ctx); _doImportRoster(context, ref); }),
+            _impExpItem(theme, Icons.upload_file, '导入积分数据', () { Navigator.pop(ctx); _doImportScores(context, ref); }),
+          ]),
+          const Divider(height: 1, indent: 56),
+          _impExpGroup(theme, '导出', [
+            _impExpItem(theme, Icons.download, '导出积分数据', () { Navigator.pop(ctx); _doExportScores(context, ref); }),
+            _impExpItem(theme, Icons.note_add, '导出名单模板', () { Navigator.pop(ctx); _doExportMemberTemplate(context, ref); }),
+            _impExpItem(theme, Icons.quiz_outlined, '导出题库模板', () { Navigator.pop(ctx); _doExportQuestionTemplate(context, ref); }),
+          ]),
+        ]),
+      ),
+    ),
+  );
+}
+
+Widget _impExpGroup(ThemeData theme, String title, List<Widget> items) {
+  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Padding(padding: const EdgeInsets.only(left: 20, top: 8, bottom: 4),
+      child: Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.4)))),
+    ...items,
+  ]);
+}
+
+Widget _impExpItem(ThemeData theme, IconData icon, String label, VoidCallback onTap) {
+  return ListTile(leading: Icon(icon, size: 20), title: Text(label, style: const TextStyle(fontSize: 14)),
+    trailing: const Icon(Icons.chevron_right, size: 18), onTap: onTap, dense: true);
+}
+
+Future<void> _doImportRoster(BuildContext context, WidgetRef ref) async {
+  try {
+    final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx', 'xls']);
+    if (r == null || r.files.isEmpty) return;
+    final path = r.files.single.path;
+    if (path == null) return;
+    final classrooms = await ExcelService.parseRoster(path);
+    if (classrooms.isEmpty) { ToastOverlay.show(context, '未能解析到任何班级数据'); return; }
+    ref.read(classProvider.notifier).loadFromData(classrooms, classrooms.first.uid);
+    ToastOverlay.show(context, '导入名单成功: \${classrooms.length} 个班级', type: ToastType.success);
+  } catch (e) { ToastOverlay.show(context, '导入名单失败: $e', type: ToastType.error); }
+}
+
+Future<void> _doImportScores(BuildContext context, WidgetRef ref) async {
+  try {
+    final scores = await ref.read(fileServiceProvider).importScores();
+    final notifier = ref.read(classProvider.notifier);
+    final state = ref.read(classProvider);
+    for (final classroom in state.classrooms) {
+      final classScores = scores[classroom.name];
+      if (classScores == null) continue;
+      for (final group in classroom.groups) {
+        final groupScores = classScores[group.name];
+        if (groupScores == null) continue;
+        for (final member in group.members) {
+          final newScore = groupScores[member.name];
+          if (newScore != null) notifier.setScore(classroom.uid, group.uid, member.uid, newScore);
+        }
+      }
+    }
+    ToastOverlay.show(context, '积分导入成功', type: ToastType.success);
+  } catch (e) { ToastOverlay.show(context, '积分导入失败: $e', type: ToastType.error); }
+}
+
+Future<void> _doExportScores(BuildContext context, WidgetRef ref) async {
+  try {
+    final cs = ref.read(classProvider);
+    final data = AppData(classrooms: cs.classrooms, questionBanks: []);
+    await ref.read(fileServiceProvider).exportScores(data);
+    ToastOverlay.show(context, '积分导出成功', type: ToastType.success);
+  } catch (e) { ToastOverlay.show(context, '积分导出失败: $e', type: ToastType.error); }
+}
+
+Future<void> _doExportMemberTemplate(BuildContext context, WidgetRef ref) async {
+  try {
+    final result = await ref.read(fileServiceProvider).exportMemberTemplate();
+    if (result != null) ToastOverlay.show(context, '名单模板已导出', type: ToastType.success);
+  } catch (e) { ToastOverlay.show(context, '模板导出失败: $e', type: ToastType.error); }
+}
+
+Future<void> _doExportQuestionTemplate(BuildContext context, WidgetRef ref) async {
+  try {
+    final result = await ref.read(fileServiceProvider).exportQuestionTemplate();
+    if (result != null) ToastOverlay.show(context, '题库模板已导出', type: ToastType.success);
+  } catch (e) { ToastOverlay.show(context, '模板导出失败: $e', type: ToastType.error); }
+}
 class _LifecycleObserver extends WidgetsBindingObserver {
   final void Function() onBackground;
   _LifecycleObserver({required this.onBackground});
