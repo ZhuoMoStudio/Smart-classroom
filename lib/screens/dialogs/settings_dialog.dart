@@ -187,7 +187,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                 const SizedBox(height: 4),
                 Text('文件名禁止包含特殊字符', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
-                const SyncStatusIndicator(),
+                SyncStatusIndicator(),
                 const SizedBox(height: 4),
                 Row(children: [
                   Expanded(child: OutlinedButton.icon(icon: const Icon(Icons.wifi, size: 16), label: const Text('测试连接', style: TextStyle(fontSize: 13)), onPressed: _testConnection)),
