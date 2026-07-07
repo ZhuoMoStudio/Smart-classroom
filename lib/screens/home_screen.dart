@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/data_service.dart';
+import '../services/workspace_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/responsive.dart';
 import '../theme/route_utils.dart';
@@ -39,6 +40,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(_LifecycleObserver(onBackground: () => ref.read(dataServiceProvider).saveImmediate(silent: true)));
+    // 启动时初始化工作区
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final ws = ref.read(workspaceServiceProvider);
+      await ws.loadSavedPath();
+      if (ws.isConfigured) {
+        await ws.ensureInitialTemplates();
+        await ref.read(dataServiceProvider).loadFromWorkspace();
+      }
+    });
   }
 
   @override
@@ -303,6 +313,7 @@ class _SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final settings = ref.watch(settingsProvider);
+    final ws = ref.watch(workspaceServiceProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -353,6 +364,15 @@ class _SettingsPage extends ConsumerWidget {
         _actionTile(theme, Icons.import_export, '导入/导出', '名单/积分/模板', () => _showDataImportExportSheet(context, ref)),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('云端同步', context),
+        _actionTile(theme, Icons.folder, '工作区文件夹', ws.isConfigured ? ws.rootPath!.split('/').last : '未配置', () async {
+          await ws.pickFolder();
+          if (ws.isConfigured) {
+            await ws.ensureInitialTemplates();
+            await ref.read(dataServiceProvider).loadFromWorkspace();
+            ToastOverlay.show(context, '工作区已设置: ${ws.rootPath}', type: ToastType.success);
+          }
+        }),
+        const SizedBox(height: 4),
         _actionTile(theme, Icons.cloud_sync, 'WebDAV同步', settings.webdavUsername.isNotEmpty ? '已配置' : '未配置', () => _openFullSettings(context)),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
         _section('关于', context),

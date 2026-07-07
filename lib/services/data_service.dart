@@ -7,6 +7,8 @@ import '../providers/question_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/services_provider.dart';
 import 'file_service.dart';
+import 'workspace_service.dart';
+import 'excel_service.dart';
 
 /// 数据管理服务 — 集中化保存/加载逻辑
 ///
@@ -127,16 +129,13 @@ final dataServiceProvider = Provider<DataService>((ref) {
   return service;
 });
 
-/// 自动保存 Provider — 监听 dirty 状态并触发防抖保存
+/// 自动保存 Provider — 监听 dirty 状态并触发防抖积分保存
 final autoSaveProvider = Provider.autoDispose<void>((ref) {
   final dataService = ref.watch(dataServiceProvider);
   final cs = ref.watch(classProvider);
   final settings = ref.watch(settingsProvider);
 
-  // 监听 dirty 状态变化，触发防抖保存
   if (cs.isDirty && settings.autoSave) {
     dataService.save(silent: true);
   }
-
-  // 返回 void，仅用于触发副作用
 });

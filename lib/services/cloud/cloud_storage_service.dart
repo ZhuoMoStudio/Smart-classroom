@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/services_provider.dart';
-import '../file_service.dart';
+import '../workspace_service.dart';
 import '../storage_service.dart';
 import 'webdav_plus_sync.dart';
 import 'sync_engine.dart';
@@ -17,7 +17,7 @@ class CloudStorageService {
   SyncEngine get _engine {
     _se ??= SyncEngine(
       _ref,
-      _ref.read(fileServiceProvider),
+      _ref.read(workspaceServiceProvider),
       _ref.read(storageServiceProvider),
       _wd,
     );
