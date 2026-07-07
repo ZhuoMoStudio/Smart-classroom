@@ -1,5 +1,3 @@
-import 'package:uuid/uuid.dart';
-
 class RankSystem {
   static const List<String> rankNames = [
     '倔强青铜',
@@ -34,13 +32,6 @@ class Member {
 
   Member copyWith({String? name, double? score}) =>
       Member(uid: uid, name: name ?? this.name, score: score ?? this.score);
-
-  Map<String, dynamic> toJson() => {'uid': uid, 'name': name, 'score': score};
-  factory Member.fromJson(Map<String, dynamic> json) => Member(
-    uid: json['uid'],
-    name: json['name'],
-    score: (json['score'] as num).toDouble(),
-  );
 }
 
 class Group {
@@ -56,20 +47,6 @@ class Group {
     uid: uid,
     name: name ?? this.name,
     members: members ?? this.members,
-  );
-
-  Map<String, dynamic> toJson() => {
-    'uid': uid,
-    'name': name,
-    'members': members.map((m) => m.toJson()).toList(),
-  };
-  factory Group.fromJson(Map<String, dynamic> json) => Group(
-    uid: json['uid'],
-    name: json['name'],
-    members:
-        (json['members'] as List)
-            .map((m) => Member.fromJson(m as Map<String, dynamic>))
-            .toList(),
   );
 }
 
@@ -89,19 +66,5 @@ class Classroom {
     uid: uid,
     name: name ?? this.name,
     groups: groups ?? this.groups,
-  );
-
-  Map<String, dynamic> toJson() => {
-    'uid': uid,
-    'name': name,
-    'groups': groups.map((g) => g.toJson()).toList(),
-  };
-  factory Classroom.fromJson(Map<String, dynamic> json) => Classroom(
-    uid: json['uid'],
-    name: json['name'],
-    groups:
-        (json['groups'] as List)
-            .map((g) => Group.fromJson(g as Map<String, dynamic>))
-            .toList(),
   );
 }

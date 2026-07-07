@@ -1,16 +1,22 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import '../providers/class_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../models/class_model.dart';
+import '../models/score_history.dart';
+import '../services/excel_service.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/rank_badge.dart';
 import '../widgets/score_button.dart';
+import '../widgets/toast_overlay.dart';
 import '../services/audio_engine.dart';
 import 'dialogs/full_leaderboard_dialog.dart';
 
 class LeaderboardPanel extends ConsumerWidget {
   const LeaderboardPanel({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = ref.watch(classProvider);
@@ -40,29 +46,95 @@ class LeaderboardPanel extends ConsumerWidget {
 
     return Column(
       children: [
+        // 切换按钮 + 撤销 + 导出
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(
-                  value: 'member',
-                  label: Text('个人榜'),
-                  icon: Icon(Icons.person, size: 16)),
-              ButtonSegment(
-                  value: 'group',
-                  label: Text('小组榜'),
-                  icon: Icon(Icons.groups, size: 16)),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(
+                        value: 'member',
+                        label: Text('个人榜'),
+                        icon: Icon(Icons.person, size: 16)),
+                    ButtonSegment(
+                        value: 'group',
+                        label: Text('小组榜'),
+                        icon: Icon(Icons.groups, size: 16)),
+                  ],
+                  selected: {ls.showGroupBoard ? 'group' : 'member'},
+                  onSelectionChanged: (_) => ref
+                      .read(leaderboardProvider.notifier)
+                      .toggleBoard(),
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ),
+              // 撤销按钮
+              if (cs.history.records.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.undo, size: 18),
+                  tooltip: '撤销最近积分变动',
+                  onPressed: () {
+                    final record =
+                        ref.read(classProvider.notifier).undoLastScoreChange();
+                    if (record != null) {
+                      ToastOverlay.show(
+                          context,
+                          '已撤销: ${record.memberName} ${record.delta > 0 ? "-" : "+"}${record.delta.abs().toStringAsFixed(1)}',
+                          type: ToastType.info);
+                    }
+                  },
+                  visualDensity: VisualDensity.compact,
+                ),
+              // 导出按钮
+              IconButton(
+                icon: const Icon(Icons.file_download, size: 18),
+                tooltip: '导出积分报表',
+                onPressed: () => _exportReport(context, ref),
+                visualDensity: VisualDensity.compact,
+              ),
             ],
-            selected: {ls.showGroupBoard ? 'group' : 'member'},
-            onSelectionChanged: (_) =>
-                ref.read(leaderboardProvider.notifier).toggleBoard(),
-            style: ButtonStyle(
-              visualDensity: VisualDensity.compact,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
+        // 最近变动记录
+        if (cs.history.records.isNotEmpty)
+          SizedBox(
+            height: 26,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: min(cs.history.records.length, 10),
+              itemBuilder: (_, i) {
+                final r = cs.history.records[i];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: r.isPositive
+                          ? Colors.green.withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${r.memberName} ${r.isPositive ? "+" : ""}${r.delta.toStringAsFixed(1)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: r.isPositive ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        const SizedBox(height: 4),
         Expanded(
           child: ls.showGroupBoard
               ? _gTable(gs, context)
@@ -123,24 +195,28 @@ class LeaderboardPanel extends ConsumerWidget {
               }
             }
             return DataRow(
-              color: WidgetStateProperty.resolveWith((_) =>
-                  rc ?? Colors.transparent),
+              color: WidgetStateProperty.resolveWith(
+                  (_) => rc ?? Colors.transparent),
               cells: [
                 DataCell(Text('$ri',
                     style: TextStyle(
-                        fontWeight: ri <= 3 ? FontWeight.bold : null))),
+                        fontWeight:
+                            ri <= 3 ? FontWeight.bold : null))),
                 DataCell(GestureDetector(
-                  onTap: () =>
-                      ref.read(leaderboardProvider.notifier).lockMember(m.uid),
+                  onTap: () => ref
+                      .read(leaderboardProvider.notifier)
+                      .lockMember(m.uid),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
-                        child: Text(m.name, overflow: TextOverflow.ellipsis),
+                        child: Text(m.name,
+                            overflow: TextOverflow.ellipsis),
                       ),
                       if (lk) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.lock, size: 12, color: Colors.orange),
+                        const Icon(Icons.lock,
+                            size: 12, color: Colors.orange),
                       ],
                     ],
                   ),
@@ -162,7 +238,8 @@ class LeaderboardPanel extends ConsumerWidget {
                           if (pg != null) {
                             ref
                                 .read(classProvider.notifier)
-                                .changeScore(cls.uid, pg.uid, m.uid, 1);
+                                .changeScore(
+                                    cls.uid, pg.uid, m.uid, 1);
                             AudioEngine().playScoreUp();
                           }
                         }),
@@ -173,7 +250,8 @@ class LeaderboardPanel extends ConsumerWidget {
                           if (pg != null) {
                             ref
                                 .read(classProvider.notifier)
-                                .changeScore(cls.uid, pg.uid, m.uid, -1);
+                                .changeScore(
+                                    cls.uid, pg.uid, m.uid, -1);
                             AudioEngine().playScoreDown();
                           }
                         }),
@@ -214,7 +292,8 @@ class LeaderboardPanel extends ConsumerWidget {
             return DataRow(cells: [
               DataCell(Text('$ri',
                   style: TextStyle(
-                      fontWeight: ri <= 3 ? FontWeight.bold : null))),
+                      fontWeight:
+                          ri <= 3 ? FontWeight.bold : null))),
               DataCell(Text(g.name)),
               DataCell(Text(g.totalScore.toStringAsFixed(1))),
               DataCell(Text('${g.memberCount}')),
@@ -225,3 +304,43 @@ class LeaderboardPanel extends ConsumerWidget {
     );
   }
 }
+
+/// 导出积分报表
+Future<void> _exportReport(
+    BuildContext context, WidgetRef ref) async {
+  try {
+    final cs = ref.read(classProvider);
+    if (cs.classrooms.isEmpty) {
+      ToastOverlay.show(context, '没有可导出的班级数据');
+      return;
+    }
+
+    final tempDir =
+        '${(await getApplicationDocumentsDirectory()).path}/灵动课堂';
+    await Directory(tempDir).create(recursive: true);
+    final now = DateTime.now();
+    final ts =
+        '${now.year}-${_p(now.month)}-${_p(now.day)}_${_p(now.hour)}${_p(now.minute)}';
+    final tempPath = '$tempDir/积分报表_$ts.xlsx';
+
+    await ExcelService.exportFullReport(cs.classrooms, tempPath);
+
+    // Android 尝试保存到 Downloads
+    try {
+      final downloadsDir = Directory('/storage/emulated/0/Download');
+      if (await downloadsDir.exists()) {
+        final destPath = '${downloadsDir.path}/积分报表_$ts.xlsx';
+        await File(tempPath).copy(destPath);
+        ToastOverlay.show(context, '报表已保存到 Downloads 文件夹',
+            type: ToastType.success);
+        return;
+      }
+    } catch (_) {}
+
+    ToastOverlay.show(context, '报表已生成', type: ToastType.success);
+  } catch (e) {
+    ToastOverlay.show(context, '导出失败: $e', type: ToastType.error);
+  }
+}
+
+String _p(int n) => n.toString().padLeft(2, '0');

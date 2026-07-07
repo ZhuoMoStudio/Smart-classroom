@@ -6,19 +6,14 @@ import '../../providers/settings_provider.dart';
 import '../storage_service.dart';
 
 /// WebDAV Plus 云同步服务
-///
-/// 使用 webdav_plus (MIT) 替代自行实现的 dio 方案。
-/// 不持有 Ref，所有数据通过参数传入。
-/// 这样避免 ProviderRef / WidgetRef 类型不兼容问题。
+/// v1.30: 增加下载和文件列表功能
 class WebdavPlusSyncService {
   const WebdavPlusSyncService();
 
-  /// 安全的文件名：移除 \\ / : * ? " < > |
   static String safeName(String name) {
     return name.replaceAll(RegExp(r'[\\\\/:*?\"<>|]'), '_').trim();
   }
 
-  /// 构建远程路径（全英文，避免 WebDAV 中文编码问题）
   static String remotePath(SettingsState settings, String fileName) {
     final base = settings.remoteFolder.replaceAll(RegExp(r'/+$'), '');
     final parts = <String>[base];
@@ -26,7 +21,6 @@ class WebdavPlusSyncService {
     return parts.join('/');
   }
 
-  /// 创建 WebDAV 客户端
   static Future<WebdavClient> createClient(
     SettingsState settings,
     String password,
@@ -39,27 +33,21 @@ class WebdavPlusSyncService {
     return client;
   }
 
-  /// 测试连接（自动尝试创建远程目录）
+  /// 测试连接
   Future<bool> testConnection({
     required SettingsState settings,
     required String password,
   }) async {
     try {
       final client = await createClient(settings, password);
-      // 先测试根目录连通性
       try {
         await client.list('/');
       } catch (_) {
-        // 根目录都无法访问，连接失败
         return false;
       }
-      // 尝试创建目标目录（如果已存在不会报错）
       try {
         await client.createDirectory(settings.remoteFolder);
-      } catch (_) {
-        // 目录可能已存在，忽略
-      }
-      // 列出目标目录验证
+      } catch (_) {}
       await client.list(settings.remoteFolder);
       return true;
     } catch (_) {
@@ -76,12 +64,11 @@ class WebdavPlusSyncService {
   }) async {
     try {
       final client = await createClient(settings, password);
-      final remotePath = WebdavPlusSyncService.remotePath(settings, fileName);
+      final rp = WebdavPlusSyncService.remotePath(settings, fileName);
       final file = File(localPath);
       if (!await file.exists()) return false;
-
       final bytes = await file.readAsBytes();
-      await client.put(remotePath, bytes);
+      await client.put(rp, bytes);
       return true;
     } catch (_) {
       return false;
@@ -96,11 +83,32 @@ class WebdavPlusSyncService {
   }) async {
     try {
       final client = await createClient(settings, password);
-      final remotePath = WebdavPlusSyncService.remotePath(settings, fileName);
-      final bytes = await client.get(remotePath);
+      final rp = WebdavPlusSyncService.remotePath(settings, fileName);
+      final bytes = await client.get(rp);
       return bytes;
     } catch (_) {
       return null;
+    }
+  }
+
+  /// 列出远程目录文件
+  Future<List<String>> listRemoteFiles({
+    required String dirName,
+    required SettingsState settings,
+    required String password,
+  }) async {
+    try {
+      final client = await createClient(settings, password);
+      final fullPath =
+          '${settings.remoteFolder.replaceAll(RegExp(r'/+$'), '')}/$dirName';
+      final resources = await client.list(fullPath);
+      return resources
+          .where((r) => !r.isDirectory)
+          .map((r) => r.name)
+          .where((n) => n.endsWith('.xlsx'))
+          .toList();
+    } catch (_) {
+      return [];
     }
   }
 
@@ -142,9 +150,8 @@ class WebdavPlusSyncService {
   }) async {
     try {
       final client = await createClient(settings, password);
-      final remotePath =
-          WebdavPlusSyncService.remotePath(settings, fileName);
-      await client.delete(remotePath);
+      final rp = WebdavPlusSyncService.remotePath(settings, fileName);
+      await client.delete(rp);
       return true;
     } catch (_) {
       return false;

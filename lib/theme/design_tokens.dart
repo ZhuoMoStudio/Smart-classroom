@@ -16,6 +16,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFF1C1C1E);
   static const Color textSecondary = Color(0xFF8E8E93);
   static const Color textTertiary = Color(0xFFC7C7CC);
+  // Light frosted glass
   static const Color frostBar = Color(0xE6FFFFFF);
   static const Color frostCard = Color(0xD9F2F2F7);
   static const Color frostPopup = Color(0xCCF0F0F5);
@@ -30,25 +31,78 @@ class AppColors {
   static const Color neutral600 = Color(0xFF636366);
   static const Color neutral700 = Color(0xFF48484A);
 
+  // ====== Dark mode frosted glass (v1.30) ======
+  static const Color darkBackground = Color(0xFF1C1C1E);
+  static const Color darkSurface = Color(0xFF2C2C2E);
+  static const Color darkSurfaceDim = Color(0xFF3A3A3C);
+  static const Color darkTextPrimary = Color(0xFFF5F5F7);
+  static const Color darkTextSecondary = Color(0xFFAEAEB2);
+  static const Color darkTextTertiary = Color(0xFF636366);
+  static const Color darkFrostBar = Color(0xCC1C1C1E);
+  static const Color darkFrostCard = Color(0xB32C2C2E);
+  static const Color darkFrostPopup = Color(0xCC2C2C2E);
+  static const Color darkFrostBorder = Color(0x33545558);
+  static Color get darkShadowLight => Colors.black.withOpacity(0.2);
+  static Color get darkShadowMedium => Colors.black.withOpacity(0.35);
 }
 
 class AppRadius {
-  static const double sm=8, md=12, lg=16, xl=20, xxl=28;
+  static const double sm = 8, md = 12, lg = 16, xl = 20, xxl = 28;
   static BorderRadius get card => BorderRadius.circular(xl);
   static BorderRadius get button => BorderRadius.circular(md);
   static BorderRadius get dialog => BorderRadius.circular(xxl);
 }
 
 class AppShadows {
-  static List<BoxShadow> get level1 => [BoxShadow(color:AppColors.shadowLight,blurRadius:8,offset:Offset(0,2))];
-  static List<BoxShadow> get level2 => [BoxShadow(color:AppColors.shadowLight,blurRadius:12,offset:Offset(0,4)),BoxShadow(color:AppColors.shadowMedium,blurRadius:4,offset:Offset(0,1))];
-  static List<BoxShadow> get level3 => [BoxShadow(color:AppColors.shadowLight,blurRadius:24,offset:Offset(0,8)),BoxShadow(color:AppColors.shadowMedium,blurRadius:8,offset:Offset(0,2))];
+  static List<BoxShadow> get level1 => [
+        BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 8,
+            offset: Offset(0, 2))
+      ];
+  static List<BoxShadow> get level2 => [
+        BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 12,
+            offset: Offset(0, 4)),
+        BoxShadow(
+            color: AppColors.shadowMedium,
+            blurRadius: 4,
+            offset: Offset(0, 1))
+      ];
+  static List<BoxShadow> get level3 => [
+        BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 24,
+            offset: Offset(0, 8)),
+        BoxShadow(
+            color: AppColors.shadowMedium,
+            blurRadius: 8,
+            offset: Offset(0, 2))
+      ];
+
+  // Dark mode shadows
+  static List<BoxShadow> get darkLevel1 => [
+        BoxShadow(
+            color: AppColors.darkShadowLight,
+            blurRadius: 8,
+            offset: Offset(0, 2))
+      ];
+  static List<BoxShadow> get darkLevel2 => [
+        BoxShadow(
+            color: AppColors.darkShadowLight,
+            blurRadius: 12,
+            offset: Offset(0, 4)),
+        BoxShadow(
+            color: AppColors.darkShadowMedium,
+            blurRadius: 4,
+            offset: Offset(0, 1))
+      ];
 }
 
 class AppBreakpoints {
-  static const double mobile=0, tablet=768, desktop=1200;
+  static const double mobile = 0, tablet = 768, desktop = 1200;
 }
-
 
 class AppDuration {
   static const Duration micro = Duration(milliseconds: 150);

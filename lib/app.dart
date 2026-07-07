@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'providers/settings_provider.dart';
 import 'services/storage_service.dart';
+import 'services/workspace_service.dart';
+import 'services/data_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'widgets/workspace_picker_dialog.dart';
 import 'l10n/generated/app_localizations.dart';
 
 class SmartClassroomApp extends ConsumerStatefulWidget {
@@ -20,7 +23,6 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
   @override
   void initState() {
     super.initState();
-    // 全屏沉浸式 + 适配状态栏
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
@@ -43,17 +45,15 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
       darkTheme: AppTheme.dark(),
       themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       builder: (ctx, child) {
-        // 限制最大文本缩放 1.3x
         final extant = MediaQuery.of(ctx).textScaler;
         final clamped = extant.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.3);
-        // 添加顶部 SafeArea 防止状态栏遮挡
         return MediaQuery(
           data: MediaQuery.of(ctx).copyWith(
             textScaler: clamped,
-            // 小屏幕使用更紧凑的 padding
             padding: MediaQuery.of(ctx).padding.copyWith(
               top: MediaQuery.of(ctx).padding.top > 30
-                  ? MediaQuery.of(ctx).padding.top : 24,
+                  ? MediaQuery.of(ctx).padding.top
+                  : 24,
             ),
           ),
           child: SafeArea(
@@ -77,6 +77,7 @@ class _AppBootstrap extends ConsumerStatefulWidget {
 
 class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   bool? _onboardingComplete;
+  bool _workspacePromptShown = false;
 
   @override
   void initState() {
@@ -96,6 +97,35 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     setState(() => _onboardingComplete = true);
   }
 
+  void _maybeShowWorkspacePicker() {
+    if (_workspacePromptShown) return;
+    _workspacePromptShown = true;
+
+    final ws = ref.read(workspaceServiceProvider);
+    // 仅在首次且未配置工作区时弹出
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ws.loadSavedPath();
+      if (!ws.isConfigured && mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => WorkspacePickerDialog(
+            onComplete: () async {
+              // 加载工作区数据
+              final updatedWs = ref.read(workspaceServiceProvider);
+              if (updatedWs.isConfigured) {
+                await ref.read(dataServiceProvider).loadFromWorkspace();
+              }
+            },
+          ),
+        );
+      } else if (ws.isConfigured && mounted) {
+        // 已配置则直接加载
+        await ref.read(dataServiceProvider).loadFromWorkspace();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_onboardingComplete == null) {
@@ -106,11 +136,19 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.school, size: 48, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.school,
+                    size: 48, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 12),
-                Text('灵动课堂', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text('灵动课堂',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
-                const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
               ],
             ),
           ),
@@ -119,9 +157,13 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     }
 
     if (_onboardingComplete == true) {
+      _maybeShowWorkspacePicker();
       return const HomeScreen();
     }
 
-    return OnboardingScreen(key: const ValueKey('onboarding'), onComplete: _onOnboardingComplete);
+    return OnboardingScreen(
+      key: const ValueKey('onboarding'),
+      onComplete: _onOnboardingComplete,
+    );
   }
 }

@@ -222,4 +222,63 @@ static Future<File> exportMemberTemplate(String outputPath) async {
   }
 
   static String _uid() => const Uuid().v4();
+
+  // ========== 一键导出全班积分报表 (v1.30) ==========
+  static Future<File> exportFullReport(
+    List<Classroom> classrooms,
+    String outputPath,
+  ) async {
+    final dir = Directory(outputPath).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
+    final excel = Excel.createExcel();
+    final sheet = excel['积分总报表'];
+
+    // 表头
+    sheet.appendRow(<dynamic>[
+      '班级', '小组', '姓名', '积分', '段位', '班级排名', '小组排名'
+    ]);
+
+    for (final cls in classrooms) {
+      final allMembers = cls.allMembers
+        ..sort((a, b) => b.score.compareTo(a.score));
+
+      for (int ci = 0; ci < allMembers.length; ci++) {
+        final m = allMembers[ci];
+        final (rankName, _) = RankSystem.getRank(m.score);
+
+        // 找所属小组
+        String groupName = '';
+        int groupRank = 0;
+        for (final g in cls.groups) {
+          for (int gi = 0; gi < g.members.length; gi++) {
+            if (g.members[gi].uid == m.uid) {
+              groupName = g.name;
+              final sorted = List<Member>.from(g.members)
+                ..sort((a, b) => b.score.compareTo(a.score));
+              groupRank = sorted.indexWhere((x) => x.uid == m.uid) + 1;
+              break;
+            }
+          }
+          if (groupName.isNotEmpty) break;
+        }
+
+        sheet.appendRow(<dynamic>[
+          cls.name,
+          groupName,
+          m.name,
+          m.score,
+          rankName,
+          ci + 1,
+          groupRank,
+        ]);
+      }
+    }
+
+    // 自动调整列宽（excel 3.x 不支持 autoFit，设固定宽）
+    final bytes = excel.encode();
+    if (bytes == null) throw Exception('Excel 编码失败');
+    final f = File(outputPath);
+    await f.writeAsBytes(bytes);
+    return f;
+  }
 }

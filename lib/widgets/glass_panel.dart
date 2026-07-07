@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/design_tokens.dart';
 
-/// 苹果透明磨砂玻璃组件
+/// 苹果透明磨砂玻璃组件 — v1.30 深色模式适配
 class FrostedPanel extends StatelessWidget {
   final Widget child;
   final double blur;
@@ -18,7 +18,8 @@ class FrostedPanel extends StatelessWidget {
     this.blur = 12.0,
     this.padding,
     this.margin,
-    this.width, this.height,
+    this.width,
+    this.height,
     this.backgroundColor,
     this.borderColor,
     this.borderRadius,
@@ -27,19 +28,26 @@ class FrostedPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? AppColors.frostCard;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = backgroundColor ??
+        (isDark ? AppColors.darkFrostCard : AppColors.frostCard);
     final br = borderRadius ?? AppRadius.card;
-    final bs = boxShadow ?? AppShadows.level2;
-    final bc = borderColor ?? AppColors.frostBorder;
+    final bc = borderColor ??
+        (isDark ? AppColors.darkFrostBorder : AppColors.frostBorder);
+    final bs = boxShadow ??
+        (isDark ? AppShadows.darkLevel2 : AppShadows.level2);
     final pad = padding ?? const EdgeInsets.all(12);
     return Container(
-      width: width, height: height, margin: margin,
+      width: width,
+      height: height,
+      margin: margin,
       child: ClipRRect(
         borderRadius: br,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Container(
-            width: width, height: height,
+            width: width,
+            height: height,
             padding: pad,
             decoration: BoxDecoration(
               color: bg,
@@ -55,7 +63,7 @@ class FrostedPanel extends StatelessWidget {
   }
 }
 
-/// 简易磨砂卡片（旧接口兼容）
+/// 简易磨砂卡片（旧接口兼容 + 深色模式适配）
 class GlassPanel extends StatelessWidget {
   final Widget child;
   final double blur;
@@ -63,11 +71,16 @@ class GlassPanel extends StatelessWidget {
   final BorderRadius? borderRadius;
   final Color? backgroundColor;
   const GlassPanel({
-    super.key, required this.child,
-    this.blur = 8.0, this.padding, this.borderRadius, this.backgroundColor,
+    super.key,
+    required this.child,
+    this.blur = 8.0,
+    this.padding,
+    this.borderRadius,
+    this.backgroundColor,
   });
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.circular(16),
       child: BackdropFilter(
@@ -75,9 +88,16 @@ class GlassPanel extends StatelessWidget {
         child: Container(
           padding: padding ?? const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.white.withOpacity(0.55),
+            color: backgroundColor ??
+                (isDark
+                    ? AppColors.darkFrostCard
+                    : Colors.white.withOpacity(0.55)),
             borderRadius: borderRadius ?? BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.12)),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.darkFrostBorder
+                  : Colors.grey.withOpacity(0.12),
+            ),
           ),
           child: child,
         ),

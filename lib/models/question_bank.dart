@@ -1,5 +1,3 @@
-import 'class_model.dart';
-
 class Question {
   final String uid;
   final int index;
@@ -25,23 +23,6 @@ class Question {
         isRisk: isRisk ?? this.isRisk,
         used: used ?? this.used,
       );
-
-  Map<String, dynamic> toJson() => {
-    'uid': uid,
-    'index': index,
-    'text': text,
-    'answer': answer,
-    'isRisk': isRisk,
-    'used': used,
-  };
-  factory Question.fromJson(Map<String, dynamic> json) => Question(
-    uid: json['uid'],
-    index: json['index'],
-    text: json['text'],
-    answer: json['answer'],
-    isRisk: json['isRisk'] ?? false,
-    used: json['used'] ?? false,
-  );
 }
 
 class QuestionBank {
@@ -60,46 +41,4 @@ class QuestionBank {
         name: name ?? this.name,
         questions: questions ?? this.questions,
       );
-
-  Map<String, dynamic> toJson() => {
-    'uid': uid,
-    'name': name,
-    'questions': questions.map((q) => q.toJson()).toList(),
-  };
-  factory QuestionBank.fromJson(Map<String, dynamic> json) => QuestionBank(
-    uid: json['uid'],
-    name: json['name'],
-    questions:
-        (json['questions'] as List)
-            .map((q) => Question.fromJson(q as Map<String, dynamic>))
-            .toList(),
-  );
-}
-
-class AppData {
-  final List<Classroom> classrooms;
-  final List<QuestionBank> questionBanks;
-  final String? lastModified;
-  const AppData({
-    this.classrooms = const [],
-    this.questionBanks = const [],
-    this.lastModified,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'classrooms': classrooms.map((c) => c.toJson()).toList(),
-    'questionBanks': questionBanks.map((b) => b.toJson()).toList(),
-    'lastModified': lastModified ?? DateTime.now().toIso8601String(),
-  };
-  factory AppData.fromJson(Map<String, dynamic> json) => AppData(
-    classrooms:
-        (json['classrooms'] as List)
-            .map((c) => Classroom.fromJson(c as Map<String, dynamic>))
-            .toList(),
-    questionBanks:
-        (json['questionBanks'] as List)
-            .map((b) => QuestionBank.fromJson(b as Map<String, dynamic>))
-            .toList(),
-    lastModified: json['lastModified'],
-  );
 }
