@@ -162,7 +162,27 @@ class ExcelService {
   }
 
   // ========== 模板导出 ==========
-  static Future<File> exportMemberTemplate(String outputPath) async {
+    // ========== 写入班级名单（含积分）到 xlsx ==========
+  static Future<File> writeRosterWithScores(Classroom classroom, String outputPath) async {
+    final dir = Directory(outputPath).parent;
+    if (!await dir.exists()) await dir.create(recursive: true);
+    final excel = Excel.createExcel();
+    final sheet = excel['班级数据'];
+    // 表头：班级, 小组, 姓名, 积分
+    sheet.appendRow(<dynamic>['班级', '小组', '姓名', '积分']);
+    for (final group in classroom.groups) {
+      for (final member in group.members) {
+        sheet.appendRow(<dynamic>[classroom.name, group.name, member.name, member.score]);
+      }
+    }
+    final bytes = excel.encode();
+    if (bytes == null) throw Exception('Excel 编码失败');
+    final f = File(outputPath);
+    await f.writeAsBytes(bytes);
+    return f;
+  }
+
+static Future<File> exportMemberTemplate(String outputPath) async {
     // 确保目录存在
     final dir = Directory(outputPath).parent;
     if (!await dir.exists()) await dir.create(recursive: true);
