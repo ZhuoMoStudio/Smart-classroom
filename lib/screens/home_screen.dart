@@ -151,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Column(
         children: [
-          const SizedBox(height: compact ? 20 : 32),
+          SizedBox(height: compact ? 20 : 32),
           for (int i = 0; i < _tabLabels.length; i++)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),

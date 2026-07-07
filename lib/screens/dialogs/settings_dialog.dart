@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../models/sync_models.dart';
 import '../../services/audio_engine.dart';
 import '../../services/auto_sync_timer.dart';
 import '../../services/cloud/cloud_presets.dart';
