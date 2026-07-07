@@ -1,235 +1,77 @@
 import 'package:flutter/material.dart';
 import 'design_tokens.dart';
 
-/// iOS 18 极简主题（更加iOS化）
-///
-/// 设计原则：
-/// - 透明/半透明导航栏
-/// - 大圆角（20px 统一圆角）
-/// - SF Pro 字体系列近似
-/// - 分组列表样式（iOS Settings 风格）
-/// - 磨砂玻璃效果（frosted glass）
-/// - 轻薄无硬阴影
+/// iOS 苹果透明磨砂玻璃拟态主题
 class AppTheme {
-  // ==================== 基础主题 ====================
   static ThemeData _base(Brightness brightness) {
-    final isLight = brightness == Brightness.light;
     final cs = ColorScheme.fromSeed(
       seedColor: AppColors.brandPrimary,
       brightness: brightness,
-      surface: AppColors.surface,
+      surface: AppColors.background,
     );
-
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
-
-      // ========== 卡片 — iOS 磨砂玻璃 ==========
+      scaffoldBackgroundColor: AppColors.background,
+      visualDensity: VisualDensity.compact,
       cardTheme: CardThemeData(
         elevation: 0,
-        color: isLight ? AppColors.frostWhite : AppColors.surfaceElevated,
+        color: AppColors.frostCard,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          side: BorderSide(color: AppColors.frostBorder, width: 0.5),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        margin: EdgeInsets.zero,
       ),
-
-      // ========== 输入框 — 大圆角无边框 ==========
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isLight ? AppColors.frostLight : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
-        ),
-        contentPadding: AppSpacing.inputPadding,
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-        hintStyle: TextStyle(color: AppColors.onSurfaceTertiary),
+        fillColor: const Color(0xB3F2F2F7),
+        border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-
-      // ========== 按钮 — 大圆角无投影 ==========
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(0, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
-          textStyle: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: isLight ? Colors.white : null,
-          ),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          side: BorderSide(color: AppColors.frostBorder),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-        ),
-      ),
-
-      // ========== 导航栏 — 透明 + 毛玻璃 ==========
-      appBarTheme: AppBarTheme(
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.dialog),
         elevation: 0,
-        scrolledUnderElevation: 0.5,
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.onSurface,
-        titleTextStyle: const TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
-        ),
-        iconTheme: const IconThemeData(
-          color: AppColors.brandPrimary,
-          size: 22,
-        ),
+        backgroundColor: AppColors.frostPopup,
       ),
-
-      // ========== 底部导航栏 — iOS 风格 ==========
+      bottomSheetTheme: BottomSheetThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        elevation: 0,
+        modalBackgroundColor: AppColors.frostPopup,
+      ),
+      appBarTheme: const AppBarTheme(
+        elevation: 0, scrolledUnderElevation: 0.5, centerTitle: true,
+        backgroundColor: Colors.transparent, foregroundColor: AppColors.textPrimary,
+      ),
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
-        backgroundColor: isLight
-            ? AppColors.frostWhite
-            : AppColors.surfaceElevated.withOpacity(0.9),
+        backgroundColor: AppColors.frostBar,
         indicatorColor: AppColors.brandPrimary.withOpacity(0.12),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.brandPrimary,
-            );
+        labelTextStyle: WidgetStateProperty.resolveWith((s) {
+          if (s.contains(WidgetState.selected)) {
+            return const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.brandPrimary);
           }
-          return const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w400,
-            color: AppColors.onSurfaceSecondary,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(size: 22, color: AppColors.brandPrimary);
-          }
-          return const IconThemeData(
-            size: 22,
-            color: AppColors.onSurfaceSecondary,
-          );
+          return const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textSecondary);
         }),
       ),
-
-      // ========== 分割线 — 极细半透明 ==========
-      dividerTheme: const DividerThemeData(
-        space: 0,
-        thickness: 0.5,
-        color: Color(0x1A8E8E93),
-      ),
-
-      // ========== 分段按钮 ==========
-      segmentedButtonTheme: SegmentedButtonThemeData(
-        style: SegmentedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          selectedBackgroundColor: AppColors.brandPrimary.withOpacity(0.12),
-        ),
-      ),
-
-      // ========== 滚动条 ==========
+      dividerTheme: const DividerThemeData(space: 0, thickness: 0.5, color: Color(0x1A8E8E93)),
       scrollbarTheme: ScrollbarThemeData(
         thickness: WidgetStateProperty.all(4.0),
         radius: const Radius.circular(2),
-        thumbColor: WidgetStateProperty.all(AppColors.onSurfaceTertiary),
+        thumbColor: WidgetStateProperty.all(AppColors.textTertiary),
       ),
-
-      // ========== Chip ==========
-      chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-        ),
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      ),
-
-      // ========== Dialog — iOS 风格大圆角 ==========
-      dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        elevation: 0,
-      ),
-
-      // ========== 弹出菜单 ==========
       popupMenuTheme: PopupMenuThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
-        shadowColor: AppColors.cardShadow,
-      ),
-
-      // ========== SnackBar ==========
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-      ),
-
-      // ========== 底部Sheet ==========
-      bottomSheetTheme: BottomSheetThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xl),
-          ),
-        ),
-        elevation: 0,
-        modalBackgroundColor:
-            isLight ? AppColors.frostWhite : AppColors.surfaceElevated,
-      ),
-
-      // ========== 时间选择器等 ==========
-      datePickerTheme: DatePickerThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-      ),
-
-      // ========== 列表 tile ==========
-      listTileTheme: ListTileThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      ),
-
-      // ========== 进度指示器 ==========
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: AppColors.brandPrimary,
-        linearTrackColor:
-            isLight ? AppColors.neutral200 : AppColors.neutral700,
       ),
     );
   }
