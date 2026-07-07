@@ -13,6 +13,7 @@ import '../../providers/services_provider.dart';
 import '../../services/cloud/cloud_storage_service.dart';
 import '../../widgets/toast_overlay.dart';
 import '../usage_guide_screen.dart';
+import '../../widgets/sync_status_indicator.dart';
 import '../open_source_screen.dart';
 
 class SettingsDialog extends ConsumerStatefulWidget {
