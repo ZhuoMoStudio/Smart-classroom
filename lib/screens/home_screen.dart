@@ -307,13 +307,13 @@ class _SettingsPage extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _section('下载源'),
+        _section('下载源', context),
         const SizedBox(height: 4),
         Row(children: [
           Expanded(child: _buildCard(theme, Icons.cloud_download, '下载源设置', '教材/更新下载源选择', () {})),
         ]),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
-        _section('交互反馈'),
+        _section('交互反馈', context),
         const SizedBox(height: 4),
         Row(children: [
           Expanded(child: _buildCard(theme, Icons.volume_up, '音效', '抽取、加减分等音效', () {})),
@@ -321,7 +321,7 @@ class _SettingsPage extends StatelessWidget {
           Expanded(child: _buildCard(theme, Icons.vibration, '触感', '按钮振动反馈', () {})),
         ]),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
-        _section('数据管理'),
+        _section('数据管理', context),
         const SizedBox(height: 4),
         _buildCard(theme, Icons.save_alt, '保存数据', '手动保存当前数据', () {}),
         const SizedBox(height: 6),
@@ -331,11 +331,11 @@ class _SettingsPage extends StatelessWidget {
           Expanded(child: _buildCard(theme, Icons.download, '导出数据', '导出积分/模板', () {})),
         ]),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
-        _section('云端同步'),
+        _section('云端同步', context),
         const SizedBox(height: 4),
         _buildCard(theme, Icons.cloud_sync, 'WebDAV同步', '坚果云/Nextcloud', () {}),
         const SizedBox(height: 12), const Divider(height: 1), const SizedBox(height: 8),
-        _section('关于'),
+        _section('关于', context),
         const SizedBox(height: 4),
         _buildCard(theme, Icons.info_outline, '灵动课堂 v1.24', '版本信息与更新', () {}),
         const SizedBox(height: 24),
@@ -351,7 +351,7 @@ class _SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _section(String t) => Padding(
+  Widget _section(String t, BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 4),
     child: Text(t, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary, fontSize: 14)),
   );
