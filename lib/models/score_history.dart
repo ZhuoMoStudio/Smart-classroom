@@ -27,9 +27,10 @@ class ScoreHistoryManager {
   final List<ScoreChangeRecord> _records = [];
   static const int _maxRecords = 200;
 
+  ScoreHistoryManager();
+
   List<ScoreChangeRecord> get records => List.unmodifiable(_records);
-  List<ScoreChangeRecord> get recentRecords =>
-      _records.take(50).toList();
+  List<ScoreChangeRecord> get recentRecords => _records.take(50).toList();
 
   void addRecord(ScoreChangeRecord record) {
     _records.insert(0, record);
@@ -38,7 +39,6 @@ class ScoreHistoryManager {
     }
   }
 
-  /// 撤销最近一次操作
   ScoreChangeRecord? undoLast() {
     if (_records.isEmpty) return null;
     return _records.removeAt(0);

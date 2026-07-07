@@ -7,7 +7,7 @@ class ClassState {
   final String? selectedClassUid;
   final bool isDirty;
   final ScoreHistoryManager history;
-  const ClassState({
+  ClassState({
     this.classrooms = const [],
     this.selectedClassUid,
     this.isDirty = false,
@@ -38,7 +38,7 @@ class ClassState {
 }
 
 class ClassNotifier extends StateNotifier<ClassState> {
-  ClassNotifier() : super(const ClassState());
+  ClassNotifier() : super(ClassState());
 
   void loadFromData(List<Classroom> classrooms, String? uid) => state =
       state.copyWith(
