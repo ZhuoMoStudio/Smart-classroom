@@ -86,25 +86,33 @@ class DataService {
     }
   }
 
-  /// 加载数据（从用户选择的 JSON 文件）
-  Future<void> load() async {
+  /// 从工作区加载所有数据
+  Future<void> loadFromWorkspace() async {
     try {
-      final data = await _fileService.pickAndLoadJson();
-      if (data != null) {
+      final classrooms = await _ws.loadAllRosters();
+      if (classrooms.isNotEmpty) {
         _ref.read(classProvider.notifier).loadFromData(
-              data.classrooms,
-              data.classrooms.isNotEmpty ? data.classrooms.first.uid : null,
+              classrooms,
+              classrooms.first.uid,
             );
-        _ref.read(questionProvider.notifier).loadFromData(data.questionBanks);
       }
+      final banks = await _ws.loadAllQuestionBanks();
+      if (banks.isNotEmpty) {
+        _ref.read(questionProvider.notifier).loadFromData(banks);
+      }
+      debugPrint('DataService: 从工作区加载完成');
     } catch (e) {
-      debugPrint('DataService: load error - $e');
-      rethrow;
+      debugPrint('DataService: 加载错误 - $e');
     }
   }
 
   /// 检查是否还有未保存的修改
   bool get hasUnsavedChanges {
+    return _ref.read(classProvider).isDirty;
+  }
+
+  /// 检查是否还有未保存的修改
+// removed duplicate
     final cs = _ref.read(classProvider);
     final qs = _ref.read(questionProvider);
     return cs.isDirty || qs.isDirty;
