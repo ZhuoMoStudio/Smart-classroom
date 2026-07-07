@@ -20,7 +20,7 @@ permissions:
 
 env:
   APP_NAME: SmartClassroom
-  APP_VERSION: "1.25.0"
+  APP_VERSION: "1.30.0"
 
 jobs:
   build-android:

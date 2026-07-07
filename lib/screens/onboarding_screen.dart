@@ -25,8 +25,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             '高效管理班级、小组和成员\n'
             '随机抽取、积分管理、课堂计时\n'
             '1905本教材离线浏览\n\n'
-            '本软件采用 MIT + Commons Clause 协议\n'
-            '仅供非商业用途使用',
+            '本软件采用 Apache License 2.0 协议\n'
+            '允许商用、修改、分发，需保留版权声明',
     ),
     _Page(
       title: '苹果磨砂玻璃UI',

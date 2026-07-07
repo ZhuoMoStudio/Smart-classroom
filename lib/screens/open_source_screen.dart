@@ -33,18 +33,18 @@ class OpenSourceScreen extends StatelessWidget {
               color: Colors.red.shade700,
               children: [
                 const Text(
-                  '灵动课堂 (Smart Classroom) 采用 CC BY-NC 4.0 协议',
+                  '灵动课堂 (Smart Classroom) 采用 Apache License 2.0',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  '本软件仅供非商业用途使用。任何个人或组织不得将本软件或其衍生作品用于商业目的，包括但不限于销售、出租、商业培训、商业服务等场景。如需商业授权，请联系开发者获取许可。',
+                  '本软件采用 Apache License 2.0 协议。允许商业使用、修改和分发，但必须保留原始版权声明、包含许可声明、并注明修改内容。详见 Apache 2.0 完整协议文本。',
                   style: TextStyle(fontSize: 13, height: 1.5),
                 ),
                 const SizedBox(height: 12),
                 _linkButton(
-                  '查看完整协议 (CC BY-NC 4.0)',
-                  'https://creativecommons.org/licenses/by-nc/4.0/',
+                  '查看完整协议 (Apache 2.0)',
+                  'https://www.apache.org/licenses/LICENSE-2.0',
                 ),
                 const SizedBox(height: 4),
                 _linkButton('项目仓库', repoUrl),

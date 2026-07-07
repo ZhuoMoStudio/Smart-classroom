@@ -1,4 +1,4 @@
-# 灵动课堂 (Smart Classroom) v1.22
+# 灵动课堂 (Smart Classroom) v1.30
 
 课堂互动管理工具 — 教师专用，多端适配，苹果透明磨砂玻璃拟态设计。
 
@@ -66,4 +66,4 @@ CI自动构建（GitHub Actions）：Android APK (3 ABIs) + Windows ZIP + Setup.
 
 ## 📄 许可
 
-MIT + Commons Clause — 严禁商用
+Apache License 2.0 — 允许商用、修改、分发，需保留版权声明和许可声明。
