@@ -59,15 +59,33 @@ class ExcelService {
     final table = excel.tables[sheet]!;
     final classMap = <String, Classroom>{};
     final classMembers = <String, Map<String, List<Member>>>{};
+    // 检测表头格式
+    bool hasGroupColumn = false;
+    if (table.maxRows > 0) {
+      final h0 = _cell(table, 0, 0);
+      final h1 = _cell(table, 0, 1);
+      final h2 = _cell(table, 0, 2);
+      // 格式1: 班级, 小组, 姓名
+      // 格式2: 班级, 姓名, 积分 (上传模板格式)
+      hasGroupColumn = h1.contains('组') || h1.contains('Group') || h1.contains('group');
+    }
     for (int i = 0; i < table.maxRows; i++) {
       if (i == 0) {
-        final fc = _cell(table, i, 0);
-        if (fc.contains('班级') || fc.contains('班') || fc.contains('Class'))
+        final h0 = _cell(table, 0, 0);
+        if (h0.contains('班级') || h0.contains('班') || h0.contains('Class'))
           continue;
       }
-      final cn = _cell(table, i, 0).trim(),
-          gn = _cell(table, i, 1).trim(),
-          mn = _cell(table, i, 2).trim();
+      String cn, gn, mn;
+      if (hasGroupColumn) {
+        cn = _cell(table, i, 0).trim();
+        gn = _cell(table, i, 1).trim();
+        mn = _cell(table, i, 2).trim();
+      } else {
+        // 格式2: 班级, 姓名, 积分 - 将姓名作为小组名
+        cn = _cell(table, i, 0).trim();
+        mn = _cell(table, i, 1).trim();
+        gn = '全体';
+      }
       if (cn.isEmpty || mn.isEmpty) continue;
       final gnf = gn.isEmpty ? '默认小组' : gn;
       if (!classMap.containsKey(cn)) {
@@ -150,9 +168,8 @@ class ExcelService {
     if (!await dir.exists()) await dir.create(recursive: true);
     final excel = Excel.createExcel();
     final sheet = excel['学生名单'];
-    sheet.appendRow(<dynamic>['班级', '小组', '姓名']);
-    sheet.appendRow(<dynamic>['三年级1班', '第一组', '张三']);
-    sheet.appendRow(<dynamic>['三年级1班', '第一组', '李四']);
+    sheet.appendRow(<dynamic>['班级', '姓名', '积分']);
+    sheet.appendRow(<dynamic>['示例班级', '示例学生', '0']);
     final bytes = excel.encode();
     if (bytes == null) throw Exception('Excel 编码失败');
     final f = File(outputPath);
@@ -167,7 +184,8 @@ class ExcelService {
     final excel = Excel.createExcel();
     final sheet = excel['题库'];
     sheet.appendRow(<dynamic>['题目', '答案', '是否为风险题']);
-    sheet.appendRow(<dynamic>['1+1等于几？', '2', '否']);
+    sheet.appendRow(<dynamic>['1+1', '', '否']);
+    sheet.appendRow(<dynamic>['2+2', '', '否']);
     sheet.appendRow(<dynamic>['中国的首都是哪里？', '北京', '是']);
     final bytes = excel.encode();
     if (bytes == null) throw Exception('Excel 编码失败');
