@@ -356,7 +356,7 @@ class _SettingsPage extends ConsumerWidget {
           })),
           const SizedBox(width: 8),
           Expanded(child: _actionTile(theme, Icons.file_open, '加载数据', '从JSON文件加载', () async {
-            try { await ref.read(dataServiceProvider).load();
+            try { await ref.read(dataServiceProvider).loadFromWorkspace();
               ToastOverlay.show(context, '加载成功', type: ToastType.success);
             } catch (e) { ToastOverlay.show(context, '加载失败: $e', type: ToastType.error); }
           })),
