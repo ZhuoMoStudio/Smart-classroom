@@ -26,9 +26,9 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xB3F2F2F7),
-        border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       filledButtonTheme: FilledButtonThemeData(

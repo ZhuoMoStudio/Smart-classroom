@@ -24,6 +24,12 @@ class AppColors {
   static const Color neutral500 = Color(0xFF8E8E93);
   static Color get shadowLight => Colors.black.withOpacity(0.04);
   static Color get shadowMedium => Colors.black.withOpacity(0.08);
+  static const Color neutral200 = Color(0xFFE8E8ED);
+  static const Color neutral300 = Color(0xFFD1D1D6);
+  static const Color neutral400 = Color(0xFFAEAEB2);
+  static const Color neutral600 = Color(0xFF636366);
+  static const Color neutral700 = Color(0xFF48484A);
+
 }
 
 class AppRadius {
@@ -41,4 +47,12 @@ class AppShadows {
 
 class AppBreakpoints {
   static const double mobile=0, tablet=768, desktop=1200;
+}
+
+
+class AppDuration {
+  static const Duration micro = Duration(milliseconds: 150);
+  static const Duration short = Duration(milliseconds: 300);
+  static const Duration medium = Duration(milliseconds: 500);
+  static const Duration spring = Duration(milliseconds: 400);
 }

@@ -29,12 +29,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _tabIndex = 0;
   static const _tabLabels = ['课堂', '班级', '资源', '设置'];
-  static const _tabIcons = [Icons.chalkboard, Icons.people, Icons.menu_book, Icons.settings];
+  static const _tabIcons = [Icons.school, Icons.people, Icons.menu_book, Icons.settings];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(_LifecycleObserver(ref));
+    WidgetsBinding.instance.addObserver(_LifecycleObserver(onBackground: () => ref.read(dataServiceProvider).saveImmediate(silent: true)));
   }
 
   @override
@@ -146,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                Text('灵动课堂', style: Theme.of(context).textTheme.title2),
+                Text('灵动课堂', style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
                 SyncStatusIndicator(),
                 const SizedBox(width: 8),
@@ -265,7 +265,7 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FrostedPanel.card(
+    return FrostedPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -302,12 +302,12 @@ class _SettingsPlaceholder extends StatelessWidget {
 
 // ==================== 生命周期观察者 ====================
 class _LifecycleObserver extends WidgetsBindingObserver {
-  final Ref ref;
-  _LifecycleObserver(this.ref);
+  final void Function() onBackground;
+  _LifecycleObserver({required this.onBackground});
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      ref.read(dataServiceProvider).saveImmediate(silent: true);
+      onBackground();
     }
   }
 }
