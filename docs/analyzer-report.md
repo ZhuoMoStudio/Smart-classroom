@@ -2,16 +2,60 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-09-25 11:43:36Z
+- 生成时间：2026-09-25 12:06:33Z
 - 触发：push @ main
-- 提交：`6301150f6cd8791140c306481028fc800a96bb14`
+- 提交：`1ee6d67de6baab55ac2dcf49cecb0e4b94e3bd73`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
-- `flutter analyze` 退出码：0
-- `flutter test` 退出码：0
+- `flutter analyze` 退出码：1
+- `flutter test` 退出码：1
 
 ## flutter analyze
 
 ```text
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.3.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_pubspec_licenses 3.0.12 (3.2.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  equatable 2.1.0 (3.0.0 available)
+  excel 3.0.0 (4.0.6 available)
+  file_picker 10.3.8 (13.1.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (22.3.1 available)
+  flutter_local_notifications_linux 4.0.1 (8.0.1 available)
+  flutter_local_notifications_platform_interface 7.2.0 (12.2.0 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.0 available)
+  package_info_plus 8.3.1 (10.2.1 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  pdfrx 1.3.5 (2.6.5 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  timezone 0.9.4 (0.11.1 available)
+  vector_math 2.2.0 (2.4.3 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+39 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
 
 warning • Unused import: '../services/storage_service.dart'. Try removing the import directive • lib/providers/services_provider.dart:3:8 • unused_import
@@ -81,9 +125,8 @@ warning • Unused import: '../models/score_history.dart'. Try removing the impo
 warning • The value of the local variable 'theme' isn't used. Try removing the variable or using it • lib/screens/onboarding_screen.dart:93:11 • unused_local_variable
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/onboarding_screen.dart:172:32 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/onboarding_screen.dart:173:51 • deprecated_member_use
-   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/pdf_reader_screen.dart:64:42 • curly_braces_in_flow_control_structures
-warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/screens/pdf_reader_screen.dart:76:39 • unnecessary_non_null_assertion
-warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/screens/pdf_reader_screen.dart:77:43 • unnecessary_non_null_assertion
+  error • The method 'forPage' isn't defined for the type 'PdfAnnotationStore'. Try correcting the name to the name of an existing method, or defining a method named 'forPage' • lib/screens/pdf_reader_screen.dart:324:24 • undefined_method
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/pdf_reader_screen.dart:447:33 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/question_panel.dart:187:54 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/question_panel.dart:189:54 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/question_panel.dart:217:54 • deprecated_member_use
@@ -100,6 +143,7 @@ warning • Unused import: '../../providers/services_provider.dart'. Try removin
 warning • Unused import: 'dart:convert'. Try removing the import directive • lib/services/cloud/webdav_plus_sync.dart:1:8 • unused_import
 warning • Unused import: '../storage_service.dart'. Try removing the import directive • lib/services/cloud/webdav_plus_sync.dart:6:8 • unused_import
 warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/services/excel_service.dart:431:13 • invalid_null_aware_operator
+   info • The private field _doc could be 'final'. Try making the field 'final' • lib/services/pdf_annotation_store.dart:129:17 • prefer_final_fields
 warning • The value of the local variable 'file' isn't used. Try removing the variable or using it • lib/services/pdf_cache_manager.dart:98:15 • unused_local_variable
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:44:48 • curly_braces_in_flow_control_structures
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:53:58 • curly_braces_in_flow_control_structures
@@ -152,12 +196,56 @@ warning • This default clause is covered by the previous cases. Try removing t
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/widgets/workspace_picker_dialog.dart:93:41 • deprecated_member_use
    info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/widgets/workspace_picker_dialog.dart:163:27 • use_build_context_synchronously
 
-137 issues found. (ran in 10.1s)
+137 issues found. (ran in 14.1s)
 ```
 
 ## flutter test
 
 ```text
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.3.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_pubspec_licenses 3.0.12 (3.2.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  equatable 2.1.0 (3.0.0 available)
+  excel 3.0.0 (4.0.6 available)
+  file_picker 10.3.8 (13.1.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (22.3.1 available)
+  flutter_local_notifications_linux 4.0.1 (8.0.1 available)
+  flutter_local_notifications_platform_interface 7.2.0 (12.2.0 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.0 available)
+  package_info_plus 8.3.1 (10.2.1 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  pdfrx 1.3.5 (2.6.5 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  timezone 0.9.4 (0.11.1 available)
+  vector_math 2.2.0 (2.4.3 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+39 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
 00:00 +0: loading /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart
 00:00 +0: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
 00:00 +1: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
@@ -169,6 +257,21 @@ warning • This default clause is covered by the previous cases. Try removing t
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
 00:00 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
-00:04 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +11: All tests passed!
+lib/screens/pdf_reader_screen.dart:324:24: Error: The method 'forPage' isn't defined for the type 'PdfAnnotationStore'.
+ - 'PdfAnnotationStore' is from 'package:smart_classroom/services/pdf_annotation_store.dart' ('lib/services/pdf_annotation_store.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'forPage'.
+        strokes: store.forPage(pageNumber),
+                       ^^^^^^^
+00:04 +10 -1: loading /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart [E]
+  Failed to load "/home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart":
+  Compilation failed for testPath=/home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: lib/screens/pdf_reader_screen.dart:324:24: Error: The method 'forPage' isn't defined for the type 'PdfAnnotationStore'.
+   - 'PdfAnnotationStore' is from 'package:smart_classroom/services/pdf_annotation_store.dart' ('lib/services/pdf_annotation_store.dart').
+  Try correcting the name to the name of an existing method, or defining a method named 'forPage'.
+          strokes: store.forPage(pageNumber),
+                         ^^^^^^^
+  .
+00:04 +10 -1: Some tests failed.
+
+Failing tests:
+  /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: loading /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart
 ```
