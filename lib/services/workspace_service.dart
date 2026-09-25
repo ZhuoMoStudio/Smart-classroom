@@ -7,6 +7,7 @@ import '../models/class_model.dart';
 import '../models/question_bank.dart';
 import 'app_log.dart';
 import 'excel_service.dart';
+import 'roster_manager.dart';
 import 'storage_service.dart';
 
 /// 工作区管理服务
@@ -14,7 +15,7 @@ import 'storage_service.dart';
 /// 目录约定（老师选定的根文件夹下）：
 ///   学生信息/  —— 既是「导入名单的投放点」，也是「本应用保存积分的落点」
 ///   题库/      —— 题库 xlsx
-///   数据存档/  —— 被淘汰的旧名单文件归档（不删除，可人工找回）
+///   数据存档/  —— 被淘汰的旧名单、同步冲突备份、批注 JSON
 class WorkspaceService {
   static const String _rootPathKey = 'workspace_root_path';
   static const String _studentsDir = '学生信息';
@@ -245,6 +246,29 @@ class WorkspaceService {
     if (previous == null || !_sameNameSet(previous, written)) {
       await _archiveStaleRosters(written);
       _lastSavedFileNames = written;
+    }
+
+    // 同一（年级+班级）的名单只保留「最旧 1 份 + 最新 5 份」。
+    // 放在归档之后：先把已不存在的班级搬走，再对仍在使用的班级做版本收敛。
+    await _pruneRosterVersions();
+  }
+
+  /// 名单版本收敛：同名年级班级只留 keepOldest + keepRecent 份。
+  ///
+  /// 只对「文件名能被识别出年级班级」的分组生效；
+  /// 识别不出的文件一份都不删 —— 分组一旦搞错就会删掉另一个班的名单，
+  /// 那是不可逆的数据损失，宁可少清理也不能删错（见 RosterManager 的注释）。
+  Future<void> _pruneRosterVersions() async {
+    final dir = studentsPath;
+    if (dir == null) return;
+    try {
+      final removed = await RosterManager.applyRetention(dir);
+      if (removed > 0) {
+        AppLog.info('工作区', '名单版本收敛：淘汰 $removed 份旧名单');
+      }
+    } catch (e, st) {
+      // 清理失败绝不能影响保存本身
+      AppLog.error('工作区', '名单版本收敛失败', e, st);
     }
   }
 

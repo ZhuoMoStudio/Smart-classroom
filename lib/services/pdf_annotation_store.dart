@@ -13,8 +13,7 @@ import 'app_log.dart';
 ///
 /// 这个选择就是「翻页与缩放都不位移」的机制本身：
 /// - 不依赖屏幕坐标 → 换设备、改缩放、翻回上一页，笔迹都落在同一处；
-/// - 不写进 PDF 文件 → 老师的教材原件永远不被改动（旧版宣传的「不嵌入PDF」正是这个意思，
-///   而 v1.23 把整块功能删掉之后，这句话在引导页上挂了很久）。
+/// - 不写进 PDF 文件 → 老师的教材原件永远不被改动。
 class AnnotationStroke {
   final int pageNumber;
 
@@ -126,7 +125,7 @@ class AnnotationDoc {
 class PdfAnnotationStore {
   final String docId;
   final Directory? _dir;
-  AnnotationDoc _doc;
+  final AnnotationDoc _doc;
 
   PdfAnnotationStore._(this.docId, this._dir, this._doc);
 
@@ -134,6 +133,14 @@ class PdfAnnotationStore {
   List<AnnotationStroke> get strokes => _doc.strokes;
   bool get hasUnsavedChanges => _dirty;
   bool _dirty = false;
+
+  /// 取某一页的笔迹。
+  ///
+  /// 这个方法放在 store 上，而不是让调用方去 `store.doc.forPage(...)`：
+  /// 阅读器只需要「给定页码拿到笔迹」，暴露内部的 AnnotationDoc 是多此一举。
+  /// （第一版就是漏了这一层，导致 pdf_reader_screen 里 `store.forPage(...)`
+  /// 编译不过、整个 Build & Release 变红，测试也跟着编译失败。）
+  List<AnnotationStroke> forPage(int pageNumber) => _doc.forPage(pageNumber);
 
   /// 用文档来源名生成稳定的 docId。
   /// 两份同名教材在不同目录下会被视为同一份 —— 这是刻意的：
@@ -170,7 +177,8 @@ class PdfAnnotationStore {
       final f = File(p.join(dir.path, '$docId.json'));
       try {
         if (await f.exists()) {
-          doc = AnnotationDoc.fromJson(docId, jsonDecode(await f.readAsString()));
+          doc = AnnotationDoc.fromJson(
+              docId, jsonDecode(await f.readAsString()));
           AppLog.info('批注', '已载入 ${doc.strokes.length} 条笔迹（$sourceName）');
         } else {
           doc = AnnotationDoc(docId: docId, sourceName: sourceName);
