@@ -65,10 +65,10 @@ jobs:
           echo "--- 本次改动 ---"
           git diff --cached --stat
 
-          git commit -m "chore(icons): 由主图重新派生各尺寸图标
-
-- Android: 5 个 density 从 2047x2047 归一为 48/72/96/144/192 px
-- Windows: 补齐 installer/setup.iss 需要的 app_icon.ico
-- 新增 branding/app_icon.png 作为唯一主图（tools/make_icons.py 幂等派生）"
+          git commit \
+            -m "chore(icons): 由主图重新派生各尺寸图标" \
+            -m "Android: 5 个 density 从 2047x2047 归一为 48/72/96/144/192 px" \
+            -m "Windows: 补齐 installer/setup.iss 需要的 app_icon.ico" \
+            -m "新增 branding/app_icon.png 作为唯一主图（tools/make_icons.py 幂等派生）"
 
           git push
