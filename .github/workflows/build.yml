@@ -5,16 +5,18 @@
 # 设计要点：
 # 1. verify job 先跑静态分析与单元测试，两个构建 job 都 needs 它。
 # 2. flutter analyze 只把**编译级错误**当失败（--no-fatal-warnings --no-fatal-infos）：
-#    当前代码库有大量历史告警，一上来就全当失败只会得到一个没用的红叉。
+#    代码库有大量历史告警，一上来全当失败只会得到一个没用的红叉。
 # 3. 【关键】分析与测试都先捕获退出码、不中断 job，把输出写成
 #    docs/analyzer-report.md 并回提交，**最后**才因失败而收尾。
 #    因为这份报告是维护者能看到分析器/测试输出的唯一通道。
-#    曾经把「回提交」放在「跑测试」之后，结果一旦测试失败报告就永远不会落盘 ——
-#    而那恰恰是最需要它的时候。
-# 4. 版本号不再写死：从 pubspec.yaml 读，单一来源，
-#    避免 README 写 v1.30、pubspec 写 1.31.1、CI 写 1.31.1 这种漂移。
-# 5. pubspec.lock 由 CI 生成并回提交：.gitignore 里原本有 *.lock，
-#    依赖版本一直没被锁住。
+# 4. 版本号不写死：从 pubspec.yaml 读，单一来源。
+# 5. 【发布方式】
+#    - 推 tag（v*）→ 发布
+#    - 或：提交信息里带 [release] → 发布
+#      后者是为了在没有 tag 推送权限、或不想额外开一个 workflow 创建 tag 时
+#      仍能发布。action-gh-release 会在 tag 不存在时自己创建。
+#      两条路径都仍然被 `needs: [verify, build-android, build-windows]` 把关，
+#      即：编译错误或单测失败时不会产生发布。
 # ============================================================
 name: Build & Release
 
@@ -332,12 +334,18 @@ jobs:
           if-no-files-found: error
 
   # ==========================================================
-  # Release（仅在打 tag 时）
+  # Release
+  #
+  # 两种触发方式：
+  #   1. 推 tag v*            —— 常规发布
+  #   2. 提交信息含 [release] —— 无需 tag 推送权限也能发布；
+  #      tag 不存在时由 action-gh-release 自己创建
+  # 两者都要先过 needs（verify + 两端构建），所以编译/测试不过时不会发布。
   # ==========================================================
   release:
     needs: [verify, build-android, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]'))
 
     steps:
       - name: Download all artifacts
@@ -355,7 +363,10 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ needs.verify.outputs.version }}
+          name: 灵动课堂 v${{ needs.verify.outputs.version }}
           files: release-assets/*
           generate_release_notes: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
