@@ -2,11 +2,11 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-09-25 12:06:33Z
+- 生成时间：2026-09-25 12:11:00Z
 - 触发：push @ main
-- 提交：`1ee6d67de6baab55ac2dcf49cecb0e4b94e3bd73`
+- 提交：`7b80a9034b1e23ad395b67101ae29705ea30298e`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
-- `flutter analyze` 退出码：1
+- `flutter analyze` 退出码：0
 - `flutter test` 退出码：1
 
 ## flutter analyze
@@ -125,7 +125,6 @@ warning • Unused import: '../models/score_history.dart'. Try removing the impo
 warning • The value of the local variable 'theme' isn't used. Try removing the variable or using it • lib/screens/onboarding_screen.dart:93:11 • unused_local_variable
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/onboarding_screen.dart:172:32 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/onboarding_screen.dart:173:51 • deprecated_member_use
-  error • The method 'forPage' isn't defined for the type 'PdfAnnotationStore'. Try correcting the name to the name of an existing method, or defining a method named 'forPage' • lib/screens/pdf_reader_screen.dart:324:24 • undefined_method
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/pdf_reader_screen.dart:447:33 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/question_panel.dart:187:54 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/screens/question_panel.dart:189:54 • deprecated_member_use
@@ -143,8 +142,8 @@ warning • Unused import: '../../providers/services_provider.dart'. Try removin
 warning • Unused import: 'dart:convert'. Try removing the import directive • lib/services/cloud/webdav_plus_sync.dart:1:8 • unused_import
 warning • Unused import: '../storage_service.dart'. Try removing the import directive • lib/services/cloud/webdav_plus_sync.dart:6:8 • unused_import
 warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/services/excel_service.dart:431:13 • invalid_null_aware_operator
-   info • The private field _doc could be 'final'. Try making the field 'final' • lib/services/pdf_annotation_store.dart:129:17 • prefer_final_fields
 warning • The value of the local variable 'file' isn't used. Try removing the variable or using it • lib/services/pdf_cache_manager.dart:98:15 • unused_local_variable
+   info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • lib/services/roster_manager.dart:260:7 • prefer_const_declarations
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:44:48 • curly_braces_in_flow_control_structures
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:53:58 • curly_braces_in_flow_control_structures
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/services/update_service.dart:64:14 • prefer_const_constructors
@@ -196,7 +195,7 @@ warning • This default clause is covered by the previous cases. Try removing t
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/widgets/workspace_picker_dialog.dart:93:41 • deprecated_member_use
    info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/widgets/workspace_picker_dialog.dart:163:27 • use_build_context_synchronously
 
-137 issues found. (ran in 14.1s)
+136 issues found. (ran in 14.7s)
 ```
 
 ## flutter test
@@ -257,21 +256,44 @@ Try `flutter pub outdated` for more information.
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
 00:00 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
-lib/screens/pdf_reader_screen.dart:324:24: Error: The method 'forPage' isn't defined for the type 'PdfAnnotationStore'.
- - 'PdfAnnotationStore' is from 'package:smart_classroom/services/pdf_annotation_store.dart' ('lib/services/pdf_annotation_store.dart').
-Try correcting the name to the name of an existing method, or defining a method named 'forPage'.
-        strokes: store.forPage(pageNumber),
-                       ^^^^^^^
-00:04 +10 -1: loading /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart [E]
-  Failed to load "/home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart":
-  Compilation failed for testPath=/home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: lib/screens/pdf_reader_screen.dart:324:24: Error: The method 'forPage' isn't defined for the type 'PdfAnnotationStore'.
-   - 'PdfAnnotationStore' is from 'package:smart_classroom/services/pdf_annotation_store.dart' ('lib/services/pdf_annotation_store.dart').
-  Try correcting the name to the name of an existing method, or defining a method named 'forPage'.
-          strokes: store.forPage(pageNumber),
-                         ^^^^^^^
-  .
-00:04 +10 -1: Some tests failed.
+00:03 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +22 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +22 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组 [E]
+  Expected: not '2_2'
+    Actual: '2_2'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/roster_manager_test.dart 73:7                  main.<fn>.<fn>
+  
+00:04 +23 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +24 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +25 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +26 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +27 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +28 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +29 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +30 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +31 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +32 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +33 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +34 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +35 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +36 -1: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:04 +37 -1: Some tests failed.
 
 Failing tests:
-  /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: loading /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart
+  /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
 ```
