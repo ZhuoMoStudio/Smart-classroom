@@ -1,0 +1,74 @@
+# ============================================================
+# 图标派生 Workflow
+#
+# 为什么存在：仓库曾把同一张 2047x2047 的图当作 5 个 Android density 的启动图标
+# （每个 3.93 MB，合计 19.64 MB），全部被打进 APK，而正确尺寸合计只有 171 KB。
+# 正确的做法是保留一张主图，其余尺寸由 tools/make_icons.py 派生。
+#
+# 首次运行会把 android/app/src/main/res/mipmap-mdpi/ic_launcher.png（遗留的大图）
+# 固化为 branding/app_icon.png 主图，并据此重写各 density 与 Windows 图标。
+#
+# 注意：workflow 用 GITHUB_TOKEN 提交，而 GITHUB_TOKEN 触发的 push 不会再次触发
+# 其他 workflow（防止递归）。所以提交后需要再推一次代码，或手动 workflow_dispatch
+# 来跑 Build & Release。
+# ============================================================
+name: Generate icons
+
+on:
+  push:
+    paths:
+      - 'tools/make_icons.py'
+      - 'branding/app_icon.png'
+      - '.github/workflows/icons.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: icons-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  icons:
+    name: Derive icons from master
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: python3 -m pip install --quiet --disable-pip-version-check Pillow
+
+      - name: Generate icons
+        run: python3 tools/make_icons.py
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A branding windows/runner/resources android/app/src/main/res
+
+          if git diff --cached --quiet; then
+            echo "图标已是最新，无需提交。"
+            exit 0
+          fi
+
+          echo "--- 本次改动 ---"
+          git diff --cached --stat
+
+          git commit -m "chore(icons): 由主图重新派生各尺寸图标
+
+- Android: 5 个 density 从 2047x2047 归一为 48/72/96/144/192 px
+- Windows: 补齐 installer/setup.iss 需要的 app_icon.ico
+- 新增 branding/app_icon.png 作为唯一主图（tools/make_icons.py 幂等派生）"
+
+          git push
