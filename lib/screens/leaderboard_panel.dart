@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,16 +34,26 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
     final cs = ref.read(classProvider);
     final cls = cs.selectedClass;
     if (cls == null || _selected.isEmpty) return;
-    ref.read(classProvider.notifier).batchChangeScore(cls.uid, _selected.toList(), delta);
-    if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+
+    final picked = _selected.length;
+    final changed = ref.read(classProvider.notifier)
+        .batchChangeScore(cls.uid, _selected.toList(), delta);
+
+    if (changed > 0) {
+      if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+    }
     setState(() => _selected.clear());
-    ToastOverlay.show(context, '已批量${delta > 0 ? "加" : "减"}分: ${_selected.length} 人');
+    // 旧实现先 clear() 再读 _selected.length，
+    // 所以不管勾了几个人，提示永远是「0 人」。
+    ToastOverlay.show(context, changed == 0
+        ? '没有可调整的学生（可能都已经在 0 分）'
+        : '已批量${delta > 0 ? "加" : "减"}分: $changed 人（选中 $picked 人）');
   }
 
   void _resetConfirm() {
     showDialog(context: context, builder: (ctx) => AlertDialog(
       title: const Text('清零确认'),
-      content: const Text('确定要清零当前班级所有学生的积分吗？此操作不可恢复。'),
+      content: const Text('确定要清零当前班级所有学生的积分吗？\n清零后积分历史也会一同清空。'),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
         FilledButton(style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -50,6 +61,28 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
             child: const Text('确认清零')),
       ],
     ));
+  }
+
+  /// 给单个学生加减分。
+  /// 只有真的改动了才放音效 —— 0 分再扣时 changeScore 返回 false，
+  /// 旧实现无论如何都会播一下，老师会以为扣分成功了。
+  void _scoreOne(Classroom cls, String memberUid, double delta) {
+    Group? g;
+    for (final gg in cls.groups) {
+      if (gg.members.any((x) => x.uid == memberUid)) { g = gg; break; }
+    }
+    if (g == null) {
+      ToastOverlay.show(context, '该学生不属于任何小组');
+      return;
+    }
+    final ok = ref
+        .read(classProvider.notifier)
+        .changeScore(cls.uid, g.uid, memberUid, delta);
+    if (!ok) {
+      ToastOverlay.show(context, '该学生当前为 0 分，无法再扣', type: ToastType.warning);
+      return;
+    }
+    if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
   }
 
   @override
@@ -82,9 +115,15 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         )),
         // 撤销
         if (cs.history.records.isNotEmpty)
-          IconButton(icon: const Icon(Icons.undo, size: 17), tooltip: '撤销',
-              onPressed: () { final r = ref.read(classProvider.notifier).undoLastScoreChange();
-                if (r != null) ToastOverlay.show(context, '已撤销: ${r.memberName}', type: ToastType.info); },
+          IconButton(icon: const Icon(Icons.undo, size: 17), tooltip: '撤销最近一次加减分',
+              onPressed: () {
+                final r = ref.read(classProvider.notifier).undoLastScoreChange();
+                // 撤销失败也要说话：旧实现只在成功时提示，
+                // 失败时界面毫无反应，老师只能反复点。
+                ToastOverlay.show(context,
+                    r != null ? '已撤销: ${r.memberName}' : '无法撤销：找不到对应的学生',
+                    type: r != null ? ToastType.info : ToastType.warning);
+              },
               visualDensity: VisualDensity.compact),
         // 批量模式
         IconButton(
@@ -154,7 +193,6 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
           final ri = ms.indexOf(m) + 1; final lk = ls.lockedMemberUid == m.uid;
           final sel = _batchMode && _selected.contains(m.uid);
           Color? rc; if (ri == 1) rc = Colors.yellow.shade100; else if (ri == 2) rc = Colors.grey.shade200; else if (ri == 3) rc = Colors.orange.shade100;
-          Group? pg; for (final g in cls.groups) { if (g.members.any((x) => x.uid == m.uid)) { pg = g; break; } }
           return DataRow(color: WidgetStateProperty.resolveWith((_) => sel ? AppColors.brandPrimary.withOpacity(0.12) : (rc ?? Colors.transparent)),
               cells: [
                 DataCell(Text('$ri', style: TextStyle(fontWeight: ri <= 3 ? FontWeight.bold : null))),
@@ -175,9 +213,9 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
                   Text(m.score.toStringAsFixed(1)), const SizedBox(width: 4), RankBadge(score: m.score),
                 ])),
                 DataCell(_batchMode ? const SizedBox() : Row(mainAxisSize: MainAxisSize.min, children: [
-                  ScoreButton(label: '+1', onTap: () { if (pg != null) { ref.read(classProvider.notifier).changeScore(cls.uid, pg.uid, m.uid, 1); AudioEngine().playScoreUp(); } }),
+                  ScoreButton(label: '+1', onTap: () => _scoreOne(cls, m.uid, 1)),
                   const SizedBox(width: 2),
-                  ScoreButton(label: '-1', onTap: () { if (pg != null) { ref.read(classProvider.notifier).changeScore(cls.uid, pg.uid, m.uid, -1); AudioEngine().playScoreDown(); } }),
+                  ScoreButton(label: '-1', onTap: () => _scoreOne(cls, m.uid, -1)),
                 ])),
               ]);
         }).toList(),
@@ -204,22 +242,74 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
   }
 }
 
+/// 导出全班积分报表。
+///
+/// 旧实现只尝试写入硬编码的 /storage/emulated/0/Download。
+/// 而 AndroidManifest 里 WRITE_EXTERNAL_STORAGE 的 maxSdkVersion 是 29，
+/// 在 Android 11+ 的分区存储下这个写入必然失败；
+/// 失败后又只提示一句「报表已生成」，文件其实落在应用私有目录，
+/// 老师根本找不到。
+/// 现在按优先级依次尝试，并且无论如何都告诉老师文件到底在哪。
 Future<void> _exportReport(BuildContext context, WidgetRef ref) async {
   try {
     final cs = ref.read(classProvider);
-    if (cs.classrooms.isEmpty) { ToastOverlay.show(context, '没有可导出的班级数据'); return; }
-    final tempDir = '${(await getApplicationDocumentsDirectory()).path}/灵动课堂';
-    await Directory(tempDir).create(recursive: true);
+    if (cs.classrooms.isEmpty) {
+      ToastOverlay.show(context, '没有可导出的班级数据');
+      return;
+    }
+
     final now = DateTime.now();
     final ts = '${now.year}-${_p(now.month)}-${_p(now.day)}_${_p(now.hour)}${_p(now.minute)}';
-    final tempPath = '$tempDir/积分报表_$ts.xlsx';
+    final fileName = '积分报表_$ts.xlsx';
+
+    // 先写到应用私有目录：这里一定可写，作为后续分发的源文件
+    final tempDir = '${(await getApplicationDocumentsDirectory()).path}/灵动课堂';
+    await Directory(tempDir).create(recursive: true);
+    final tempPath = '$tempDir/$fileName';
     await ExcelService.exportFullReport(cs.classrooms, tempPath);
+
+    // 首选：系统「另存为」（SAF）。Android 11+ 下这一步可靠，
+    // 而且位置由老师自己选。
+    try {
+      final savePath = await FilePicker.platform.saveFile(
+        dialogTitle: '保存积分报表',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+      );
+      if (savePath != null) {
+        await File(tempPath).copy(savePath);
+        if (context.mounted) {
+          ToastOverlay.show(context, '报表已保存: $savePath', type: ToastType.success);
+        }
+        return;
+      }
+    } catch (_) {}
+
+    // 降级：公共 Download 目录（Android 10 及以下通常可用）
     try {
       final downloadsDir = Directory('/storage/emulated/0/Download');
-      if (await downloadsDir.exists()) { await File(tempPath).copy('${downloadsDir.path}/积分报表_$ts.xlsx'); ToastOverlay.show(context, '报表已保存到 Downloads', type: ToastType.success); return; }
+      if (await downloadsDir.exists()) {
+        await File(tempPath).copy('${downloadsDir.path}/$fileName');
+        if (context.mounted) {
+          ToastOverlay.show(context, '报表已保存到 Download 目录', type: ToastType.success);
+        }
+        return;
+      }
     } catch (_) {}
-    ToastOverlay.show(context, '报表已生成', type: ToastType.success);
-  } catch (e) { ToastOverlay.show(context, '导出失败: $e', type: ToastType.error); }
+
+    // 最后不再含糊：直接把完整路径告诉老师
+    if (context.mounted) {
+      ToastOverlay.show(
+        context,
+        '报表已生成（未找到可写的外部目录）:\n$tempPath',
+        type: ToastType.warning,
+        duration: const Duration(seconds: 6),
+      );
+    }
+  } catch (e) {
+    ToastOverlay.show(context, '导出失败: $e', type: ToastType.error);
+  }
 }
 
 String _p(int n) => n.toString().padLeft(2, '0');
