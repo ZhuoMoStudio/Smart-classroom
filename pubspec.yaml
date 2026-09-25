@@ -1,7 +1,7 @@
 name: smart_classroom
 description: 灵动课堂 - 课堂互动管理工具（Apache 2.0 开源协议）
 publish_to: 'none'
-version: 1.31.1+1
+version: 1.32.1+1
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
@@ -40,7 +40,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  # 注意：assets/wallpapers/ 已移除。
+  # 该目录下曾放着 20.3 MB 的壁纸，而 lib/ 里对它的引用数为 0 ——
+  # 也就是说这些图会原封不动被打进 APK 与 Windows ZIP，却从没有任何代码去加载。
+  # 图标主图已移到不被打包的 branding/app_icon.png，由 tools/make_icons.py 派生各尺寸。
   assets:
     - assets/sounds/
-    - assets/wallpapers/
     - assets/textbook_index.json

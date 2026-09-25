@@ -58,26 +58,64 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
     });
   }
 
+  /// 给刚抽到的学生加减分。
+  ///
+  /// 这里必须从 provider 里把权威分数读回来，不能自己算 `score + delta`：
+  /// changeScore 内部有「不低于 0」的钳制，本地算术没有，
+  /// 于是 0.5 分时点 -1，磁盘上存 0、屏幕上显示 -0.5，两边长期不一致。
   void _changeScore(double delta) {
     if (_drawnMemberObj == null) return;
     final cs = ref.read(classProvider);
     final cls = cs.selectedClass;
     if (cls == null) return;
+
     Group? pg;
     for (final g in cls.groups) {
-      if (g.members.any((m) => m.uid == _drawnMemberObj!.uid)) { pg = g; break; }
+      if (g.members.any((m) => m.uid == _drawnMemberObj!.uid)) {
+        pg = g;
+        break;
+      }
     }
-    if (pg == null) return;
-    ref.read(classProvider.notifier).changeScore(cls.uid, pg.uid, _drawnMemberObj!.uid, delta);
-    if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+    if (pg == null) {
+      ToastOverlay.show(context, '找不到该学生所属的小组，请重新抽取');
+      return;
+    }
+
+    final uid = _drawnMemberObj!.uid;
+    final ok =
+        ref.read(classProvider.notifier).changeScore(cls.uid, pg.uid, uid, delta);
+    if (!ok) {
+      // 已经是 0 分还要再扣时 changeScore 返回 false，不能装作成功
+      ToastOverlay.show(context, '该学生当前为 0 分，无法再扣');
+      return;
+    }
+    if (delta > 0) {
+      AudioEngine().playScoreUp();
+    } else {
+      AudioEngine().playScoreDown();
+    }
+
+    Member? fresh;
+    for (final c in ref.read(classProvider).classrooms) {
+      if (c.uid != cls.uid) continue;
+      for (final g in c.groups) {
+        if (g.uid != pg.uid) continue;
+        for (final m in g.members) {
+          if (m.uid == uid) fresh = m;
+        }
+      }
+    }
     setState(() {
-      _drawnMemberObj = _drawnMemberObj!.copyWith(score: _drawnMemberObj!.score + delta);
+      if (fresh != null) _drawnMemberObj = fresh;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final ds = ref.watch(drawProvider);
+    // 必须 watch：availableMembers / availableGroups 走的是 ref.read，
+    // 不 watch 的话候选池变化（加减分、重置排除）不会触发重建。
+    // 这里不接收返回值，避免出现未使用的局部变量。
+    ref.watch(drawProvider);
     final notifier = ref.read(drawProvider.notifier);
     final members = notifier.availableMembers;
     final groups = notifier.availableGroups;
