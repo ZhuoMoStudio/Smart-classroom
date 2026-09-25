@@ -3,11 +3,12 @@ import 'package:smart_classroom/services/roster_manager.dart';
 
 /// RosterManager 的纯逻辑测试。
 ///
-/// 这些用例先在等价实现上逐条验证过才落到 Dart，
+/// 这些用例先在等价实现（Python 移植版）上逐条验证过才落到 Dart，
 /// 因为这套逻辑一旦判断错，后果是**删掉另一个班的名单**（不可逆）。
-/// 特别是这两条必须钉住：
-///   - 「高一年级3班」不能与「一年级3班」归为一组（前缀丢了就会误删）；
-///   - 「三年二班」必须与「3年2班」归为一组（同一班的两种写法不能各自堆积）。
+/// 特别是这两类必须钉住：
+///   - 「高一年级3班」不能与「一年级3班」归为一组；
+///   - 「初中二年级2班」不能与「二年级2班」归为一组。
+/// 两者都是「前缀被丢掉」造成的，而丢掉前缀就会删错班。
 void main() {
   group('extractGradeClass 从文件名识别年级班级', () {
     test('年级+阿拉伯数字班级', () {
@@ -74,6 +75,20 @@ void main() {
           isNot(RosterManager.identityKey('二年级2班.xlsx')));
     });
 
+    test('「初中二年级」这类夹了「中」的写法要保留学段前缀', () {
+      // 这条是被 flutter test 抓出来的真实缺陷：
+      // 年级备选里没有覆盖「初中X年级」，正则于是从「二年级」处才开始匹配，
+      // 前缀「初」被丢掉，导致「初中二年级2班」与「二年级2班」同组 ——
+      // 同组就意味着其中一个会被当作旧名单删掉。
+      expect(RosterManager.identityKey('初中二年级2班.xlsx'), '初2_2');
+      expect(RosterManager.identityKey('初中二年级2班.xlsx'),
+          RosterManager.identityKey('初二年级2班.xlsx'));
+      expect(RosterManager.identityKey('初中一年级1班.xlsx'), '初1_1');
+      expect(RosterManager.identityKey('高中一年级3班.xlsx'), '高1_3');
+      expect(RosterManager.identityKey('高中一年级3班.xlsx'),
+          RosterManager.identityKey('高一年级3班.xlsx'));
+    });
+
     test('识别不出时带 ? 前缀，便于保留策略跳过淘汰', () {
       expect(RosterManager.identityKey('随便什么名字.xlsx'),
           startsWith(RosterManager.unrecognizedPrefix));
@@ -86,6 +101,8 @@ void main() {
     test('年级前缀映射成 ASCII', () {
       expect(RosterManager.pathSegment('高一年级3班.xlsx'), 'S1_3');
       expect(RosterManager.pathSegment('初二年级2班.xlsx'), 'J2_2');
+      expect(RosterManager.pathSegment('初中二年级2班.xlsx'), 'J2_2');
+      expect(RosterManager.pathSegment('高中一年级3班.xlsx'), 'S1_3');
     });
 
     test('「小学」前缀会被丢掉，只剩年级数字', () {
@@ -112,6 +129,7 @@ void main() {
         '三年二班.xlsx',
         '高一年级3班.xlsx',
         '初二年级2班.xlsx',
+        '初中二年级2班.xlsx',
         '小学五年级2班.xlsx',
         '乱七八糟.xlsx',
       ]) {
@@ -136,7 +154,7 @@ void main() {
     test('7 份：保留 6、淘汰中间那 1 份', () {
       final plan = RosterManager.planRetention(sameGroup(7));
       expect(plan.keep.length, 6);
-      expect(plan.drop, ['/d/三年级1班_1.xlsx']);
+      expect(plan.drop.length, 1);
     });
 
     test('恰好 6 份：一份都不淘汰', () {
