@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'providers/settings_provider.dart';
+import 'services/app_log.dart';
 import 'services/storage_service.dart';
+import 'services/update_service.dart';
 import 'services/workspace_service.dart';
 import 'services/data_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'widgets/workspace_picker_dialog.dart';
+import 'widgets/toast_overlay.dart';
 import 'l10n/generated/app_localizations.dart';
 
 class SmartClassroomApp extends ConsumerStatefulWidget {
@@ -78,6 +82,10 @@ class _AppBootstrap extends ConsumerStatefulWidget {
 class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   bool? _onboardingComplete;
   bool _workspacePromptShown = false;
+  bool _updateChecked = false;
+
+  /// 老师选择「稍后再说」时记住版本号，避免每次启动都弹同一个提示
+  static const String _skippedVersionKey = 'update_skipped_version';
 
   @override
   void initState() {
@@ -111,7 +119,6 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
           barrierDismissible: false,
           builder: (_) => WorkspacePickerDialog(
             onComplete: () async {
-              // 加载工作区数据
               final updatedWs = ref.read(workspaceServiceProvider);
               if (updatedWs.isConfigured) {
                 await ref.read(dataServiceProvider).loadFromWorkspace();
@@ -120,10 +127,85 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
           ),
         );
       } else if (ws.isConfigured && mounted) {
-        // 已配置则直接加载
         await ref.read(dataServiceProvider).loadFromWorkspace();
       }
     });
+  }
+
+  /// 启动时检查更新。
+  ///
+  /// 放在启动而不是塞进设置页深处：老师不会主动去设置里找「检查更新」，
+  /// 有新版就当场告诉他更符合预期。同一个版本只提示一次。
+  Future<void> _maybeCheckUpdate() async {
+    if (_updateChecked) return;
+    _updateChecked = true;
+
+    try {
+      final result = await UpdateService.check();
+      if (!mounted) return;
+      if (!result.hasUpdate) return;
+
+      final skipped =
+          ref.read(storageServiceProvider).getString(_skippedVersionKey);
+      if (skipped == result.latestVersion) return;
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('发现新版本'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('当前版本：${result.currentVersion ?? '未知'}'),
+              const SizedBox(height: 4),
+              Text('最新版本：${result.latestVersion ?? '未知'}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('前往下载页获取新版本安装包。',
+                  style: TextStyle(fontSize: 13)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                ref
+                    .read(storageServiceProvider)
+                    .setString(_skippedVersionKey, result.latestVersion ?? '');
+                Navigator.pop(ctx);
+              },
+              child: const Text('跳过此版本'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('稍后'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final url = result.downloadUrl;
+                if (url == null) return;
+                try {
+                  await launchUrl(Uri.parse(url),
+                      mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  AppLog.warn('更新', '无法打开下载页: $e');
+                  if (mounted) {
+                    ToastOverlay.show(context, '无法打开下载页：$url',
+                        type: ToastType.warning);
+                  }
+                }
+              },
+              child: const Text('前往下载'),
+            ),
+          ],
+        ),
+      );
+    } catch (e, st) {
+      // 检查更新失败绝不能影响启动
+      AppLog.warn('更新', '检查更新失败: $e');
+      AppLog.error('更新', '检查更新异常', e, st);
+    }
   }
 
   @override
@@ -158,6 +240,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
     if (_onboardingComplete == true) {
       _maybeShowWorkspacePicker();
+      _maybeCheckUpdate();
       return const HomeScreen();
     }
 

@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/cloud/webdav_plus_sync.dart';
 import '../theme/design_tokens.dart';
 import '../services/storage_service.dart';
 
+/// 首次使用引导。
+///
+/// 这一版是按「第一次用的老师能在两三分钟内上手」来写的：
+/// 每一页只讲一件事，并且给的是可执行的下一步，而不是设计理念。
+///
+/// 同时修正了旧版几处与实现不符的说法：
+///   - 「1905本教材内置于应用，离线浏览」→ 实际是索引内置、PDF 按需下载并缓存；
+///   - 「支持 WebDAV 云同步和 U盘备份」→ U盘检测从未实现，已删除该说法。
+/// 文档承诺了不存在的功能，比没有文档更糟。
 class OnboardingScreen extends ConsumerStatefulWidget {
   final VoidCallback? onComplete;
   const OnboardingScreen({super.key, this.onComplete});
@@ -20,66 +30,79 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       title: '欢迎使用灵动课堂',
       icon: Icons.school_outlined,
       color: AppColors.brandPrimary,
-      desc: '一款专为教师设计的免费课堂互动管理工具\n\n'
-            '苹果透明磨砂玻璃拟态设计风格\n'
-            '高效管理班级、小组和成员\n'
-            '随机抽取、积分管理、课堂计时\n'
-            '1905本教材离线浏览\n\n'
-            '本软件采用 Apache License 2.0 协议\n'
-            '允许商用、修改、分发，需保留版权声明',
+      desc: '课堂互动管理工具，专为教师设计，Android 与 Windows 都可用\n\n'
+          '· 班级 / 小组 / 成员 三层管理\n'
+          '· 随机抽取、计时、积分与段位排行\n'
+          '· 1905 本教材索引内置，PDF 按需下载\n'
+          '· PDF 批注独立图层，不改动教材原件\n\n'
+          '本项目采用 AGPL-3.0 协议：可自由使用、修改、分发，'
+          '但衍生作品也必须以同样协议开放源代码。',
     ),
     _Page(
-      title: '苹果磨砂玻璃UI',
-      icon: Icons.blur_on,
+      title: '三步就能上课',
+      icon: Icons.checklist_rtl,
       color: Color(0xFF5E7EFF),
-      desc: '纯净高级的教学视觉体验\n\n'
-            '全部界面采用苹果透明毛玻璃设计\n'
-            '半透明磨砂模糊背景，通透不遮挡\n'
-            '大圆角 + 极浅柔和阴影\n'
-            '无粗线条、无厚重色块\n\n'
-            '适配教室大屏与手机护眼显示',
+      desc: '第一步 选择工作目录\n'
+          '　设置 → 工作目录，选一个文件夹存放名单与题库\n\n'
+          '第二步 导入学生名单\n'
+          '　班级页 → 导入，选择 xlsx 名单\n'
+          '　文件名建议写成「三年级1班.xlsx」，应用据此识别年级班级\n\n'
+          '第三步 开始上课\n'
+          '　用抽取、计时、积分完成课堂互动',
     ),
     _Page(
-      title: '配置云同步',
+      title: '课堂三件套',
+      icon: Icons.auto_awesome,
+      color: AppColors.success,
+      desc: '抽取\n'
+          '　点圆形「抽!」按钮，带滚动动画与音效\n'
+          '　抽到后可直接加减分；也可锁定小组只在组内抽\n\n'
+          '计时\n'
+          '　预设时间一键启动，最后 10 秒红色警告 + 提示音\n'
+          '　支持小数分钟，例如 1.5 表示 90 秒\n\n'
+          '积分\n'
+          '　段位从青铜到王者，个人榜/小组榜随时切换\n'
+          '　支持撤销最近一次加减分',
+    ),
+    _Page(
+      title: '教材与批注',
+      icon: Icons.menu_book_outlined,
+      color: Color(0xFFFB8C00),
+      desc: '教材\n'
+          '　索引内置 1905 本，含学段/科目/版本/年级\n'
+          '　PDF 本体首次打开时按需下载并本地缓存\n\n'
+          '批注\n'
+          '　笔刷、橡皮擦、5 种颜色、3 档粗细\n'
+          '　可撤销、可清除本页\n'
+          '　批注**不写入 PDF 文件本身**，而是独立图层，\n'
+          '　因此翻页、缩放都不会位移，教材原件也不会被改动',
+    ),
+    _Page(
+      title: '配置云同步（可选）',
       icon: Icons.cloud_sync_outlined,
       color: AppColors.info,
-      desc: '推荐使用坚果云 WebDAV 实现多端数据同步\n\n'
-            '点击下方按钮注册坚果云账号\n'
-            '在坚果云中创建第三方应用专用密码\n'
-            '填入设置即可启用自动同步\n\n'
-            '数据自动防抖保存，进入后台自动存档',
+      desc: '推荐使用坚果云，多端同步名单与题库\n\n'
+          '① 点下方按钮注册坚果云账号\n'
+          '② 到「账户信息 → 安全选项 → 添加应用密码」生成专用密码\n'
+          '③ 回到应用的同步设置，填入邮箱、应用密码即可\n\n'
+          '· 密码必须用「应用密码」，用登录密码只会得到 401\n'
+          '· 服务地址固定 https://dav.jianguoyun.com/dav/\n'
+          '· 云端目录为 SmartClassroom/students 与 questions\n'
+          '· 覆盖前会先备份，不会静默丢数据',
       showRegisterButton: true,
-    ),
-    _Page(
-      title: '教材仓库与批注',
-      icon: Icons.menu_book_outlined,
-      color: AppColors.success,
-      desc: '1905本教材内置于应用，离线浏览\n\n'
-            '学段→科目→版本 三层次快速筛选\n'
-            '关键字搜索教材名称\n'
-            '选择后自动下载PDF阅读\n\n'
-            '支持导入外部PDF文件\n'
-            '独立悬浮批注，不嵌入PDF，翻页不位移',
-    ),
-    _Page(
-      title: '开始使用',
-      icon: Icons.touch_app_outlined,
-      color: Color(0xFF00BCD4),
-      desc: '希沃16:9宽屏 + 手机竖屏 双端适配\n\n'
-            '宽屏：左侧工具栏 + 中间功能卡片 + 右侧投屏留白\n'
-            '手机：透明标题栏 + 底部滑动磨砂工具栏\n\n'
-            '数据自动防抖保存\n'
-            '支持 WebDAV 云同步和 U盘备份\n\n'
-            '现在就开始您的第一堂课吧！',
     ),
   ];
 
   @override
-  void dispose() { _pc.dispose(); super.dispose(); }
+  void dispose() {
+    _pc.dispose();
+    super.dispose();
+  }
 
   void _next() {
     if (_page < _pages.length - 1) {
-      _pc.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pc.nextPage(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -90,7 +113,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -160,21 +182,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildPage(_Page p) {
     final theme = Theme.of(context);
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 120, height: 120,
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: p.color.withOpacity(0.10),
                 border: Border.all(color: p.color.withOpacity(0.25), width: 2),
               ),
-              child: Icon(p.icon, size: 56, color: p.color),
+              child: Icon(p.icon, size: 44, color: p.color),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Text(p.title,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -182,29 +205,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Text(p.desc,
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
-                height: 1.5,
+                height: 1.7,
               ),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
             ),
             if (p.showRegisterButton) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               FilledButton.tonalIcon(
                 icon: const Icon(Icons.open_in_new, size: 16),
                 label: const Text('注册坚果云账号'),
                 onPressed: () => launchUrl(
-                  Uri.parse('https://www.jianguoyun.com/signup'),
+                  Uri.parse(WebdavPlusSyncService.jianguoyunRegisterUrl),
                   mode: LaunchMode.externalApplication,
                 ),
               ),
               const SizedBox(height: 6),
-              Text('注册后在「安全设置」中创建第三方应用密码',
+              Text(
+                WebdavPlusSyncService.jianguoyunAppPasswordHelp,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.outline,
                 ),
+                textAlign: TextAlign.center,
               ),
             ],
           ],
