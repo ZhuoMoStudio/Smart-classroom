@@ -1,6 +1,18 @@
 # ============================================================
-# Android + Windows CI Build Workflow
+# Android + Windows CI
 # 产出：Android APK (3 ABIs) + Windows ZIP + Windows Setup.exe
+#
+# 设计要点：
+# 1. verify job 先跑静态分析与单元测试，两个构建 job 都 needs 它 ——
+#    历史上这个仓库有多次「push -> CI -> 编译错误 -> 再修」的循环，
+#    而原因几乎都是没跑过分析器。
+# 2. flutter analyze 只把**编译级错误**当失败（--no-fatal-warnings --no-fatal-infos）：
+#    当前代码库有大量历史告警，一上来就全当失败只会得到一个没用的红叉。
+#    告警会写进 docs/analyzer-report.md 并回提交，供逐个清理。
+# 3. 版本号不再写死：从 pubspec.yaml 读，单一来源，
+#    避免出现过 README 写 v1.30、pubspec 写 1.31.1、CI 写 1.31.1 这种漂移。
+# 4. pubspec.lock 由 CI 生成并回提交：此仓库的 .gitignore 里有 *.lock，
+#    依赖版本一直没有被锁住，同一份代码在不同时间构建可能解析到不同版本。
 # ============================================================
 name: Build & Release
 
@@ -20,11 +32,110 @@ permissions:
 
 env:
   APP_NAME: SmartClassroom
-  APP_VERSION: "1.31.1"
 
 jobs:
+  # ==========================================================
+  # 静态分析 + 单元测试
+  # ==========================================================
+  verify:
+    name: 静态分析与测试
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44'
+          channel: 'stable'
+          cache: true
+
+      - name: Read version from pubspec
+        id: version
+        run: |
+          v=$(sed -nE 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -1)
+          if [ -z "$v" ]; then
+            echo "::error::无法从 pubspec.yaml 解析出语义化版本号"
+            exit 1
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "本次构建版本: $v"
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      # 不在这里失败：先让报告落盘，否则分析失败时反而拿不到任何细节
+      - name: Analyze
+        id: analyze
+        run: |
+          set +e
+          flutter analyze --no-fatal-warnings --no-fatal-infos > analyzer-raw.txt 2>&1
+          code=$?
+          cat analyzer-raw.txt
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Build analyzer report
+        if: always()
+        run: |
+          mkdir -p docs
+          {
+            echo "# flutter analyze 报告"
+            echo
+            echo "本文件由 CI 的 verify job 自动生成，请勿手工编辑。"
+            echo
+            echo "- 生成时间：$(date -u '+%Y-%m-%d %H:%M:%SZ')"
+            echo "- 触发：${{ github.event_name }} @ ${{ github.ref_name }}"
+            echo "- 提交：\`${{ github.sha }}\`"
+            echo "- 分析器退出码：${{ steps.analyze.outputs.exit }}"
+            echo
+            echo '```text'
+            cat analyzer-raw.txt
+            echo '```'
+          } > docs/analyzer-report.md
+          echo "报告行数: $(wc -l < docs/analyzer-report.md)"
+
+      - name: Run unit tests
+        run: flutter test --reporter expanded
+
+      # 把报告与锁文件回提交（仅限 main 的 push）。
+      # 注意：GITHUB_TOKEN 触发的 push 不会再触发其他 workflow，
+      # 所以这一提交不会造成递归。
+      - name: Commit analyzer report & pubspec.lock
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A docs/analyzer-report.md pubspec.lock
+          if git diff --cached --quiet; then
+            echo "分析报告与锁文件均无变化，跳过提交。"
+            exit 0
+          fi
+          git diff --cached --stat
+          git commit \
+            -m "chore(ci): 刷新静态分析报告与 pubspec.lock" \
+            -m "由 verify job 自动生成。docs/analyzer-report.md 请勿手工编辑。"
+          git push
+
+      # 报告已落盘、已提交，现在才真正因为编译错误而失败
+      - name: Fail on analyzer errors
+        if: steps.analyze.outputs.exit != '0'
+        run: |
+          echo "::error::flutter analyze 发现编译级错误，详情见仓库里的 docs/analyzer-report.md"
+          exit 1
+
+  # ==========================================================
+  # Android
+  # ==========================================================
   build-android:
     name: Android Build
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -49,8 +160,8 @@ jobs:
         run: |
           echo "flutter.sdk=${FLUTTER_ROOT}" > android/local.properties
           echo "flutter.buildMode=release" >> android/local.properties
-          echo "flutter.versionName=${{ env.APP_VERSION }}" >> android/local.properties
-          echo "flutter.versionCode=1" >> android/local.properties
+          echo "flutter.versionName=${{ needs.verify.outputs.version }}" >> android/local.properties
+          echo "flutter.versionCode=${{ github.run_number }}" >> android/local.properties
 
       - name: Clean stale build artifacts
         run: flutter clean
@@ -61,38 +172,33 @@ jobs:
       - name: Build split APKs
         run: |
           flutter build apk --release --split-per-abi \
-            --build-name=${{ env.APP_VERSION }} \
-            --build-number=1
+            --build-name=${{ needs.verify.outputs.version }} \
+            --build-number=${{ github.run_number }}
 
-      - name: Rename & Upload arm64 APK
+      - name: Package APKs
         run: |
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
-          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_arm64-v8a.apk
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            src="build/app/outputs/flutter-apk/app-${abi}-release.apk"
+            dst="${{ env.APP_NAME }}_v${V}_${abi}.apk"
+            cp "$src" "$dst"
+            echo "$dst  $(du -h "$dst" | cut -f1)"
+          done
 
-      - name: Rename & Upload armeabi APK
-        run: |
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
-      - uses: actions/upload-artifact@v4
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
-          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_armeabi-v7a.apk
+          name: android-apks
+          path: ${{ env.APP_NAME }}_v*.apk
+          if-no-files-found: error
 
-      - name: Rename & Upload x86_64 APK
-        run: |
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
-             ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
-          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_x86_64.apk
-
+  # ==========================================================
+  # Windows
+  # ==========================================================
   build-windows:
     name: Windows Build
+    needs: verify
     runs-on: windows-latest
     timeout-minutes: 60
 
@@ -109,6 +215,9 @@ jobs:
       - name: Enable Windows
         run: flutter config --enable-windows-desktop
 
+      # 仓库里的 windows/ 是个不完整的骨架（没有 Runner.rc、没有 main.cpp、
+      # 缺 app_icon.ico），本地根本构建不了。这里先重建以保证 CI 可用；
+      # 真正的修法是把完整的 windows/ 工程提交进仓库并删掉这一步。
       - name: Recreate Windows project
         shell: pwsh
         run: |
@@ -131,21 +240,24 @@ jobs:
       - name: Package Windows ZIP
         shell: pwsh
         run: |
-          $zipName = "${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip"
+          $V = "${{ needs.verify.outputs.version }}"
+          $zipName = "${{ env.APP_NAME }}_v${V}_windows.zip"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $zipName
           echo "ZIP_PATH=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "$zipName  $((Get-Item $zipName).Length / 1MB) MB"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
-          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_windows.zip
+          name: windows-zip
+          path: ${{ env.APP_NAME }}_v*_windows.zip
+          if-no-files-found: error
 
       # ----- 产物 2：Inno Setup 安装包 -----
       - name: Install Inno Setup
         shell: pwsh
         run: |
           choco install innosetup -y --no-progress 2>&1 | Out-Null
-          # 验证安装
           $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue
           if ($iscc) {
             Write-Host "ISCC found: $($iscc.Source)"
@@ -168,29 +280,38 @@ jobs:
       - name: Compile Inno Setup Installer
         shell: pwsh
         run: |
-          # 复制安装脚本到工作目录
           Copy-Item installer/setup.iss setup.iss -Force
-          
-          # 编译
+
+          # setup.iss 的 SetupIconFile 指向 windows\runner\resources\app_icon.ico。
+          # 该文件以前根本不在仓库里（本地构建必失败），
+          # 现在由 tools/make_icons.py + Generate icons workflow 生成并提交。
+          if (-not (Test-Path 'windows\runner\resources\app_icon.ico')) {
+            throw 'app_icon.ico 缺失，请先跑一次 Generate icons workflow'
+          }
+
           $iscc = $env:ISCC_PATH
           if (-not $iscc) { $iscc = "iscc.exe" }
-          
+
           & $iscc setup.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed" }
-          
-          # 重命名安装包
-          $setupName = "${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe"
+
+          $V = "${{ needs.verify.outputs.version }}"
+          $setupName = "${{ env.APP_NAME }}_v${V}_Setup.exe"
           Copy-Item build/installer/*.exe $setupName -Force
-          echo "SETUP_PATH=$setupName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "Installer created: $setupName"
+          Write-Host "$setupName  $((Get-Item $setupName).Length / 1MB) MB"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Setup.exe
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe
-          path: ${{ env.APP_NAME }}_v${{ env.APP_VERSION }}_Setup.exe
+          name: windows-setup
+          path: ${{ env.APP_NAME }}_v*_Setup.exe
+          if-no-files-found: error
 
+  # ==========================================================
+  # Release（仅在打 tag 时）
+  # ==========================================================
   release:
-    needs: [build-android, build-windows]
+    needs: [verify, build-android, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -202,7 +323,10 @@ jobs:
           merge-multiple: true
 
       - name: List release assets
-        run: ls -la release-assets/
+        run: |
+          ls -la release-assets/
+          echo "--- 各产物体积 ---"
+          du -h release-assets/* | sort -h
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

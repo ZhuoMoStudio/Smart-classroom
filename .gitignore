@@ -12,7 +12,16 @@ build/
 .vscode/
 *.lock
 
+# 例外：应用需要把 pubspec.lock 入库才有可复现的构建。
+# 原先 *.lock 把它一并屏蔽了，于是依赖版本完全没锁 ——
+# 同一份代码在不同时间可能解析到不同版本的包，
+# 这类漂移正是历史上多次「本地/CI 编译错误」的来源之一。
+!pubspec.lock
+
 # l10n generated (run: flutter gen-l10n)
+# 注意：这个目录里曾经被手工提交了一份假的 app_localizations.dart，
+# 在 pubspec 已开启 generate: true 的情况下它会被 gen-l10n 覆盖，
+# 留在仓库里只会误导人。
 lib/l10n/generated/
 
 # OS
