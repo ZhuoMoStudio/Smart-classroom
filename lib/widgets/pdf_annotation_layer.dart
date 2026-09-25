@@ -47,6 +47,18 @@ class AnnotationPainter extends CustomPainter {
     }
   }
 
+  /// 明确声明「不参与命中测试」。
+  ///
+  /// CustomPainter.hitTest 的默认值由 RenderCustomPaint 决定：
+  /// `hitTestSelf => _painter != null && (_painter!.hitTest(position) ?? true)`，
+  /// 也就是**只要挂了 painter，默认就认为是命中的**。
+  /// 于是这个铺满整页的批注层会把平移、缩放手势全部吃掉，
+  /// 表现为「PDF 无法用手势移动和放大缩小」。
+  /// 虽然调用方已经用 IgnorePointer 包了一层，这里再显式否定一次，
+  /// 让意图不依赖调用方的实现细节。
+  @override
+  bool? hitTest(Offset position) => false;
+
   @override
   bool shouldRepaint(covariant AnnotationPainter oldDelegate) =>
       oldDelegate.strokes != strokes || oldDelegate.scale != scale;
@@ -162,7 +174,15 @@ class _PageAnnotationOverlayState extends State<PageAnnotationOverlay> {
       painter: AnnotationPainter(strokes: all, scale: _scale),
     );
 
-    if (!widget.annotating) return layer;
+    if (!widget.annotating) {
+      // 非批注模式：这层只负责显示，必须完全让出手势。
+      //
+      // 这一句是「PDF 无法用手势移动/缩放」的直接修复。
+      // 原因是 RenderCustomPaint 在挂了 painter 时 hitTestSelf 默认为 true，
+      // 于是铺满整页的这层会把 pan/scale 手势全吃掉，
+      // 底下的 PdfViewer 一个都收不到。
+      return IgnorePointer(child: layer);
+    }
 
     // 批注模式下接管手势。
     // pdfrx 的文档明确说：放在叠加层里的 GestureDetector 会「吃掉」手势，

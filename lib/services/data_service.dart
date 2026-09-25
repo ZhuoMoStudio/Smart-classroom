@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
 import '../providers/draw_provider.dart';
 import '../providers/question_provider.dart';
+import '../providers/services_provider.dart';
 import '../providers/settings_provider.dart';
 import 'app_log.dart';
+import 'pdf_cache_manager.dart';
 import 'workspace_service.dart';
 
 /// 数据管理服务 — 基于工作区文件夹的保存/加载
@@ -12,6 +14,7 @@ import 'workspace_service.dart';
 /// 保存策略：
 /// - 班级/成员/积分 → 写入 学生信息/*.xlsx（每个班级一个文件）
 /// - 题库 → 从 题库/*.xlsx 加载
+/// - 教材 PDF → 缓存在 课本/（工作区内，跨设备可直接读取）
 class DataService {
   final Ref _ref;
   Timer? _debounceTimer;
@@ -90,10 +93,27 @@ class DataService {
     }
   }
 
+  /// 把工作区派生出来的存储位置交给各服务。
+  ///
+  /// 为什么放在这里：工作区路径只有一个归属（WorkspaceService），
+  /// 而它一旦变化，课本缓存目录、模板导出目录都要跟着变。
+  /// 集中到「工作区就绪」这一个时点，避免各处各自去读路径而产生分歧。
+  void _applyWorkspacePaths() {
+    final root = _ws.rootPath;
+    if (root == null) return;
+
+    // 课本存到工作区：跟着文件夹跨设备，同一本教材不必在每台机器上重下
+    PdfCacheManager().setStoreDir(_ws.textbooksPath);
+
+    // 模板导出的兜底位置也落在工作区，而不是应用私有目录
+    _ref.read(fileServiceProvider).setWorkingDir(root);
+  }
+
   /// 从工作区加载所有数据
   Future<void> loadFromWorkspace() async {
     // 先把日志目录接上，这样加载期的错误也能落盘
     AppLog.setLogDirectory(_ws.archivePath);
+    _applyWorkspacePaths();
 
     try {
       final classrooms = await _ws.loadAllRosters();

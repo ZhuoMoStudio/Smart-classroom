@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/class_model.dart';
 import '../models/question_bank.dart';
@@ -15,12 +14,15 @@ import 'storage_service.dart';
 /// 目录约定（老师选定的根文件夹下）：
 ///   学生信息/  —— 既是「导入名单的投放点」，也是「本应用保存积分的落点」
 ///   题库/      —— 题库 xlsx
-///   数据存档/  —— 被淘汰的旧名单、同步冲突备份、批注 JSON
+///   课本/      —— 下载过的教材 PDF（放在工作区而不是应用私有目录，
+///                这样跟着文件夹一起跨设备，同一本教材不必在每台机器上重下）
+///   数据存档/  —— 被淘汰的旧名单、同步冲突备份、批注 JSON、运行日志
 class WorkspaceService {
   static const String _rootPathKey = 'workspace_root_path';
   static const String _studentsDir = '学生信息';
   static const String _questionsDir = '题库';
   static const String _archiveDir = '数据存档';
+  static const String _textbooksDir = '课本';
 
   final Ref _ref;
   String? _rootPath;
@@ -63,7 +65,12 @@ class WorkspaceService {
 
   Future<void> _ensureDirectories() async {
     if (_rootPath == null) return;
-    for (final dir in [_studentsDir, _questionsDir, _archiveDir]) {
+    for (final dir in [
+      _studentsDir,
+      _questionsDir,
+      _archiveDir,
+      _textbooksDir,
+    ]) {
       final d = Directory('$_rootPath/$dir');
       if (!await d.exists()) {
         await d.create(recursive: true);
@@ -78,6 +85,8 @@ class WorkspaceService {
       _rootPath != null ? '$_rootPath/$_questionsDir' : null;
   String? get archivePath =>
       _rootPath != null ? '$_rootPath/$_archiveDir' : null;
+  String? get textbooksPath =>
+      _rootPath != null ? '$_rootPath/$_textbooksDir' : null;
 
   // ==================== 路径工具 ====================
 
@@ -106,21 +115,66 @@ class WorkspaceService {
         '${two(n.hour)}${two(n.minute)}${two(n.second)}';
   }
 
-  // ==================== 学生名单管理 ====================
+  // ==================== 文件枚举 ====================
 
-  Future<List<File>> listRosterFiles() async {
-    if (studentsPath == null) return [];
-    final dir = Directory(studentsPath!);
+  /// 列出目录下的 xlsx。
+  ///
+  /// [includeSubdirs] 为 true 时额外向下扫一层。
+  ///
+  /// 为什么需要它（跨设备读取兼容性）：
+  /// 老师可能在另一台设备上、或用别的软件把名单按年级整理成了
+  /// `学生信息/三年级/三年级1班.xlsx` 这样的子目录。
+  /// 而这里原先只 `dir.list()` 一层、遇到目录直接跳过，
+  /// 于是**那种结构下一个班级都读不到**，看起来就像「数据丢了」。
+  /// 读取放宽到一层子目录即可覆盖绝大多数手动整理习惯，代价又可以忽略。
+  ///
+  /// 注意：写入、归档、版本收敛一律只用根目录（默认 false）——
+  /// 应用自己产出的文件永远在根目录，不该去动老师手工整理的结构。
+  Future<List<File>> _listXlsx(
+    String? dirPath, {
+    required bool includeSubdirs,
+  }) async {
+    if (dirPath == null) return [];
+    final dir = Directory(dirPath);
     if (!await dir.exists()) return [];
+
     final files = <File>[];
+    final subdirs = <Directory>[];
+
     await for (final entity in dir.list()) {
       if (entity is File && entity.path.toLowerCase().endsWith('.xlsx')) {
         files.add(entity);
+      } else if (entity is Directory) {
+        subdirs.add(entity);
       }
     }
+
+    if (includeSubdirs) {
+      for (final sub in subdirs) {
+        try {
+          await for (final entity in sub.list()) {
+            if (entity is File &&
+                entity.path.toLowerCase().endsWith('.xlsx')) {
+              files.add(entity);
+            }
+          }
+        } catch (e, st) {
+          AppLog.error('工作区', '扫描子目录失败 ${fileNameOf(sub.path)}', e, st);
+        }
+      }
+    }
+
     files.sort((a, b) => a.path.compareTo(b.path));
     return files;
   }
+
+  Future<List<File>> listRosterFiles({bool includeSubdirs = false}) =>
+      _listXlsx(studentsPath, includeSubdirs: includeSubdirs);
+
+  Future<List<File>> listQuestionFiles({bool includeSubdirs = false}) =>
+      _listXlsx(questionsPath, includeSubdirs: includeSubdirs);
+
+  // ==================== 学生名单 ====================
 
   /// 加载工作区里所有名单。
   ///
@@ -133,7 +187,7 @@ class WorkspaceService {
   /// 只要某个班级在本应用自己写出的文件里出现过，就只采信这类文件；
   /// 只存在于老师原始文件里的班级（尚未保存过）才从原始文件读取。
   Future<List<Classroom>> loadAllRosters() async {
-    final files = await listRosterFiles();
+    final files = await listRosterFiles(includeSubdirs: true);
     if (files.isEmpty) return [];
 
     final parsed = <ParsedRosterFile>[];
@@ -255,9 +309,8 @@ class WorkspaceService {
 
   /// 名单版本收敛：同名年级班级只留 keepOldest + keepRecent 份。
   ///
-  /// 只对「文件名能被识别出年级班级」的分组生效；
-  /// 识别不出的文件一份都不删 —— 分组一旦搞错就会删掉另一个班的名单，
-  /// 那是不可逆的数据损失，宁可少清理也不能删错（见 RosterManager 的注释）。
+  /// 只扫**根目录**。应用自己产出的文件永远在根目录；
+  /// 子目录里的文件多半是老师手工整理的，不该由应用去删。
   Future<void> _pruneRosterVersions() async {
     final dir = studentsPath;
     if (dir == null) return;
@@ -281,6 +334,7 @@ class WorkspaceService {
   ///   删除班级 → 文件还在 → 下次启动班级又回来了；
   ///   重命名班级 → 旧文件与新文件并存 → 班级列表里出现两个同名班级。
   /// 这里选择归档而不是删除：老师的数据不该由应用悄悄抹掉。
+  /// 同样只处理根目录，不动子目录。
   Future<void> _archiveStaleRosters(Set<String> currentFileNames) async {
     final archive = archivePath;
     if (archive == null) return;
@@ -326,24 +380,10 @@ class WorkspaceService {
     }
   }
 
-  // ==================== 题库管理 ====================
-
-  Future<List<File>> listQuestionFiles() async {
-    if (questionsPath == null) return [];
-    final dir = Directory(questionsPath!);
-    if (!await dir.exists()) return [];
-    final files = <File>[];
-    await for (final entity in dir.list()) {
-      if (entity is File && entity.path.toLowerCase().endsWith('.xlsx')) {
-        files.add(entity);
-      }
-    }
-    files.sort((a, b) => a.path.compareTo(b.path));
-    return files;
-  }
+  // ==================== 题库 ====================
 
   Future<List<QuestionBank>> loadAllQuestionBanks() async {
-    final files = await listQuestionFiles();
+    final files = await listQuestionFiles(includeSubdirs: true);
     final banks = <QuestionBank>[];
     for (final f in files) {
       try {
