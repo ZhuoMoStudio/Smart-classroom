@@ -2,9 +2,9 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-09-25 12:22:05Z
+- 生成时间：2026-09-25 12:51:39Z
 - 触发：push @ main
-- 提交：`1d9bddaf5a30e4529eca0e0f122a14a12498779f`
+- 提交：`bfa673b1b8c1f9e78eec6940ee72125452cd7f5b`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
 - `flutter analyze` 退出码：0
 - `flutter test` 退出码：0
@@ -12,6 +12,46 @@
 ## flutter analyze
 
 ```text
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.3.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_pubspec_licenses 3.0.12 (3.2.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  equatable 2.1.0 (3.0.0 available)
+  excel 3.0.0 (4.0.6 available)
+  file_picker 10.3.8 (13.1.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.0 available)
+  package_info_plus 8.3.1 (10.2.1 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  pdfrx 1.3.5 (2.6.5 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  vector_math 2.2.0 (2.4.3 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+35 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
 
 warning • Unused import: '../services/storage_service.dart'. Try removing the import directive • lib/providers/services_provider.dart:3:8 • unused_import
@@ -94,12 +134,10 @@ warning • Unused import: '../models/score_history.dart'. Try removing the impo
 warning • Unused import: 'cloud/cloud_storage_service.dart'. Try removing the import directive • lib/services/auto_sync_timer.dart:6:8 • unused_import
 warning • Unused import: '../../providers/services_provider.dart'. Try removing the import directive • lib/services/cloud/cloud_storage_service.dart:3:8 • unused_import
 warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/services/excel_service.dart:431:13 • invalid_null_aware_operator
-warning • The value of the local variable 'file' isn't used. Try removing the variable or using it • lib/services/pdf_cache_manager.dart:98:15 • unused_local_variable
    info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • lib/services/roster_manager.dart:268:7 • prefer_const_declarations
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:44:48 • curly_braces_in_flow_control_structures
    info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/textbook_index_service.dart:53:58 • curly_braces_in_flow_control_structures
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/services/update_service.dart:64:14 • prefer_const_constructors
-warning • Unused import: 'package:flutter/foundation.dart'. Try removing the import directive • lib/services/workspace_service.dart:4:8 • unused_import
 warning • The value of the local variable 'surface' isn't used. Try removing the variable or using it • lib/theme/app_theme.dart:9:11 • unused_local_variable
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/theme/app_theme.dart:40:37 • deprecated_member_use
    info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/theme/app_theme.dart:51:17 • prefer_const_constructors
@@ -147,12 +185,52 @@ warning • This default clause is covered by the previous cases. Try removing t
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/widgets/workspace_picker_dialog.dart:93:41 • deprecated_member_use
    info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/widgets/workspace_picker_dialog.dart:163:27 • use_build_context_synchronously
 
-132 issues found. (ran in 10.7s)
+130 issues found. (ran in 13.8s)
 ```
 
 ## flutter test
 
 ```text
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.3.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_pubspec_licenses 3.0.12 (3.2.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  equatable 2.1.0 (3.0.0 available)
+  excel 3.0.0 (4.0.6 available)
+  file_picker 10.3.8 (13.1.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.0 available)
+  package_info_plus 8.3.1 (10.2.1 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  pdfrx 1.3.5 (2.6.5 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  vector_math 2.2.0 (2.4.3 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+35 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
 00:00 +0: loading /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart
 00:00 +0: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
 00:00 +1: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
@@ -164,34 +242,34 @@ warning • This default clause is covered by the previous cases. Try removing t
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
 00:00 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
-00:04 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:05 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+阿拉伯数字班级
-00:05 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+中文数字班级
-00:05 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 高中简称
-00:05 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 小学全称带括号（归一化会去掉括号）
-00:05 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 只有班级没有年级
-00:05 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 全角数字按半角处理
-00:05 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 识别不出时返回双 null
-00:05 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 三年二班 与 3年2班 归一为同一组
-00:05 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 全角与半角数字归一为同一组
-00:05 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 高一年级3班 与 高一3班 归一为同一组
-00:05 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 初二年级2班 与 初二2班 归一为同一组
-00:05 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：高一年级3班 不能与 一年级3班 同组（否则会误删另一个年级）
-00:05 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
-00:05 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 「初中二年级」这类夹了「中」的写法要保留学段前缀
-00:05 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 识别不出时带 ? 前缀，便于保留策略跳过淘汰
-00:05 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 年级前缀映射成 ASCII
-00:05 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 「小学」前缀会被丢掉，只剩年级数字
-00:05 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 纯数字年级班级保持原样
-00:05 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 识别不出时落到 _unsorted
-00:05 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 结果不含 WebDAV 禁止的字符，也不含非 ASCII
-00:05 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 7 份：保留 6、淘汰中间那 1 份
-00:05 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 恰好 6 份：一份都不淘汰
-00:05 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 少于 6 份：一份都不淘汰
-00:05 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最旧的一份始终被保留（这就是「最初始的那一份」）
-00:05 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最新的一份始终被保留
-00:05 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 不同年级/班级互不影响
-00:05 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 三年二班 与 3年2班 混排时视为同一组
-00:05 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 识别不出年级班级的文件永不淘汰
-00:05 +39: All tests passed!
+00:05 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:05 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:06 +39: All tests passed!
 ```
