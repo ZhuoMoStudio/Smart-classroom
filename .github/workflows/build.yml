@@ -3,16 +3,18 @@
 # 产出：Android APK (3 ABIs) + Windows ZIP + Windows Setup.exe
 #
 # 设计要点：
-# 1. verify job 先跑静态分析与单元测试，两个构建 job 都 needs 它 ——
-#    历史上这个仓库有多次「push -> CI -> 编译错误 -> 再修」的循环，
-#    而原因几乎都是没跑过分析器。
+# 1. verify job 先跑静态分析与单元测试，两个构建 job 都 needs 它。
 # 2. flutter analyze 只把**编译级错误**当失败（--no-fatal-warnings --no-fatal-infos）：
 #    当前代码库有大量历史告警，一上来就全当失败只会得到一个没用的红叉。
-#    告警会写进 docs/analyzer-report.md 并回提交，供逐个清理。
-# 3. 版本号不再写死：从 pubspec.yaml 读，单一来源，
-#    避免出现过 README 写 v1.30、pubspec 写 1.31.1、CI 写 1.31.1 这种漂移。
-# 4. pubspec.lock 由 CI 生成并回提交：此仓库的 .gitignore 里有 *.lock，
-#    依赖版本一直没有被锁住，同一份代码在不同时间构建可能解析到不同版本。
+# 3. 【关键】分析与测试都先捕获退出码、不中断 job，把输出写成
+#    docs/analyzer-report.md 并回提交，**最后**才因失败而收尾。
+#    因为这份报告是维护者能看到分析器/测试输出的唯一通道。
+#    曾经把「回提交」放在「跑测试」之后，结果一旦测试失败报告就永远不会落盘 ——
+#    而那恰恰是最需要它的时候。
+# 4. 版本号不再写死：从 pubspec.yaml 读，单一来源，
+#    避免 README 写 v1.30、pubspec 写 1.31.1、CI 写 1.31.1 这种漂移。
+# 5. pubspec.lock 由 CI 生成并回提交：.gitignore 里原本有 *.lock，
+#    依赖版本一直没被锁住。
 # ============================================================
 name: Build & Release
 
@@ -69,65 +71,87 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      # 不在这里失败：先让报告落盘，否则分析失败时反而拿不到任何细节
+      # ---- 不在这里失败：先让输出落盘，否则失败时反而拿不到任何细节 ----
       - name: Analyze
         id: analyze
         run: |
           set +e
-          flutter analyze --no-fatal-warnings --no-fatal-infos > analyzer-raw.txt 2>&1
+          flutter analyze --no-fatal-warnings --no-fatal-infos > analyze-raw.txt 2>&1
           code=$?
-          cat analyzer-raw.txt
+          cat analyze-raw.txt
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Build analyzer report
+      - name: Run unit tests
+        id: test
+        run: |
+          set +e
+          flutter test --reporter expanded > test-raw.txt 2>&1
+          code=$?
+          cat test-raw.txt
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Build diagnostic report
         if: always()
         run: |
           mkdir -p docs
           {
-            echo "# flutter analyze 报告"
+            echo "# CI 静态分析与测试报告"
             echo
             echo "本文件由 CI 的 verify job 自动生成，请勿手工编辑。"
             echo
             echo "- 生成时间：$(date -u '+%Y-%m-%d %H:%M:%SZ')"
             echo "- 触发：${{ github.event_name }} @ ${{ github.ref_name }}"
             echo "- 提交：\`${{ github.sha }}\`"
-            echo "- 分析器退出码：${{ steps.analyze.outputs.exit }}"
+            echo "- Flutter：$(flutter --version | head -1)"
+            echo "- \`flutter analyze\` 退出码：${{ steps.analyze.outputs.exit }}"
+            echo "- \`flutter test\` 退出码：${{ steps.test.outputs.exit }}"
+            echo
+            echo "## flutter analyze"
             echo
             echo '```text'
-            cat analyzer-raw.txt
+            cat analyze-raw.txt 2>/dev/null || echo "（无输出）"
+            echo '```'
+            echo
+            echo "## flutter test"
+            echo
+            echo '```text'
+            tail -400 test-raw.txt 2>/dev/null || echo "（无输出）"
             echo '```'
           } > docs/analyzer-report.md
           echo "报告行数: $(wc -l < docs/analyzer-report.md)"
 
-      - name: Run unit tests
-        run: flutter test --reporter expanded
-
       # 把报告与锁文件回提交（仅限 main 的 push）。
-      # 注意：GITHUB_TOKEN 触发的 push 不会再触发其他 workflow，
-      # 所以这一提交不会造成递归。
-      - name: Commit analyzer report & pubspec.lock
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # GITHUB_TOKEN 触发的 push 不会再触发其他 workflow，不会递归。
+      - name: Commit report & pubspec.lock
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A docs/analyzer-report.md pubspec.lock
           if git diff --cached --quiet; then
-            echo "分析报告与锁文件均无变化，跳过提交。"
+            echo "报告与锁文件均无变化，跳过提交。"
             exit 0
           fi
           git diff --cached --stat
           git commit \
-            -m "chore(ci): 刷新静态分析报告与 pubspec.lock" \
+            -m "chore(ci): 刷新 CI 诊断报告与 pubspec.lock" \
             -m "由 verify job 自动生成。docs/analyzer-report.md 请勿手工编辑。"
           git push
 
-      # 报告已落盘、已提交，现在才真正因为编译错误而失败
-      - name: Fail on analyzer errors
-        if: steps.analyze.outputs.exit != '0'
+      # 报告已落盘、已提交，现在才真正失败
+      - name: Fail if analyzer reported errors
+        if: always() && steps.analyze.outputs.exit != '0'
         run: |
-          echo "::error::flutter analyze 发现编译级错误，详情见仓库里的 docs/analyzer-report.md"
+          echo "::error::flutter analyze 发现编译级错误，详情见 docs/analyzer-report.md"
+          exit 1
+
+      - name: Fail if tests failed
+        if: always() && steps.test.outputs.exit != '0'
+        run: |
+          echo "::error::单元测试失败，详情见 docs/analyzer-report.md"
           exit 1
 
   # ==========================================================
