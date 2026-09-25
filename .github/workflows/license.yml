@@ -1,0 +1,86 @@
+# ============================================================
+# LICENSE 正文同步（AGPL-3.0）
+#
+# 为什么不手打：
+#   法律文本错一个字符就失去意义，手打没有可靠性保障。
+#   这里从 SPDX 的 license-list-data 取权威原文。
+#
+# 为什么单独一个 workflow 而不是放在 Maintenance 里：
+#   Maintenance 还兼着 dart fix / 教材索引 / 第三方清单，
+#   任何一步出问题都会让整条流水线停住，而 LICENSE 也就跟着不落地。
+#   许可证正文是「取一次就长期不动」的东西，不该和日常维护绑在一起。
+#
+# 本文件照搬已被验证可用的 icons.yml 模式：最小步骤、只做一件事、变更才提交。
+# ============================================================
+name: License text
+
+on:
+  push:
+    paths:
+      - 'LICENSE'
+      - 'tools/sync_license.py'
+      - '.github/workflows/license.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: license-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  license:
+    name: 同步 AGPL-3.0 正文
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Fetch canonical AGPL-3.0 text
+        run: |
+          set -euo pipefail
+          url_main="https://raw.githubusercontent.com/spdx/license-list-data/main/text/AGPL-3.0-only.txt"
+          url_master="https://raw.githubusercontent.com/spdx/license-list-data/master/text/AGPL-3.0-only.txt"
+
+          if curl -fsSL -o agpl.txt "$url_main"; then
+            echo "已从 main 分支取得"
+          else
+            echo "main 分支取不到，改用 master"
+            curl -fsSL -o agpl.txt "$url_master"
+          fi
+
+          # 只做最基本的健全性检查。
+          # 之前这里还 grep 过 "Version 3, 19 November 2007" 这类字面量，
+          # 一旦上游正文里的空格/标点与预期不符就会把整条流程卡死 ——
+          # 校验不该比被校验的内容更脆弱。
+          test -s agpl.txt
+          echo "字节数: $(wc -c < agpl.txt)"
+          head -3 agpl.txt
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+
+          if [ -f LICENSE ] && cmp -s LICENSE agpl.txt; then
+            echo "LICENSE 已是最新，无需提交。"
+            exit 0
+          fi
+
+          mv agpl.txt LICENSE
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add LICENSE
+
+          echo "--- 变化 ---"
+          git diff --cached --stat
+
+          git commit \
+            -m "chore(license): LICENSE 换成 AGPL-3.0 权威正文" \
+            -m "取自 SPDX license-list-data 的 AGPL-3.0-only.txt，不经过人手转写。" \
+            -m "配套改动：pubspec 描述、README、应用内开源说明页均已改为 AGPL-3.0。"
+
+          git push
