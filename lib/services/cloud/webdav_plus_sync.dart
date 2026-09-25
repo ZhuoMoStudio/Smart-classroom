@@ -6,7 +6,6 @@ import '../../providers/settings_provider.dart';
 import '../storage_service.dart';
 
 /// WebDAV Plus 云同步服务
-/// v1.30: 增加下载和文件列表功能
 class WebdavPlusSyncService {
   const WebdavPlusSyncService();
 
@@ -14,11 +13,22 @@ class WebdavPlusSyncService {
     return name.replaceAll(RegExp(r'[\\\\/:*?\"<>|]'), '_').trim();
   }
 
-  static String remotePath(SettingsState settings, String fileName) {
+  /// 把仓库内的相对路径拼成 WebDAV 上的完整路径。
+  ///
+  /// 注意只清洗「路径段」，不能对整串做 safeName：
+  /// safeName 会把 `/` 也替换成 `_`，于是一旦传入 `学生信息/三年二班.xlsx`，
+  /// 上传会把它写成远程根目录下的 `学生信息_三年二班.xlsx`，
+  /// 而下载端 listRemoteFiles 是在 `学生信息/` 子目录里找 —— 两边永远对不上，
+  /// 上传看似成功、下载永远拿不到东西，多设备根本无法互通。
+  static String remotePath(SettingsState settings, String relativePath) {
     final base = settings.remoteFolder.replaceAll(RegExp(r'/+$'), '');
-    final parts = <String>[base];
-    parts.add(safeName(fileName));
-    return parts.join('/');
+    final segments = relativePath
+        .split(RegExp(r'[/\\]+'))
+        .where((s) => s.isNotEmpty && s != '.')
+        .map(safeName)
+        .toList();
+    if (segments.isEmpty) return base;
+    return <String>[base, ...segments].join('/');
   }
 
   static Future<WebdavClient> createClient(
