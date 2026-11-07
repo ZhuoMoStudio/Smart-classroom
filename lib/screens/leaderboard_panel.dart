@@ -199,9 +199,13 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         rows: top.map((m) {
           final ri = ms.indexOf(m) + 1; final lk = ls.lockedMemberUid == m.uid;
           final sel = _batchMode && _selected.contains(m.uid);
-          Color? rc; if (ri == 1) {
-            rc = Colors.yellow.shade100;
-          } else if (ri == 2) rc = Colors.grey.shade200; else if (ri == 3) rc = Colors.orange.shade100;
+          // 前三名的高亮色（金 / 银 / 铜）。
+          final Color? rc = switch (ri) {
+            1 => Colors.yellow.shade100,
+            2 => Colors.grey.shade200,
+            3 => Colors.orange.shade100,
+            _ => null,
+          };
           return DataRow(color: WidgetStateProperty.resolveWith((_) => sel ? AppColors.brandPrimary.withValues(alpha: 0.12) : (rc ?? Colors.transparent)),
               cells: [
                 DataCell(Text('$ri', style: TextStyle(fontWeight: ri <= 3 ? FontWeight.bold : null))),
