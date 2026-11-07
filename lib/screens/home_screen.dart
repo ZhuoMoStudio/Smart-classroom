@@ -343,22 +343,28 @@ class _ClassDataViewState extends ConsumerState<_ClassDataView> {
     ]);
   }
 
-  void _addDialog(BuildContext ctx, String what, Function(String) onAdd) {
+  // 弹窗里的 TextEditingController 必须显式 dispose：
+  // 它不在 State 里，没人会替它释放，每次打开对话框都会泄漏一个。
+  Future<void> _addDialog(
+      BuildContext ctx, String what, Function(String) onAdd) async {
     final c = TextEditingController();
-    showDialog(context: ctx, builder: (ctx2) => AlertDialog(
+    await showDialog<void>(context: ctx, builder: (ctx2) => AlertDialog(
       title: Text('添加$what'), content: TextField(controller: c, decoration: InputDecoration(hintText: '${what}名称'), autofocus: true),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
         FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { onAdd(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('添加'))],
     ));
+    c.dispose();
   }
 
-  void _renameDialog(BuildContext ctx, String old, Function(String) cb) {
+  Future<void> _renameDialog(
+      BuildContext ctx, String old, Function(String) cb) async {
     final c = TextEditingController(text: old);
-    showDialog(context: ctx, builder: (ctx2) => AlertDialog(
+    await showDialog<void>(context: ctx, builder: (ctx2) => AlertDialog(
       title: const Text('重命名'), content: TextField(controller: c, autofocus: true),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
         FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { cb(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('确定'))],
     ));
+    c.dispose();
   }
 
   void _confirm(BuildContext ctx, String msg, VoidCallback cb) {

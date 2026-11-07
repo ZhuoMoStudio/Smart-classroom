@@ -84,7 +84,7 @@
 
 ## 开发
 
-Flutter 3.44.9 / Dart 3.10，版本固定在 `.github/workflows/build.yml` 的
+Flutter 3.44.9 / Dart 3.12，版本固定在 `.github/workflows/build.yml` 的
 `FLUTTER_VERSION`。构建与验证全部在 GitHub Actions 完成，本地无需配置工具链。
 
 CI 包含：
