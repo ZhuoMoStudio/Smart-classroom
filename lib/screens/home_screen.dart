@@ -343,28 +343,30 @@ class _ClassDataViewState extends ConsumerState<_ClassDataView> {
     ]);
   }
 
-  // 弹窗里的 TextEditingController 必须显式 dispose：
-  // 它不在 State 里，没人会替它释放，每次打开对话框都会泄漏一个。
   Future<void> _addDialog(
       BuildContext ctx, String what, Function(String) onAdd) async {
-    final c = TextEditingController();
-    await showDialog<void>(context: ctx, builder: (ctx2) => AlertDialog(
-      title: Text('添加$what'), content: TextField(controller: c, decoration: InputDecoration(hintText: '$what名称'), autofocus: true),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
-        FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { onAdd(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('添加'))],
-    ));
-    c.dispose();
+    final v = await showDialog<String>(
+      context: ctx,
+      builder: (_) => _TextInputDialog(
+        title: '添加$what',
+        hint: '$what名称',
+        confirmLabel: '添加',
+      ),
+    );
+    if (v != null && v.isNotEmpty) onAdd(v);
   }
 
   Future<void> _renameDialog(
       BuildContext ctx, String old, Function(String) cb) async {
-    final c = TextEditingController(text: old);
-    await showDialog<void>(context: ctx, builder: (ctx2) => AlertDialog(
-      title: const Text('重命名'), content: TextField(controller: c, autofocus: true),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
-        FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { cb(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('确定'))],
-    ));
-    c.dispose();
+    final v = await showDialog<String>(
+      context: ctx,
+      builder: (_) => _TextInputDialog(
+        title: '重命名',
+        initialValue: old,
+        confirmLabel: '确定',
+      ),
+    );
+    if (v != null && v.isNotEmpty) cb(v);
   }
 
   void _confirm(BuildContext ctx, String msg, VoidCallback cb) {
@@ -716,5 +718,67 @@ class _LifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) onBackground();
+  }
+}
+
+
+/// 单行文本输入对话框。
+///
+/// 为什么单独抽一个 StatefulWidget，而不是在调用处 `final c = TextEditingController()`：
+/// controller 必须跟着对话框的生命周期释放。若在 `await showDialog(...)` 返回后立刻
+/// dispose，退出动画期间 TextField 还在用它，会抛 "used after being disposed"；
+/// 而不 dispose 则每次弹窗泄漏一个 controller。让它成为 State 的字段，
+/// 由框架在路由真正销毁时释放，两个问题一起没有。
+class _TextInputDialog extends StatefulWidget {
+  final String title;
+  final String? hint;
+  final String initialValue;
+  final String confirmLabel;
+
+  const _TextInputDialog({
+    required this.title,
+    required this.confirmLabel,
+    this.hint,
+    this.initialValue = '',
+  });
+
+  @override
+  State<_TextInputDialog> createState() => _TextInputDialogState();
+}
+
+class _TextInputDialogState extends State<_TextInputDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final v = _controller.text.trim();
+    if (v.isEmpty) return;
+    Navigator.pop(context, v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: InputDecoration(hintText: widget.hint),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
+      ],
+    );
   }
 }
