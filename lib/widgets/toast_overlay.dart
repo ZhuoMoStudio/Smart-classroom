@@ -47,7 +47,7 @@ class ToastOverlay {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: bg.withOpacity(0.4),
+                        color: bg.withValues(alpha: 0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -96,7 +96,6 @@ class ToastOverlay {
       case ToastType.error:
         return (Colors.red.shade600, Icons.error, Colors.white);
       case ToastType.info:
-      default:
         return (
           theme.colorScheme.inverseSurface,
           Icons.info_outline,

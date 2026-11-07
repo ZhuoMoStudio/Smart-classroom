@@ -1,4 +1,3 @@
-import 'dart:ui' show Brightness;
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -23,8 +22,8 @@ class AppColors {
   static const Color frostDark = Color(0x993C3C43);
   static const Color frostBorder = Color(0x338E8E93);
   static const Color neutral500 = Color(0xFF8E8E93);
-  static Color get shadowLight => Colors.black.withOpacity(0.04);
-  static Color get shadowMedium => Colors.black.withOpacity(0.08);
+  static Color get shadowLight => Colors.black.withValues(alpha: 0.04);
+  static Color get shadowMedium => Colors.black.withValues(alpha: 0.08);
   static const Color neutral200 = Color(0xFFE8E8ED);
   static const Color neutral300 = Color(0xFFD1D1D6);
   static const Color neutral400 = Color(0xFFAEAEB2);
@@ -42,8 +41,8 @@ class AppColors {
   static const Color darkFrostCard = Color(0xB32C2C2E);
   static const Color darkFrostPopup = Color(0xCC2C2C2E);
   static const Color darkFrostBorder = Color(0x33545558);
-  static Color get darkShadowLight => Colors.black.withOpacity(0.2);
-  static Color get darkShadowMedium => Colors.black.withOpacity(0.35);
+  static Color get darkShadowLight => Colors.black.withValues(alpha: 0.2);
+  static Color get darkShadowMedium => Colors.black.withValues(alpha: 0.35);
 }
 
 class AppRadius {
@@ -58,27 +57,27 @@ class AppShadows {
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
   static List<BoxShadow> get level2 => [
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 12,
-            offset: Offset(0, 4)),
+            offset: const Offset(0, 4)),
         BoxShadow(
             color: AppColors.shadowMedium,
             blurRadius: 4,
-            offset: Offset(0, 1))
+            offset: const Offset(0, 1))
       ];
   static List<BoxShadow> get level3 => [
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 24,
-            offset: Offset(0, 8)),
+            offset: const Offset(0, 8)),
         BoxShadow(
             color: AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
 
   // Dark mode shadows
@@ -86,17 +85,17 @@ class AppShadows {
         BoxShadow(
             color: AppColors.darkShadowLight,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
   static List<BoxShadow> get darkLevel2 => [
         BoxShadow(
             color: AppColors.darkShadowLight,
             blurRadius: 12,
-            offset: Offset(0, 4)),
+            offset: const Offset(0, 4)),
         BoxShadow(
             color: AppColors.darkShadowMedium,
             blurRadius: 4,
-            offset: Offset(0, 1))
+            offset: const Offset(0, 1))
       ];
 }
 

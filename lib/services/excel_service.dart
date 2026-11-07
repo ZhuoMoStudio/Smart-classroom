@@ -428,7 +428,9 @@ class ExcelService {
     final c = sheet.cell(
       CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
     );
-    return c?.value?.toString() ?? '';
+    // excel 3.x 的 Sheet.cell() 返回非空 Data，Data.value 也是非空的 CellValue：
+    // 之前的 `?.` 与 `?? ''` 在这里都是死代码（分析器会直接报出来）。
+    return c.value.toString();
   }
 
   /// 读单元格里的数字。

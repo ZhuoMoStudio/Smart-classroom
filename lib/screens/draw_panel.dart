@@ -4,7 +4,6 @@ import '../providers/draw_provider.dart';
 import '../providers/class_provider.dart';
 import '../models/class_model.dart';
 import '../services/audio_engine.dart';
-import '../theme/design_tokens.dart';
 import '../widgets/score_button.dart';
 import '../widgets/rolling_display.dart';
 import '../widgets/toast_overlay.dart';
@@ -148,7 +147,7 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
           Icon(icon, size: 14, color: c), const SizedBox(width: 4),
           Text(label, style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(width: 4),
-          Text('$count $unit', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+          Text('$count $unit', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
         ]),
       ),
       const SizedBox(height: 6),
@@ -162,7 +161,7 @@ class _DrawPanelState extends ConsumerState<DrawPanel> {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(drawnName, style: theme.textTheme.titleSmall?.copyWith(color: c, fontWeight: FontWeight.bold)),
             if (drawnObj != null)
-              Text('积分: ${drawnObj.score.toStringAsFixed(1)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+              Text('积分: ${drawnObj.score.toStringAsFixed(1)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
           ]),
         ),
         if (isMember) ...[
@@ -196,7 +195,7 @@ class _GroupLockWidget extends ConsumerWidget {
     return Row(mainAxisSize: MainAxisSize.min, children: [
       if (ds.lockedGroupUid != null) ...[
         const Icon(Icons.lock, size: 13, color: Colors.orange), const SizedBox(width: 3),
-        Text('已锁定', style: TextStyle(fontSize: 11, color: Colors.orange)), const SizedBox(width: 6),
+        const Text('已锁定', style: TextStyle(fontSize: 11, color: Colors.orange)), const SizedBox(width: 6),
         TextButton.icon(icon: const Icon(Icons.lock_open, size: 13),
             label: const Text('解锁', style: TextStyle(fontSize: 11)),
             onPressed: () => notifier.unlockGroup()),
@@ -256,7 +255,7 @@ class _PulseButtonState extends State<_PulseButton> with SingleTickerProviderSta
             decoration: BoxDecoration(
               shape: BoxShape.circle, color: widget.backgroundColor,
               border: Border.all(color: widget.borderColor, width: 2),
-              boxShadow: [BoxShadow(color: widget.borderColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))],
+              boxShadow: [BoxShadow(color: widget.borderColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))],
             ),
             child: Center(child: Text(widget.text,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20, color: widget.borderColor, fontWeight: FontWeight.bold))),

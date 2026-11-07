@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/settings_provider.dart';
-import '../../providers/services_provider.dart';
 import '../workspace_service.dart';
 import '../storage_service.dart';
 import 'webdav_plus_sync.dart';

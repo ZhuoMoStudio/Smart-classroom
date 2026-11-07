@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 桌面图标下的名字。应用内文案由 Flutter 的 gen-l10n 管理，
+         这里只覆盖 Android 系统会读的那一个字符串。 -->
+    <string name="app_name">灵动课堂</string>
+</resources>

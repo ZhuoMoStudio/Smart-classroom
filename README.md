@@ -1,6 +1,12 @@
 # 灵动课堂 (Smart Classroom)
 
+[![Build & Release](https://github.com/ZhuoMoStudio/Smart-classroom/actions/workflows/build.yml/badge.svg)](https://github.com/ZhuoMoStudio/Smart-classroom/actions/workflows/build.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+
 课堂互动管理工具 — 教师专用，Android 与 Windows 双端可用。
+
+**[下载最新版](https://github.com/ZhuoMoStudio/Smart-classroom/releases/latest)** ·
+[更新日志](CHANGELOG.md) · [参与开发](CONTRIBUTING.md)
 
 **本项目采用 [AGPL-3.0](LICENSE) 协议。** 你可以自由使用、修改、分发，包括商用，
 但若分发修改版、或把它作为网络服务提供给他人使用，必须以同样协议公开完整源代码。
@@ -78,18 +84,48 @@
 
 ## 开发
 
-Flutter 3.44 / Dart 3.12。构建与验证全部在 GitHub Actions 完成，本地无需配置工具链。
+Flutter 3.44.9 / Dart 3.12，版本固定在 `.github/workflows/build.yml` 的
+`FLUTTER_VERSION`。构建与验证全部在 GitHub Actions 完成，本地无需配置工具链。
 
 CI 包含：
 
 - **Build & Release**：先跑 `flutter analyze`（编译级错误会导致失败）与 `flutter test`，
-  两者通过才出包；分析结果写入 `docs/analyzer-report.md` 并回提交
+  两者通过才出包；分析结果写入 `docs/analyzer-report.md` 并回提交。
+  **PR 只跑 verify**（分析 + 测试），完整打包只在 `main` / tag 上做
 - **Maintenance**：清理教材索引、`dart fix --apply`、生成第三方协议清单。
   其中 `dart fix` 的自动改动只有在 `analyze` + `test` 都通过时才会保留，否则自动回滚
 - **License text**：从 SPDX 取 AGPL-3.0 权威正文写入 LICENSE（不手打法律文本）
 - **Workflow lint**：校验 `.github/workflows/*.yml` 是否合法。
   GitHub 对语法无效的 workflow 不会让 push 报错，只会静默禁用那一个文件，
   所以需要一个独立的校验器来兜住这类问题
+- **Dependabot**：每周检查 pub 依赖与 Actions 版本，开 PR 走同一套 verify
+
+构建产物（每次 `main` 构建都可在 Actions 页面下载）：
+
+| 产物 | 说明 |
+|---|---|
+| `SmartClassroom_v<版本>_arm64-v8a.apk` | 现代 Android 手机/平板 |
+| `SmartClassroom_v<版本>_armeabi-v7a.apk` | 老旧 32 位设备 |
+| `SmartClassroom_v<版本>_x86_64.apk` | 模拟器 / x86 平板 |
+| `SmartClassroom_v<版本>_windows.zip` | Windows 绿色版 |
+| `SmartClassroom_v<版本>_Setup.exe` | Windows 安装包 |
+
+### Android 签名
+
+仓库**不保存 keystore**。CI 在没有密钥时退回 debug 签名 —— 能装能用，
+但**不适合分发给别人**（任何人的 debug key 都能覆盖安装）。
+
+要发布正式包，在仓库 Settings → Secrets and variables → Actions 里配置：
+
+| Secret | 内容 |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 upload-keystore.jks` 的输出 |
+| `ANDROID_KEY_ALIAS` | keystore 里的 alias |
+| `ANDROID_KEY_PASSWORD` | alias 对应密码 |
+| `ANDROID_STORE_PASSWORD` | keystore 密码 |
+
+配置后 CI 自动生成 `android/key.properties` 并签出正式包；
+日志里会明确写出本次用的是哪种签名。
 
 辅助脚本：
 

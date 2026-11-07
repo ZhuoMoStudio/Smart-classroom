@@ -155,7 +155,7 @@ class PdfCacheManager {
     String url, {
     void Function(int received, int total)? onProgress,
     void Function(DownloadState state)? onStatus,
-    int mirrorIndex = 0,
+    bool useMirror = false,
   }) async {
     final cachePath = await _cachePathForUrl(url);
 
@@ -169,12 +169,14 @@ class PdfCacheManager {
     _downloadStates[url] = DownloadState.downloading;
     onStatus?.call(DownloadState.downloading);
 
-    final proxyUrls = GhProxyService.toProxyUrls(url);
+    // 缓存键始终是**原始 URL**。旧实现让调用方先把 URL 换成镜像地址再传进来，
+    // 于是缓存文件名按镜像 URL 计算，下次用原始 URL 查缓存永远查不到 ——
+    // 同一本教材会被重复下载，而且镜像一换就全部失效。
+    final candidates = GhProxyService.candidates(url, useMirror: useMirror);
 
-    for (int i = mirrorIndex; i < proxyUrls.length; i++) {
+    for (final proxyUrl in candidates) {
       final tempFile = File('$cachePath.tmp');
       try {
-        final proxyUrl = proxyUrls[i];
         final client = http.Client();
         try {
           final request = http.Request('GET', Uri.parse(proxyUrl));
@@ -191,7 +193,10 @@ class PdfCacheManager {
           int receivedBytes = 0;
           final sink = tempFile.openWrite();
           try {
-            await for (final chunk in response.stream) {
+            // 逐块超时：连接建立后服务端挂住不动是最常见的失败形态，
+            // 只给 send() 设超时覆盖不到它。
+            await for (final chunk
+                in response.stream.timeout(const Duration(seconds: 30))) {
               receivedBytes += chunk.length;
               sink.add(chunk);
               onProgress?.call(receivedBytes, totalBytes);

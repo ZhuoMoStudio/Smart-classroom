@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
+import '../providers/settings_provider.dart';
 import '../services/pdf_annotation_store.dart';
 import '../services/pdf_cache_manager.dart';
 import '../services/pdf_merge_service.dart';
@@ -129,6 +130,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
           _status = '下载中...';
           fp = await cm.downloadAndCache(
             widget.networkUrl!,
+            useMirror: ref.read(settingsProvider).downloadSource == 'mirror',
             onProgress: (r, t) {
               if (mounted && t > 0) setState(() => _progress = r / t);
             },
@@ -444,7 +446,7 @@ class _State extends ConsumerState<PdfReaderScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 8),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.78),
+            color: Colors.black.withValues(alpha: 0.78),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Wrap(

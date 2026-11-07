@@ -1,12 +1,16 @@
 ; Smart Classroom Windows Installer
-; Inno Setup Script for v1.20.0
 ; Generates a single-file setup.exe with auto-uninstall
 ;
 ; 注意：此文件在 CI 中被复制到仓库根目录后编译（Copy-Item installer/setup.iss setup.iss）
 ; 所有路径均相对于仓库根目录
+;
+; 版本号由 CI 通过 /DMyAppVersion=<pubspec 版本> 传入。
+; 以前这里写死 1.25.0，于是安装包文件名是新的、控制面板里显示的版本却永远是 1.25.0。
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0"
+#endif
 
 #define MyAppName "灵动课堂 Smart Classroom"
-#define MyAppVersion "1.25.0"
 #define MyAppPublisher "松庭灼墨 (ZhuoMoStudio)"
 #define MyAppURL "https://github.com/ZhuoMoStudio/Smart-classroom"
 #define MyAppExeName "smart_classroom.exe"
@@ -19,6 +23,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+AppVerName={#MyAppName} {#MyAppVersion}
 DefaultDirName={autopf}\SmartClassroom
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -31,7 +36,6 @@ WizardStyle=modern
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesInstallIn64BitMode=x64compatible
-ChangesAssociations=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupIconFile=windows\runner\resources\app_icon.ico
 
@@ -54,15 +58,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "启动 {#MyAppName}"; Flags: postinstall nowait skipifsilent shellexec
 
-[UninstallRun]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--uninstall"; Flags: runhidden
 
-[Registry]
-; 关联 .scdata 文件（可选）
-Root: HKCU; Subkey: "Software\Classes\.scdata"; ValueType: string; ValueName: ""; ValueData: "SmartClassroom.Data"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SmartClassroom.Data"; ValueType: string; ValueName: ""; ValueData: "灵动课堂数据文件"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SmartClassroom.Data\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SmartClassroom.Data\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
 
 [Code]
 function InitializeSetup: Boolean;

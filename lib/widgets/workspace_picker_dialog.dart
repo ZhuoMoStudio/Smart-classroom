@@ -60,7 +60,7 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
                 height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.brandPrimary.withOpacity(0.1),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
                 ),
                 child: const Icon(Icons.folder_open,
                     size: 36, color: AppColors.brandPrimary),
@@ -90,7 +90,7 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.08),
+                    color: Colors.green.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -160,7 +160,9 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
       if (path != null && mounted) {
         await ws.ensureInitialTemplates();
         await ref.read(dataServiceProvider).loadFromWorkspace();
-        ToastOverlay.show(context, '工作目录已设置 ✓', type: ToastType.success);
+        if (mounted) {
+          ToastOverlay.show(context, '工作目录已设置 ✓', type: ToastType.success);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -169,8 +171,9 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+    if (!mounted) return;
     widget.onComplete?.call();
-    if (mounted) Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 
   void _skip() {

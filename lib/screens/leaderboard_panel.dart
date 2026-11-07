@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import '../providers/class_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../models/class_model.dart';
-import '../models/score_history.dart';
 import '../services/excel_service.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/rank_badge.dart';
@@ -40,7 +39,11 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         .batchChangeScore(cls.uid, _selected.toList(), delta);
 
     if (changed > 0) {
-      if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+      if (delta > 0) {
+        AudioEngine().playScoreUp();
+      } else {
+        AudioEngine().playScoreDown();
+      }
     }
     setState(() => _selected.clear());
     // 旧实现先 clear() 再读 _selected.length，
@@ -82,7 +85,11 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
       ToastOverlay.show(context, '该学生当前为 0 分，无法再扣', type: ToastType.warning);
       return;
     }
-    if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+    if (delta > 0) {
+      AudioEngine().playScoreUp();
+    } else {
+      AudioEngine().playScoreDown();
+    }
   }
 
   @override
@@ -142,7 +149,7 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
       if (_batchMode && _selected.isNotEmpty)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          color: AppColors.brandPrimary.withOpacity(0.08),
+          color: AppColors.brandPrimary.withValues(alpha: 0.08),
           child: Row(children: [
             Text('已选 ${_selected.length} 人', style: const TextStyle(fontSize: 12)),
             const Spacer(),
@@ -159,7 +166,7 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
               final r = cs.history.records[i];
               return Padding(padding: const EdgeInsets.only(right: 4), child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(color: (r.isPositive ? Colors.green : Colors.red).withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(color: (r.isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                 child: Text('${r.memberName} ${r.isPositive ? "+" : ""}${r.delta.toStringAsFixed(1)}',
                     style: TextStyle(fontSize: 10, color: r.isPositive ? Colors.green : Colors.red)),
               ));
@@ -192,14 +199,26 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         rows: top.map((m) {
           final ri = ms.indexOf(m) + 1; final lk = ls.lockedMemberUid == m.uid;
           final sel = _batchMode && _selected.contains(m.uid);
-          Color? rc; if (ri == 1) rc = Colors.yellow.shade100; else if (ri == 2) rc = Colors.grey.shade200; else if (ri == 3) rc = Colors.orange.shade100;
-          return DataRow(color: WidgetStateProperty.resolveWith((_) => sel ? AppColors.brandPrimary.withOpacity(0.12) : (rc ?? Colors.transparent)),
+          // 前三名的高亮色（金 / 银 / 铜）。
+          final Color? rc = switch (ri) {
+            1 => Colors.yellow.shade100,
+            2 => Colors.grey.shade200,
+            3 => Colors.orange.shade100,
+            _ => null,
+          };
+          return DataRow(color: WidgetStateProperty.resolveWith((_) => sel ? AppColors.brandPrimary.withValues(alpha: 0.12) : (rc ?? Colors.transparent)),
               cells: [
                 DataCell(Text('$ri', style: TextStyle(fontWeight: ri <= 3 ? FontWeight.bold : null))),
                 DataCell(GestureDetector(
                   onTap: () {
-                    if (_batchMode) { setState(() { if (_selected.contains(m.uid)) _selected.remove(m.uid); else _selected.add(m.uid); }); }
-                    else ref.read(leaderboardProvider.notifier).lockMember(m.uid);
+                    if (_batchMode) { setState(() { if (_selected.contains(m.uid)) {
+                      _selected.remove(m.uid);
+                    } else {
+                      _selected.add(m.uid);
+                    } }); }
+                    else {
+                      ref.read(leaderboardProvider.notifier).lockMember(m.uid);
+                    }
                   },
                   onLongPress: () { setState(() { _batchMode = true; _selected.add(m.uid); }); },
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -308,7 +327,9 @@ Future<void> _exportReport(BuildContext context, WidgetRef ref) async {
       );
     }
   } catch (e) {
-    ToastOverlay.show(context, '导出失败: $e', type: ToastType.error);
+    if (context.mounted) {
+      ToastOverlay.show(context, '导出失败: $e', type: ToastType.error);
+    }
   }
 }
 

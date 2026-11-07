@@ -91,12 +91,12 @@ class GlassPanel extends StatelessWidget {
             color: backgroundColor ??
                 (isDark
                     ? AppColors.darkFrostCard
-                    : Colors.white.withOpacity(0.55)),
+                    : Colors.white.withValues(alpha: 0.55)),
             borderRadius: borderRadius ?? BorderRadius.circular(16),
             border: Border.all(
               color: isDark
                   ? AppColors.darkFrostBorder
-                  : Colors.grey.withOpacity(0.12),
+                  : Colors.grey.withValues(alpha: 0.12),
             ),
           ),
           child: child,

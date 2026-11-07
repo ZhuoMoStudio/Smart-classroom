@@ -6,7 +6,6 @@ class AppTheme {
   static ThemeData _base(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
-    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
     final frostCard =
         isDark ? AppColors.darkFrostCard : AppColors.frostCard;
     final frostPopup =
@@ -37,7 +36,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark
-            ? AppColors.darkSurface.withOpacity(0.7)
+            ? AppColors.darkSurface.withValues(alpha: 0.7)
             : const Color(0xB3F2F2F7),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -48,7 +47,7 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                BorderSide(color: AppColors.brandPrimary, width: 1.5)),
+                const BorderSide(color: AppColors.brandPrimary, width: 1.5)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
@@ -68,7 +67,7 @@ class AppTheme {
         backgroundColor: frostPopup,
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius:
                 BorderRadius.vertical(top: Radius.circular(28))),
         elevation: 0,
@@ -86,7 +85,7 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
         backgroundColor: frostBar,
-        indicatorColor: AppColors.brandPrimary.withOpacity(0.12),
+        indicatorColor: AppColors.brandPrimary.withValues(alpha: 0.12),
         labelTextStyle: WidgetStateProperty.resolveWith((s) {
           if (s.contains(WidgetState.selected)) {
             return const TextStyle(

@@ -1,12 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/textbook_index_service.dart';
 import '../services/pdf_cache_manager.dart';
-import '../services/gh_proxy_service.dart';
 import '../providers/settings_provider.dart';
-import '../theme/design_tokens.dart';
 import '../theme/route_utils.dart';
 import '../screens/pdf_reader_screen.dart';
 import 'toast_overlay.dart';
@@ -56,10 +53,12 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
       await TextbookIndexService.load();
       if (mounted) setState(() => _loaded = true);
     } catch (e) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _loaded = true;
         _error = '加载教材索引失败: $e';
       });
+      }
     }
   }
 
@@ -146,9 +145,12 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
       final cm = PdfCacheManager();
       final useMirror =
           ref.read(settingsProvider).downloadSource == 'mirror';
-      final finalUrl = useMirror ? GhProxyService.toProxyUrl(url) : url;
 
-      final localPath = await cm.downloadAndCache(finalUrl,
+      // 传**原始 URL**，由下载器自己排候选源。
+      // 旧代码先把 URL 换成镜像地址再传进去，缓存键就变成了镜像地址，
+      // 下次按原始 URL 查缓存必然落空。
+      final localPath = await cm.downloadAndCache(url,
+          useMirror: useMirror,
           onProgress: (r, t) {
             if (mounted && t > 0) {
               setState(() =>
@@ -321,11 +323,13 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
               children: [
                 if (i > 0)
                   Icon(Icons.chevron_right, size: 14,
-                      color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                 GestureDetector(
                   onTap: () {
                     // 点击面包屑回到对应层级
-                    while (_breadcrumbs.length > i + 1) _goBack();
+                    while (_breadcrumbs.length > i + 1) {
+                      _goBack();
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -334,7 +338,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: i == _breadcrumbs.length - 1
                             ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withOpacity(0.5),
+                            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         fontWeight: i == _breadcrumbs.length - 1
                             ? FontWeight.w600 : null,
                       ),
@@ -404,7 +408,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
                           leading: Container(
                             width: 32, height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.08),
+                              color: Colors.red.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(Icons.picture_as_pdf,
@@ -473,7 +477,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             children: [
-              Icon(Icons.library_books, size: 14, color: Colors.grey),
+              const Icon(Icons.library_books, size: 14, color: Colors.grey),
               const SizedBox(width: 4),
               Text(
                 '共 ${stats['stages']} 个学段 · ${stats['subjects']} 个科目 · ${stats['files']} 本教材',
@@ -497,7 +501,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
                   leading: Container(
                     width: 40, height: 40,
                     decoration: BoxDecoration(
-                      color: _iconColorForStage(stage).withOpacity(0.12),
+                      color: _iconColorForStage(stage).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(Icons.school,
@@ -532,7 +536,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
             leading: Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: _subjectIconColor(subject).withOpacity(0.1),
+                color: _subjectIconColor(subject).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(_subjectIcon(subject),
@@ -565,7 +569,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
             leading: Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.08),
+                color: Colors.blue.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.library_books,
@@ -598,7 +602,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
             leading: Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.08),
+                color: Colors.red.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.picture_as_pdf,
@@ -629,10 +633,14 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
     if (subject.contains('数学')) return Colors.blue;
     if (subject.contains('英语')) return Colors.green;
     if (subject.contains('物理') || subject.contains('化学') ||
-        subject.contains('生物') || subject.contains('科学')) return Colors.teal;
+        subject.contains('生物') || subject.contains('科学')) {
+      return Colors.teal;
+    }
     if (subject.contains('历史') || subject.contains('地理')) return Colors.brown;
     if (subject.contains('音乐') || subject.contains('美术') ||
-        subject.contains('艺术')) return Colors.pink;
+        subject.contains('艺术')) {
+      return Colors.pink;
+    }
     if (subject.contains('体育')) return Colors.orange;
     return Colors.grey;
   }

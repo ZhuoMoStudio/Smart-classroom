@@ -66,10 +66,22 @@ android {
             signingConfig = (keystoreProperties.getProperty('keyAlias', null) != null)
                 ? signingConfigs.release
                 : signingConfigs.debug
-            // Flutter 已通过 --split-per-abi 优化体积，R8 会导致 Play Core 缺失
+            // R8 保持关闭，理由不是"会坏事"，而是**收益不抵风险**：
+            // Flutter 应用的 Java 侧只有极薄的一层胶水，真正占体积的是
+            // Dart AOT 快照与 pdfrx 的 PDFium 原生库，R8 影响不到它们；
+            // 而 audioplayers / flutter_secure_storage / file_picker 这些插件
+            // 一旦缺 keep 规则，出事是在老师的手机上崩溃，构建阶段看不出来。
+            // 真要开，请先补全 keep 规则并在真机上完整回归。
             minifyEnabled false
             shrinkResources false
         }
+    }
+
+    // APK 里的依赖元数据块（META-INF 下）对运行时没有作用，
+    // 关掉既能少几十 KB，也不把内部依赖清单交给分发对象。
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 

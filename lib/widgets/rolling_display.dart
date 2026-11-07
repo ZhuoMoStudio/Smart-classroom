@@ -85,7 +85,6 @@ class RollingDisplayState extends State<RollingDisplay>
       return SizedBox(height: widget.itemHeight);
     }
 
-    final isAnimating = _controller.isAnimating;
 
     return SizedBox(
       height: widget.itemHeight,
@@ -104,13 +103,13 @@ class RollingDisplayState extends State<RollingDisplay>
                       Theme.of(context)
                           .colorScheme
                           .surface
-                          .withOpacity(0.9),
+                          .withValues(alpha: 0.9),
                       Colors.transparent,
                       Colors.transparent,
                       Theme.of(context)
                           .colorScheme
                           .surface
-                          .withOpacity(0.9),
+                          .withValues(alpha: 0.9),
                     ],
                     stops: const [0.0, 0.2, 0.8, 1.0],
                   ),

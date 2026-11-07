@@ -23,12 +23,9 @@ class _RankBadgeState extends State<RankBadge>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
-  double _previousScore = 0;
-
   @override
   void initState() {
     super.initState();
-    _previousScore = widget.score;
     _controller = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -49,7 +46,6 @@ class _RankBadgeState extends State<RankBadge>
   }
 
   void _trigger() {
-    _previousScore = widget.score;
     _controller.forward().then((_) {
       if (mounted) _controller.reverse();
     });

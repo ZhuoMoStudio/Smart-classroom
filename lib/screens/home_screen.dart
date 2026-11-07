@@ -15,17 +15,14 @@ import '../services/auto_sync_timer.dart';
 import '../services/cloud/webdav_plus_sync.dart';
 import '../providers/services_provider.dart';
 import '../theme/design_tokens.dart';
-import '../theme/responsive.dart';
 import '../theme/route_utils.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/toast_overlay.dart';
 import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
 import '../widgets/textbook_panel.dart';
-import '../widgets/workspace_picker_dialog.dart';
 import '../services/audio_engine.dart';
 import '../services/excel_service.dart';
-import '../models/class_model.dart';
 import 'draw_panel.dart';
 import 'question_panel.dart';
 import 'timer_panel.dart';
@@ -109,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _toolBtn(int i, bool compact) => GestureDetector(
     onTap: () => setState(() => _tabIndex = i),
     child: FrostedPanel(blur: 8, padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8, horizontal: 4),
-      backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withOpacity(0.12) : Colors.transparent,
+      backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Icon(_tabIcons[i], size: compact ? 20 : 22,
@@ -140,12 +137,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: List.generate(_tabLabels.length, (i) => GestureDetector(
         onTap: () => setState(() => _tabIndex = i),
         child: FrostedPanel(blur: 6, padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-          backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withOpacity(0.12) : Colors.transparent,
+          backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(_tabIcons[i], size: 18, color: _tabIndex == i ? AppColors.brandPrimary : AppColors.textSecondary),
             if (_tabIndex == i) ...[const SizedBox(width: 4),
-              Text(_tabLabels[i], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandPrimary))],
+              Text(_tabLabels[i], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandPrimary))],
           ]),
         ),
       )),
@@ -179,7 +176,7 @@ class _ClassroomView extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis)),
                     const SizedBox(width: 4),
                     Text('${cls.groups.length}组·${cls.allMembers.length}人',
-                        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   ])
                 : Text('请先添加班级', style: TextStyle(fontSize: 13, color: theme.colorScheme.outline)),
           ),
@@ -193,7 +190,7 @@ class _ClassroomView extends ConsumerWidget {
           // 重置排除
           InkWell(
             onTap: () { ref.read(drawProvider.notifier).resetDrawnOnly(); ToastOverlay.show(context, '已重置排除列表'); },
-            child: Icon(Icons.refresh, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+            child: Icon(Icons.refresh, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
           ),
         ]),
       ),
@@ -231,9 +228,9 @@ class _ClassroomView extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
-          color: active ? AppColors.brandPrimary.withOpacity(0.15) : Colors.transparent,
+          color: active ? AppColors.brandPrimary.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: active ? AppColors.brandPrimary : theme.colorScheme.outline.withOpacity(0.2)),
+          border: Border.all(color: active ? AppColors.brandPrimary : theme.colorScheme.outline.withValues(alpha: 0.2)),
         ),
         child: Text(label, style: TextStyle(fontSize: 11, color: active ? AppColors.brandPrimary : theme.colorScheme.outline)),
       ),
@@ -346,22 +343,30 @@ class _ClassDataViewState extends ConsumerState<_ClassDataView> {
     ]);
   }
 
-  void _addDialog(BuildContext ctx, String what, Function(String) onAdd) {
-    final c = TextEditingController();
-    showDialog(context: ctx, builder: (ctx2) => AlertDialog(
-      title: Text('添加$what'), content: TextField(controller: c, decoration: InputDecoration(hintText: '${what}名称'), autofocus: true),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
-        FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { onAdd(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('添加'))],
-    ));
+  Future<void> _addDialog(
+      BuildContext ctx, String what, Function(String) onAdd) async {
+    final v = await showDialog<String>(
+      context: ctx,
+      builder: (_) => _TextInputDialog(
+        title: '添加$what',
+        hint: '$what名称',
+        confirmLabel: '添加',
+      ),
+    );
+    if (v != null && v.isNotEmpty) onAdd(v);
   }
 
-  void _renameDialog(BuildContext ctx, String old, Function(String) cb) {
-    final c = TextEditingController(text: old);
-    showDialog(context: ctx, builder: (ctx2) => AlertDialog(
-      title: const Text('重命名'), content: TextField(controller: c, autofocus: true),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
-        FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { cb(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('确定'))],
-    ));
+  Future<void> _renameDialog(
+      BuildContext ctx, String old, Function(String) cb) async {
+    final v = await showDialog<String>(
+      context: ctx,
+      builder: (_) => _TextInputDialog(
+        title: '重命名',
+        initialValue: old,
+        confirmLabel: '确定',
+      ),
+    );
+    if (v != null && v.isNotEmpty) cb(v);
   }
 
   void _confirm(BuildContext ctx, String msg, VoidCallback cb) {
@@ -376,13 +381,19 @@ class _ClassDataViewState extends ConsumerState<_ClassDataView> {
   Future<void> _import(BuildContext ctx) async {
     try {
       final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx', 'xls']);
+      if (!ctx.mounted) return;
       if (r == null || r.files.isEmpty) return;
       final p = r.files.single.path; if (p == null) return;
       final cs = await ExcelService.parseRoster(p);
+      if (!ctx.mounted) return;
       if (cs.isEmpty) { ToastOverlay.show(ctx, '未能解析到任何班级数据'); return; }
       ref.read(classProvider.notifier).loadFromData(cs, cs.first.uid);
       ToastOverlay.show(ctx, '导入成功: ${cs.length} 个班级', type: ToastType.success);
-    } catch (e) { ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error); }
+    } catch (e) {
+      if (ctx.mounted) {
+        ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error);
+      }
+    }
   }
 }
 
@@ -421,12 +432,26 @@ class _SettingsPage extends ConsumerWidget {
         const SizedBox(height: 6), const Divider(height: 1), const SizedBox(height: 6),
         _sec('数据管理', theme),
         _tile(theme, Icons.save_alt, '立即保存', '手动保存当前积分数据', () async {
-          try { await ref.read(dataServiceProvider).save(silent: false, immediate: true); ToastOverlay.show(context, '保存成功', type: ToastType.success); }
-          catch (e) { ToastOverlay.show(context, '保存失败: $e', type: ToastType.error); }
+          try {
+            await ref.read(dataServiceProvider).save(silent: false, immediate: true);
+            if (context.mounted) {
+              ToastOverlay.show(context, '保存成功', type: ToastType.success);
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ToastOverlay.show(context, '保存失败: $e', type: ToastType.error);
+            }
+          }
         }),
         const SizedBox(height: 2),
         _tile(theme, Icons.folder_open, '工作目录', ws.isConfigured ? ws.rootPath!.split('/').last : '未设置', () async {
-          final p = await ws.pickFolder(); if (p != null && ws.isConfigured) { await ws.ensureInitialTemplates(); await ref.read(dataServiceProvider).loadFromWorkspace(); ToastOverlay.show(context, '工作目录已设置', type: ToastType.success); }
+          final p = await ws.pickFolder();
+          if (p == null || !ws.isConfigured) return;
+          await ws.ensureInitialTemplates();
+          await ref.read(dataServiceProvider).loadFromWorkspace();
+          if (context.mounted) {
+            ToastOverlay.show(context, '工作目录已设置', type: ToastType.success);
+          }
         }),
         const SizedBox(height: 2),
         _tile(theme, Icons.import_export, '导入/导出', '名单/模板', () => _showImportExportSheet(context, ref)),
@@ -508,7 +533,7 @@ class _SettingsPage extends ConsumerWidget {
   Widget _sec(String t, ThemeData th) => Text(t, style: TextStyle(fontWeight: FontWeight.bold, color: th.colorScheme.primary, fontSize: 14));
 
   Widget _tile(ThemeData th, IconData ic, String t, String sub, VoidCallback onTap) => Card(
-    elevation: 0, color: th.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+    elevation: 0, color: th.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     child: ListTile(leading: Icon(ic, size: 22, color: th.colorScheme.primary),
         title: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -516,32 +541,41 @@ class _SettingsPage extends ConsumerWidget {
         trailing: const Icon(Icons.chevron_right, size: 18), onTap: onTap, dense: true),
   );
 
+  // DropdownButtonFormField.value 已在 Flutter 3.32 弃用，改为 initialValue。
+  // 但 FormField 只在挂载时读 initialValue，外部设置变化后要换 key 才会重建，
+  // 否则界面上会一直显示旧选项 —— 所以 key 里带上当前值。
   Widget _ddStr(ThemeData th, String label, String value, List<DropdownMenuItem<String>> items, Function(String?) cb) =>
-      DropdownButtonFormField<String>(value: value, decoration: InputDecoration(labelText: label, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)), items: items, onChanged: cb);
+      DropdownButtonFormField<String>(key: ValueKey('$label-$value'), initialValue: value, decoration: InputDecoration(labelText: label, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)), items: items, onChanged: cb);
 
   Widget _ddInt(ThemeData th, String label, int value, List<DropdownMenuItem<int>> items, Function(int?) cb) =>
-      DropdownButtonFormField<int>(value: value, decoration: InputDecoration(labelText: label, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)), items: items, onChanged: cb);
+      DropdownButtonFormField<int>(key: ValueKey('$label-$value'), initialValue: value, decoration: InputDecoration(labelText: label, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)), items: items, onChanged: cb);
 
   Widget _tf(ThemeData th, String label, String value, {String? hint, Function(String)? onChanged}) =>
       TextFormField(initialValue: value, decoration: InputDecoration(labelText: label, isDense: true, hintText: hint, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)), style: const TextStyle(fontSize: 14), onChanged: onChanged);
 
   Color _syncBg(SyncStatus s) {
     switch (s) {
-      case SyncStatus.syncing: return Colors.blue.withOpacity(0.08);
-      case SyncStatus.online: return Colors.green.withOpacity(0.08);
-      case SyncStatus.error: return Colors.red.withOpacity(0.08);
-      case SyncStatus.offline: return Colors.orange.withOpacity(0.08);
-      default: return Colors.grey.withOpacity(0.06);
+      case SyncStatus.syncing: return Colors.blue.withValues(alpha: 0.08);
+      case SyncStatus.online: return Colors.green.withValues(alpha: 0.08);
+      case SyncStatus.error: return Colors.red.withValues(alpha: 0.08);
+      case SyncStatus.offline: return Colors.orange.withValues(alpha: 0.08);
+      default: return Colors.grey.withValues(alpha: 0.06);
     }
   }
 
   void _showPicker(BuildContext ctx, SettingsState s, WidgetRef ref) async {
     final r = await showModalBottomSheet<String>(context: ctx,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (c) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        RadioListTile<String>(title: const Text('GitHub 官方源'), value: 'github', groupValue: s.downloadSource, onChanged: (v) => Navigator.pop(c, v)),
-        RadioListTile<String>(title: const Text('国内镜像加速'), value: 'mirror', groupValue: s.downloadSource, onChanged: (v) => Navigator.pop(c, v)),
-      ])));
+      builder: (c) => SafeArea(
+        child: RadioGroup<String>(
+          groupValue: s.downloadSource,
+          onChanged: (v) => Navigator.pop(c, v),
+          child: const Column(mainAxisSize: MainAxisSize.min, children: [
+            RadioListTile<String>(title: Text('GitHub 官方源'), value: 'github'),
+            RadioListTile<String>(title: Text('国内镜像加速'), value: 'mirror'),
+          ]),
+        ),
+      ));
     if (r != null) ref.read(settingsProvider.notifier).update(s.copyWith(downloadSource: r));
   }
 }
@@ -572,7 +606,7 @@ class _SyncButtonsState extends ConsumerState<_SyncButtons> {
     setState(() => _testing = true);
     final s = ref.read(settingsProvider);
     final pw = await ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
-    final ok = await WebdavPlusSyncService().testConnection(settings: s, password: pw);
+    final ok = await const WebdavPlusSyncService().testConnection(settings: s, password: pw);
     if (mounted) { setState(() => _testing = false); if (ok) ref.read(syncProvider.notifier).setIdle(); ToastOverlay.show(context, ok ? '连接成功 ✓' : '连接失败'); }
   }
 
@@ -643,7 +677,7 @@ void _showImportExportSheet(BuildContext ctx, WidgetRef ref) {
   );
 }
 Widget _iLabel(ThemeData theme, String t) => Padding(padding: const EdgeInsets.only(left: 20, top: 8, bottom: 4),
-    child: Text(t, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.4))));
+    child: Text(t, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))));
 Widget _iItem(IconData ic, String label, VoidCallback onTap) => ListTile(
     leading: Icon(ic, size: 20), title: Text(label, style: const TextStyle(fontSize: 14)),
     trailing: const Icon(Icons.chevron_right, size: 18), onTap: onTap, dense: true);
@@ -651,20 +685,31 @@ Widget _iItem(IconData ic, String label, VoidCallback onTap) => ListTile(
 Future<void> _doImport(BuildContext ctx, WidgetRef ref) async {
   try {
     final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx', 'xls']);
+    if (!ctx.mounted) return;
     if (r == null || r.files.isEmpty) return;
     final p = r.files.single.path; if (p == null) return;
     final cs = await ExcelService.parseRoster(p);
+    if (!ctx.mounted) return;
     if (cs.isEmpty) { ToastOverlay.show(ctx, '未能解析到任何班级数据'); return; }
     ref.read(classProvider.notifier).loadFromData(cs, cs.first.uid);
     ToastOverlay.show(ctx, '导入成功: ${cs.length} 个班级', type: ToastType.success);
-  } catch (e) { ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error); }
+  } catch (e) {
+    if (ctx.mounted) {
+      ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error);
+    }
+  }
 }
 
 Future<void> _doTmpl(BuildContext ctx, WidgetRef ref, bool isMember) async {
   try {
     final f = isMember ? await ref.read(fileServiceProvider).exportMemberTemplate() : await ref.read(fileServiceProvider).exportQuestionTemplate();
+    if (!ctx.mounted) return;
     if (f != null) { final m = f.path.contains('/Download') ? '模板已保存到 Downloads 文件夹' : '模板已导出'; ToastOverlay.show(ctx, m, type: ToastType.success); }
-  } catch (e) { ToastOverlay.show(ctx, '导出失败: $e', type: ToastType.error); }
+  } catch (e) {
+    if (ctx.mounted) {
+      ToastOverlay.show(ctx, '导出失败: $e', type: ToastType.error);
+    }
+  }
 }
 
 class _LifecycleObserver extends WidgetsBindingObserver {
@@ -673,5 +718,67 @@ class _LifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) onBackground();
+  }
+}
+
+
+/// 单行文本输入对话框。
+///
+/// 为什么单独抽一个 StatefulWidget，而不是在调用处 `final c = TextEditingController()`：
+/// controller 必须跟着对话框的生命周期释放。若在 `await showDialog(...)` 返回后立刻
+/// dispose，退出动画期间 TextField 还在用它，会抛 "used after being disposed"；
+/// 而不 dispose 则每次弹窗泄漏一个 controller。让它成为 State 的字段，
+/// 由框架在路由真正销毁时释放，两个问题一起没有。
+class _TextInputDialog extends StatefulWidget {
+  final String title;
+  final String? hint;
+  final String initialValue;
+  final String confirmLabel;
+
+  const _TextInputDialog({
+    required this.title,
+    required this.confirmLabel,
+    this.hint,
+    this.initialValue = '',
+  });
+
+  @override
+  State<_TextInputDialog> createState() => _TextInputDialogState();
+}
+
+class _TextInputDialogState extends State<_TextInputDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final v = _controller.text.trim();
+    if (v.isEmpty) return;
+    Navigator.pop(context, v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: InputDecoration(hintText: widget.hint),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
+      ],
+    );
   }
 }

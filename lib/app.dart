@@ -95,14 +95,29 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   void _checkOnboarding() {
     final storage = ref.read(storageServiceProvider);
-    setState(() {
-      _onboardingComplete = storage.getBool('onboarding_complete', false);
-    });
+    final done = storage.getBool('onboarding_complete', false);
+    // initState 里直接赋值，不 setState —— 首帧本来就会用这个值。
+    _onboardingComplete = done;
+    if (done) _scheduleStartupTasks();
   }
 
   void _onOnboardingComplete() {
     ref.read(storageServiceProvider).setBool('onboarding_complete', true);
     setState(() => _onboardingComplete = true);
+    _scheduleStartupTasks();
+  }
+
+  /// 启动期的两个副作用（工作区引导、检查更新）只在这里排一次。
+  ///
+  /// 旧实现把它们直接写在 build() 里：虽然各有布尔量挡着重复执行，
+  /// 但 build 期间弹对话框 / 发网络请求本身就是未定义行为，
+  /// 主题变化、字体缩放、窗口尺寸变化都会重新触发 build。
+  void _scheduleStartupTasks() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeShowWorkspacePicker();
+      _maybeCheckUpdate();
+    });
   }
 
   void _maybeShowWorkspacePicker() {
@@ -239,8 +254,6 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     }
 
     if (_onboardingComplete == true) {
-      _maybeShowWorkspacePicker();
-      _maybeCheckUpdate();
       return const HomeScreen();
     }
 
