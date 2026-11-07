@@ -41,7 +41,9 @@ class TextbookIndexService {
   /// 获取某学段+科目下的所有版本
   static List<String> getVersions(String stage, String subject) {
     if (_cache == null || !_cache!.containsKey(stage) ||
-        !_cache![stage]!.containsKey(subject)) return [];
+        !_cache![stage]!.containsKey(subject)) {
+      return [];
+    }
     return _cache![stage]![subject]!.keys.toList()..sort();
   }
 
@@ -50,7 +52,9 @@ class TextbookIndexService {
       String stage, String subject, String version) {
     if (_cache == null || !_cache!.containsKey(stage) ||
         !_cache![stage]!.containsKey(subject) ||
-        !_cache![stage]![subject]!.containsKey(version)) return [];
+        !_cache![stage]![subject]!.containsKey(version)) {
+      return [];
+    }
     return _cache![stage]![subject]![version]!;
   }
 

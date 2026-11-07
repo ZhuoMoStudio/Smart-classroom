@@ -142,7 +142,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(_tabIcons[i], size: 18, color: _tabIndex == i ? AppColors.brandPrimary : AppColors.textSecondary),
             if (_tabIndex == i) ...[const SizedBox(width: 4),
-              Text(_tabLabels[i], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandPrimary))],
+              Text(_tabLabels[i], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandPrimary))],
           ]),
         ),
       )),
@@ -349,7 +349,7 @@ class _ClassDataViewState extends ConsumerState<_ClassDataView> {
       BuildContext ctx, String what, Function(String) onAdd) async {
     final c = TextEditingController();
     await showDialog<void>(context: ctx, builder: (ctx2) => AlertDialog(
-      title: Text('添加$what'), content: TextField(controller: c, decoration: InputDecoration(hintText: '${what}名称'), autofocus: true),
+      title: Text('添加$what'), content: TextField(controller: c, decoration: InputDecoration(hintText: '$what名称'), autofocus: true),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx2), child: const Text('取消')),
         FilledButton(onPressed: () { if (c.text.trim().isNotEmpty) { onAdd(c.text.trim()); Navigator.pop(ctx2); } }, child: const Text('添加'))],
     ));
@@ -604,7 +604,7 @@ class _SyncButtonsState extends ConsumerState<_SyncButtons> {
     setState(() => _testing = true);
     final s = ref.read(settingsProvider);
     final pw = await ref.read(storageServiceProvider).getSecure('webdav_password') ?? '';
-    final ok = await WebdavPlusSyncService().testConnection(settings: s, password: pw);
+    final ok = await const WebdavPlusSyncService().testConnection(settings: s, password: pw);
     if (mounted) { setState(() => _testing = false); if (ok) ref.read(syncProvider.notifier).setIdle(); ToastOverlay.show(context, ok ? '连接成功 ✓' : '连接失败'); }
   }
 

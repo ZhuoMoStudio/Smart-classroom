@@ -160,7 +160,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text('${_pad(minutes)}',
+                  Text(_pad(minutes),
                       style: theme.textTheme.displaySmall?.copyWith(
                         color: isLowTime ? Colors.red : null,
                         fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                         color: isLowTime ? Colors.red : null,
                         fontWeight: FontWeight.bold,
                       )),
-                  Text('${_pad(seconds)}',
+                  Text(_pad(seconds),
                       style: theme.textTheme.displaySmall?.copyWith(
                         color: isLowTime ? Colors.red : null,
                         fontWeight: FontWeight.bold,

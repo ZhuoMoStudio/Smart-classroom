@@ -94,7 +94,7 @@ class UpdateService {
     final lat = await getLatestVersion();
 
     if (lat == null) {
-      return UpdateResult(hasUpdate: false, message: '无法获取更新信息，请检查网络连接');
+      return const UpdateResult(hasUpdate: false, message: '无法获取更新信息，请检查网络连接');
     }
 
     final hasUpdate = compareVersions(cur, lat) < 0;

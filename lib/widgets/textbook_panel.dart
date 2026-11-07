@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import '../services/textbook_index_service.dart';
 import '../services/pdf_cache_manager.dart';
 import '../providers/settings_provider.dart';
-import '../theme/design_tokens.dart';
 import '../theme/route_utils.dart';
 import '../screens/pdf_reader_screen.dart';
 import 'toast_overlay.dart';
@@ -54,10 +53,12 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
       await TextbookIndexService.load();
       if (mounted) setState(() => _loaded = true);
     } catch (e) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _loaded = true;
         _error = '加载教材索引失败: $e';
       });
+      }
     }
   }
 
@@ -326,7 +327,9 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
                 GestureDetector(
                   onTap: () {
                     // 点击面包屑回到对应层级
-                    while (_breadcrumbs.length > i + 1) _goBack();
+                    while (_breadcrumbs.length > i + 1) {
+                      _goBack();
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -474,7 +477,7 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             children: [
-              Icon(Icons.library_books, size: 14, color: Colors.grey),
+              const Icon(Icons.library_books, size: 14, color: Colors.grey),
               const SizedBox(width: 4),
               Text(
                 '共 ${stats['stages']} 个学段 · ${stats['subjects']} 个科目 · ${stats['files']} 本教材',
@@ -630,10 +633,14 @@ class _TextbookPanelState extends ConsumerState<TextbookPanel> {
     if (subject.contains('数学')) return Colors.blue;
     if (subject.contains('英语')) return Colors.green;
     if (subject.contains('物理') || subject.contains('化学') ||
-        subject.contains('生物') || subject.contains('科学')) return Colors.teal;
+        subject.contains('生物') || subject.contains('科学')) {
+      return Colors.teal;
+    }
     if (subject.contains('历史') || subject.contains('地理')) return Colors.brown;
     if (subject.contains('音乐') || subject.contains('美术') ||
-        subject.contains('艺术')) return Colors.pink;
+        subject.contains('艺术')) {
+      return Colors.pink;
+    }
     if (subject.contains('体育')) return Colors.orange;
     return Colors.grey;
   }

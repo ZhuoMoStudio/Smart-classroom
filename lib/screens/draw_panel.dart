@@ -195,7 +195,7 @@ class _GroupLockWidget extends ConsumerWidget {
     return Row(mainAxisSize: MainAxisSize.min, children: [
       if (ds.lockedGroupUid != null) ...[
         const Icon(Icons.lock, size: 13, color: Colors.orange), const SizedBox(width: 3),
-        Text('已锁定', style: TextStyle(fontSize: 11, color: Colors.orange)), const SizedBox(width: 6),
+        const Text('已锁定', style: TextStyle(fontSize: 11, color: Colors.orange)), const SizedBox(width: 6),
         TextButton.icon(icon: const Icon(Icons.lock_open, size: 13),
             label: const Text('解锁', style: TextStyle(fontSize: 11)),
             onPressed: () => notifier.unlockGroup()),

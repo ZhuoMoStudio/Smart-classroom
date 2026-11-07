@@ -33,9 +33,11 @@ class TimerNotifier extends StateNotifier<TimerState> {
 
   void start() {
     if (state.remainingSeconds <= 0) {
-      if (state.totalSeconds > 0)
+      if (state.totalSeconds > 0) {
         state = state.copyWith(remainingSeconds: state.totalSeconds);
-      else return;
+      } else {
+        return;
+      }
     }
     _timer?.cancel();
     state = state.copyWith(isRunning: true);
@@ -44,7 +46,9 @@ class TimerNotifier extends StateNotifier<TimerState> {
       if (ns <= 0) {
         t.cancel();
         state = state.copyWith(remainingSeconds: 0, isRunning: false);
-      } else state = state.copyWith(remainingSeconds: ns);
+      } else {
+        state = state.copyWith(remainingSeconds: ns);
+      }
     });
   }
 

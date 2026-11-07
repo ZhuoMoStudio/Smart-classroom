@@ -265,7 +265,7 @@ class RosterManager {
     for (final entry in groups.entries) {
       final group = entry.value;
 
-      final limit = keepRecent + keepOldest;
+      const limit = keepRecent + keepOldest;
       if (group.length <= limit) {
         keep.addAll(group.map((f) => f.path));
         continue;

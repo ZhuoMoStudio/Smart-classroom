@@ -39,7 +39,11 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         .batchChangeScore(cls.uid, _selected.toList(), delta);
 
     if (changed > 0) {
-      if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+      if (delta > 0) {
+        AudioEngine().playScoreUp();
+      } else {
+        AudioEngine().playScoreDown();
+      }
     }
     setState(() => _selected.clear());
     // 旧实现先 clear() 再读 _selected.length，
@@ -81,7 +85,11 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
       ToastOverlay.show(context, '该学生当前为 0 分，无法再扣', type: ToastType.warning);
       return;
     }
-    if (delta > 0) AudioEngine().playScoreUp(); else AudioEngine().playScoreDown();
+    if (delta > 0) {
+      AudioEngine().playScoreUp();
+    } else {
+      AudioEngine().playScoreDown();
+    }
   }
 
   @override
@@ -191,14 +199,22 @@ class _LeaderboardPanelState extends ConsumerState<LeaderboardPanel> {
         rows: top.map((m) {
           final ri = ms.indexOf(m) + 1; final lk = ls.lockedMemberUid == m.uid;
           final sel = _batchMode && _selected.contains(m.uid);
-          Color? rc; if (ri == 1) rc = Colors.yellow.shade100; else if (ri == 2) rc = Colors.grey.shade200; else if (ri == 3) rc = Colors.orange.shade100;
+          Color? rc; if (ri == 1) {
+            rc = Colors.yellow.shade100;
+          } else if (ri == 2) rc = Colors.grey.shade200; else if (ri == 3) rc = Colors.orange.shade100;
           return DataRow(color: WidgetStateProperty.resolveWith((_) => sel ? AppColors.brandPrimary.withValues(alpha: 0.12) : (rc ?? Colors.transparent)),
               cells: [
                 DataCell(Text('$ri', style: TextStyle(fontWeight: ri <= 3 ? FontWeight.bold : null))),
                 DataCell(GestureDetector(
                   onTap: () {
-                    if (_batchMode) { setState(() { if (_selected.contains(m.uid)) _selected.remove(m.uid); else _selected.add(m.uid); }); }
-                    else ref.read(leaderboardProvider.notifier).lockMember(m.uid);
+                    if (_batchMode) { setState(() { if (_selected.contains(m.uid)) {
+                      _selected.remove(m.uid);
+                    } else {
+                      _selected.add(m.uid);
+                    } }); }
+                    else {
+                      ref.read(leaderboardProvider.notifier).lockMember(m.uid);
+                    }
                   },
                   onLongPress: () { setState(() { _batchMode = true; _selected.add(m.uid); }); },
                   child: Row(mainAxisSize: MainAxisSize.min, children: [

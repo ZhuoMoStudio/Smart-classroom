@@ -47,7 +47,7 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                BorderSide(color: AppColors.brandPrimary, width: 1.5)),
+                const BorderSide(color: AppColors.brandPrimary, width: 1.5)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
@@ -67,7 +67,7 @@ class AppTheme {
         backgroundColor: frostPopup,
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius:
                 BorderRadius.vertical(top: Radius.circular(28))),
         elevation: 0,
