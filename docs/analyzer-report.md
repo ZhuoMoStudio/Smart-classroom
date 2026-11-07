@@ -2,9 +2,9 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-11-07 16:38:42Z
+- 生成时间：2026-11-07 16:48:42Z
 - 触发：push @ main
-- 提交：`9b5eadb3cd41adbf432a86fc211d3ec4320f327a`
+- 提交：`3a74b45f3f9363b31a0e933903ee1f245b5e1c37`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
 - `flutter analyze` 退出码：0
 - `flutter test` 退出码：0
@@ -57,7 +57,7 @@ Got dependencies!
 39 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
-No issues found! (ran in 14.3s)
+No issues found! (ran in 9.9s)
 ```
 
 ## flutter test
@@ -118,26 +118,26 @@ Try `flutter pub outdated` for more information.
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 预发布后缀只比较主版本
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 下载页地址使用 v 前缀
 00:02 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:03 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 解析出正确的 UTC 时间
+00:03 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 一位数日期与前后空白
+00:03 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 月份大小写不敏感
+00:03 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 十二月的边界
+00:03 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 RFC 850 两位年份按 50 年窗口解释
+00:03 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 asctime 格式
+00:03 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 空串、垃圾串、越界字段都返回 null
+00:03 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 ISO-8601 走兜底解析
+00:03 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 音效目录存在且包含全部预期文件
+00:03 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 add_member.wav
+00:03 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 click.wav
+00:03 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 delete_member.wav
+00:03 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_result.wav
+00:03 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_roll.wav
+00:03 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_start.wav
+00:03 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 score_down.wav
+00:03 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 score_up.wav
+00:03 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_complete.wav
+00:03 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_fail.wav
+00:03 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 timer_end.wav
 00:04 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 往返序列化保留所有字段
 00:04 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 空 JSON 回退到默认值
 00:04 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 字段类型不对时逐项回退，不抛异常
@@ -147,29 +147,29 @@ Try `flutter pub outdated` for more information.
 { 这不是 JSON
   ^
 
-00:04 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+阿拉伯数字班级
-00:04 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+中文数字班级
-00:04 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 高中简称
-00:04 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 小学全称带括号（归一化会去掉括号）
-00:04 +39: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 只有班级没有年级
-00:04 +40: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 全角数字按半角处理
-00:04 +41: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 识别不出时返回双 null
-00:04 +42: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 三年二班 与 3年2班 归一为同一组
-00:04 +43: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 全角与半角数字归一为同一组
-00:04 +44: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 高一年级3班 与 高一3班 归一为同一组
-00:04 +45: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 初二年级2班 与 初二2班 归一为同一组
-00:04 +46: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：高一年级3班 不能与 一年级3班 同组（否则会误删另一个年级）
-00:04 +47: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
-00:04 +48: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 「初中二年级」这类夹了「中」的写法要保留学段前缀
-00:04 +49: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 识别不出时带 ? 前缀，便于保留策略跳过淘汰
-00:04 +50: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 年级前缀映射成 ASCII
-00:04 +51: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 「小学」前缀会被丢掉，只剩年级数字
-00:04 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 纯数字年级班级保持原样
-00:04 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 识别不出时落到 _unsorted
-00:04 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 结果不含 WebDAV 禁止的字符，也不含非 ASCII
-00:04 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 7 份：保留 6、淘汰中间那 1 份
-00:04 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 恰好 6 份：一份都不淘汰
-00:04 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 少于 6 份：一份都不淘汰
+00:05 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+阿拉伯数字班级
+00:05 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+中文数字班级
+00:05 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 高中简称
+00:05 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 小学全称带括号（归一化会去掉括号）
+00:05 +39: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 只有班级没有年级
+00:05 +40: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 全角数字按半角处理
+00:05 +41: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 识别不出时返回双 null
+00:05 +42: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 三年二班 与 3年2班 归一为同一组
+00:05 +43: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 全角与半角数字归一为同一组
+00:05 +44: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 高一年级3班 与 高一3班 归一为同一组
+00:05 +45: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 初二年级2班 与 初二2班 归一为同一组
+00:05 +46: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：高一年级3班 不能与 一年级3班 同组（否则会误删另一个年级）
+00:05 +47: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
+00:05 +48: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 「初中二年级」这类夹了「中」的写法要保留学段前缀
+00:05 +49: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 识别不出时带 ? 前缀，便于保留策略跳过淘汰
+00:05 +50: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 年级前缀映射成 ASCII
+00:05 +51: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 「小学」前缀会被丢掉，只剩年级数字
+00:05 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 纯数字年级班级保持原样
+00:05 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 识别不出时落到 _unsorted
+00:05 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 结果不含 WebDAV 禁止的字符，也不含非 ASCII
+00:05 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 7 份：保留 6、淘汰中间那 1 份
+00:05 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 恰好 6 份：一份都不淘汰
+00:05 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 少于 6 份：一份都不淘汰
 00:05 +58: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最旧的一份始终被保留（这就是「最初始的那一份」）
 00:05 +59: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最新的一份始终被保留
 00:05 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 不同年级/班级互不影响
