@@ -126,8 +126,10 @@ jobs:
           git status --short
           git --no-pager diff --stat
 
+      # 任何分支的 push 都可以把结果提交回去：
+      # 分支上运行它相当于「让 CI 代跑 dart fix」，main 上则是常规维护。
       - name: Commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref_type == 'branch'
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
@@ -154,7 +156,8 @@ jobs:
           # 两边都要往 main 回提交：先到的那次会让后到的 push 被拒（非快进）。
           # 2026-09-25 那次失败就是这么来的 —— 代码没写错，只是没重试。
           for i in 1 2 3 4 5; do
-            if git push; then
+            # checkout 出来是 detached HEAD，必须写明 HEAD:<分支>
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
               echo "已推送（第 $i 次尝试）"
               exit 0
             fi

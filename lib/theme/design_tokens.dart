@@ -57,27 +57,27 @@ class AppShadows {
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
   static List<BoxShadow> get level2 => [
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 12,
-            offset: Offset(0, 4)),
+            offset: const Offset(0, 4)),
         BoxShadow(
             color: AppColors.shadowMedium,
             blurRadius: 4,
-            offset: Offset(0, 1))
+            offset: const Offset(0, 1))
       ];
   static List<BoxShadow> get level3 => [
         BoxShadow(
             color: AppColors.shadowLight,
             blurRadius: 24,
-            offset: Offset(0, 8)),
+            offset: const Offset(0, 8)),
         BoxShadow(
             color: AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
 
   // Dark mode shadows
@@ -85,17 +85,17 @@ class AppShadows {
         BoxShadow(
             color: AppColors.darkShadowLight,
             blurRadius: 8,
-            offset: Offset(0, 2))
+            offset: const Offset(0, 2))
       ];
   static List<BoxShadow> get darkLevel2 => [
         BoxShadow(
             color: AppColors.darkShadowLight,
             blurRadius: 12,
-            offset: Offset(0, 4)),
+            offset: const Offset(0, 4)),
         BoxShadow(
             color: AppColors.darkShadowMedium,
             blurRadius: 4,
-            offset: Offset(0, 1))
+            offset: const Offset(0, 1))
       ];
 }
 
