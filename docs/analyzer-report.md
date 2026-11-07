@@ -2,9 +2,9 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-11-07 14:34:50Z
+- 生成时间：2026-11-07 14:43:14Z
 - 触发：push @ main
-- 提交：`4917155ae367ee1148cd42e7955b7499d88be7e0`
+- 提交：`1dab6a20ef91935a456e0db38d79ec84132d9c2e`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
 - `flutter analyze` 退出码：0
 - `flutter test` 退出码：0
@@ -64,7 +64,7 @@ Got dependencies!
 46 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
-No issues found! (ran in 14.1s)
+No issues found! (ran in 14.6s)
 ```
 
 ## flutter test
@@ -131,76 +131,77 @@ Try `flutter pub outdated` for more information.
 00:00 +6: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 非法段不会让比较抛异常
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 预发布后缀只比较主版本
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 下载页地址使用 v 前缀
-00:03 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:04 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 音效目录存在且包含全部预期文件
-00:04 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 add_member.wav
-00:04 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 click.wav
-00:04 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 delete_member.wav
-00:04 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_result.wav
-00:04 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_roll.wav
-00:04 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 draw_start.wav
-00:04 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 score_down.wav
-00:04 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 score_up.wav
-00:04 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_complete.wav
-00:04 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_fail.wav
-00:04 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 timer_end.wav
-00:05 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+阿拉伯数字班级
-00:05 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+中文数字班级
-00:05 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 高中简称
-00:05 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 小学全称带括号（归一化会去掉括号）
-00:05 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 只有班级没有年级
-00:05 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 全角数字按半角处理
-00:05 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 识别不出时返回双 null
-00:05 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 三年二班 与 3年2班 归一为同一组
-00:05 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 全角与半角数字归一为同一组
-00:05 +39: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 高一年级3班 与 高一3班 归一为同一组
-00:05 +40: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 初二年级2班 与 初二2班 归一为同一组
-00:05 +41: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：高一年级3班 不能与 一年级3班 同组（否则会误删另一个年级）
-00:05 +42: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
-00:05 +43: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 「初中二年级」这类夹了「中」的写法要保留学段前缀
-00:05 +44: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 识别不出时带 ? 前缀，便于保留策略跳过淘汰
-00:05 +45: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 年级前缀映射成 ASCII
-00:05 +46: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 「小学」前缀会被丢掉，只剩年级数字
-00:06 +47: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 纯数字年级班级保持原样
-00:06 +48: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 识别不出时落到 _unsorted
-00:06 +49: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 结果不含 WebDAV 禁止的字符，也不含非 ASCII
-00:06 +50: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 7 份：保留 6、淘汰中间那 1 份
-00:06 +51: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 恰好 6 份：一份都不淘汰
-00:06 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 少于 6 份：一份都不淘汰
-00:06 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最旧的一份始终被保留（这就是「最初始的那一份」）
-00:06 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最新的一份始终被保留
-00:06 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 不同年级/班级互不影响
-00:06 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 三年二班 与 3年2班 混排时视为同一组
-00:06 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 识别不出年级班级的文件永不淘汰
-00:06 +58: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
-00:06 +59: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
-00:06 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 跨过 50 分进入秩序白银
-00:06 +61: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 小数分向下取整，49.9 仍属倔强青铜 I
-00:06 +62: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 负分被夹到 0，不产生越界段位
-00:06 +63: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 290 分是至尊星耀 I，300 分起进入最强王者
-00:06 +64: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 350 分及以上封顶荣耀王者，level 不再增长
-00:06 +65: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
-00:06 +66: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
-00:06 +67: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
-00:06 +68: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 原始地址只在候选末尾兜底
-00:06 +69: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像优先时，原始地址仍在最后
-00:06 +70: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 非 raw 地址原样返回，不拼接镜像
-00:06 +71: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 单镜像转换可指定序号且不越界
-00:06 +72: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像列表不含已知失效域名
-00:07 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: peekLast 只看不取
-00:07 +74: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: undoLast 取出最新一条，并支持连续撤销
-00:07 +75: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 记录按时间倒序（最新在前）
-00:07 +76: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 超过上限后丢弃最旧的，防止内存无限增长
-00:07 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
-00:07 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
-00:07 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
-00:07 +80: All tests passed!
+00:02 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +13: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +14: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +15: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +16: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +17: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +18: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +19: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +20: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +21: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +22: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +23: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +24: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +25: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +26: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 timer_end.wav
+00:03 +30: loading /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart
+00:04 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+阿拉伯数字班级
+00:04 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 年级+中文数字班级
+00:04 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 高中简称
+00:04 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 小学全称带括号（归一化会去掉括号）
+00:04 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 只有班级没有年级
+00:04 +35: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 全角数字按半角处理
+00:04 +36: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: extractGradeClass 从文件名识别年级班级 识别不出时返回双 null
+00:04 +37: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 三年二班 与 3年2班 归一为同一组
+00:04 +38: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 全角与半角数字归一为同一组
+00:04 +39: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 高一年级3班 与 高一3班 归一为同一组
+00:04 +40: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 初二年级2班 与 初二2班 归一为同一组
+00:04 +41: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：高一年级3班 不能与 一年级3班 同组（否则会误删另一个年级）
+00:04 +42: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 关键：初中二年级2班 不能与 二年级2班 同组
+00:04 +43: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 「初中二年级」这类夹了「中」的写法要保留学段前缀
+00:04 +44: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: identityKey 分组键 识别不出时带 ? 前缀，便于保留策略跳过淘汰
+00:04 +45: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 年级前缀映射成 ASCII
+00:04 +46: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 「小学」前缀会被丢掉，只剩年级数字
+00:04 +47: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 纯数字年级班级保持原样
+00:04 +48: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 识别不出时落到 _unsorted
+00:04 +49: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: pathSegment 供云同步目录使用（必须是纯 ASCII） 结果不含 WebDAV 禁止的字符，也不含非 ASCII
+00:04 +50: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 7 份：保留 6、淘汰中间那 1 份
+00:04 +51: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 恰好 6 份：一份都不淘汰
+00:04 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 少于 6 份：一份都不淘汰
+00:04 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最旧的一份始终被保留（这就是「最初始的那一份」）
+00:04 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 最新的一份始终被保留
+00:04 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 不同年级/班级互不影响
+00:04 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 三年二班 与 3年2班 混排时视为同一组
+00:04 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 识别不出年级班级的文件永不淘汰
+00:05 +58: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
+00:05 +59: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
+00:05 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 跨过 50 分进入秩序白银
+00:05 +61: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 小数分向下取整，49.9 仍属倔强青铜 I
+00:05 +62: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 负分被夹到 0，不产生越界段位
+00:05 +63: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 290 分是至尊星耀 I，300 分起进入最强王者
+00:05 +64: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 350 分及以上封顶荣耀王者，level 不再增长
+00:05 +65: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
+00:05 +66: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
+00:05 +67: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
+00:05 +68: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 原始地址只在候选末尾兜底
+00:05 +69: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像优先时，原始地址仍在最后
+00:05 +70: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 非 raw 地址原样返回，不拼接镜像
+00:05 +71: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 单镜像转换可指定序号且不越界
+00:05 +72: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像列表不含已知失效域名
+00:05 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: peekLast 只看不取
+00:05 +74: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: undoLast 取出最新一条，并支持连续撤销
+00:05 +75: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 记录按时间倒序（最新在前）
+00:05 +76: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 超过上限后丢弃最旧的，防止内存无限增长
+00:05 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
+00:05 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
+00:05 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
+00:05 +80: All tests passed!
 ```
