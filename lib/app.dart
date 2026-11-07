@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'providers/settings_provider.dart';
 import 'services/app_log.dart';
+import 'services/audio_engine.dart';
 import 'services/storage_service.dart';
 import 'services/update_service.dart';
 import 'services/workspace_service.dart';
@@ -90,6 +91,12 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   @override
   void initState() {
     super.initState();
+    // 设置里保存的音效/触感开关要在启动时真正生效：
+    // AudioEngine 是单例，默认全开，不主动同步的话「上次关掉音效」会在重启后失效。
+    final s = ref.read(settingsProvider);
+    AudioEngine()
+      ..setSoundEnabled(s.soundEnabled)
+      ..setHapticEnabled(s.hapticFeedback);
     _checkOnboarding();
   }
 

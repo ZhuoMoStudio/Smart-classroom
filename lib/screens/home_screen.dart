@@ -65,9 +65,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
     final isWide = size.width >= AppBreakpoints.desktop;
+    // 背景色跟随主题：写死 AppColors.background 会让深色模式下的
+    // 页面底色仍是浅灰，与深色面板/文字形成刺眼的反差。
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: isWide ? _buildWideLayout() : isLandscape ? _buildLandscapeLayout() : _buildPortraitLayout(),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: isWide
+          ? _buildWideLayout()
+          : isLandscape
+              ? _buildLandscapeLayout()
+              : _buildPortraitLayout(),
     );
   }
 
@@ -103,21 +109,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ]),
   );
 
-  Widget _toolBtn(int i, bool compact) => GestureDetector(
-    onTap: () => setState(() => _tabIndex = i),
-    child: FrostedPanel(blur: 8, padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8, horizontal: 4),
-      backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(_tabIcons[i], size: compact ? 20 : 22,
-            color: _tabIndex == i ? AppColors.brandPrimary : AppColors.textSecondary),
-        const SizedBox(height: 2),
-        Text(_tabLabels[i], style: TextStyle(fontSize: compact ? 9 : 10,
-            color: _tabIndex == i ? AppColors.brandPrimary : AppColors.textSecondary,
-            fontWeight: _tabIndex == i ? FontWeight.w600 : FontWeight.w400)),
-      ]),
-    ),
-  );
+  Widget _toolBtn(int i, bool compact) {
+    final theme = Theme.of(context);
+    // 未选中项用 colorScheme.onSurfaceVariant：它在深色模式下会自动变亮，
+    // 而 AppColors.textSecondary 只是一个固定浅灰。
+    final idle = theme.colorScheme.onSurfaceVariant;
+    final active = AppColors.brandPrimary;
+    return GestureDetector(
+      onTap: () => setState(() => _tabIndex = i),
+      child: Tooltip(
+        message: _tabLabels[i],
+        waitDuration: const Duration(milliseconds: 700),
+        child: FrostedPanel(blur: 8, padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8, horizontal: 4),
+          backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(_tabIcons[i], size: compact ? 20 : 22,
+                color: _tabIndex == i ? active : idle),
+            const SizedBox(height: 2),
+            Text(_tabLabels[i], style: TextStyle(fontSize: compact ? 9 : 10,
+                color: _tabIndex == i ? active : idle,
+                fontWeight: _tabIndex == i ? FontWeight.w600 : FontWeight.w400)),
+          ]),
+        ),
+      ),
+    );
+  }
 
   Widget _buildMainContent() {
     switch (_tabIndex) {
@@ -140,7 +157,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(_tabIcons[i], size: 18, color: _tabIndex == i ? AppColors.brandPrimary : AppColors.textSecondary),
+            Icon(_tabIcons[i], size: 18,
+                color: _tabIndex == i
+                    ? AppColors.brandPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant),
             if (_tabIndex == i) ...[const SizedBox(width: 4),
               Text(_tabLabels[i], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandPrimary))],
           ]),
