@@ -336,7 +336,7 @@ jobs:
           done
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-apks
           path: ${{ env.APP_NAME }}_v*.apk
@@ -410,7 +410,7 @@ jobs:
           "- ``$zipName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Windows ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-zip
           path: ${{ env.APP_NAME }}_v*_windows.zip
@@ -469,7 +469,7 @@ jobs:
           "- ``$setupName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Setup.exe
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-setup
           path: ${{ env.APP_NAME }}_v*_Setup.exe
