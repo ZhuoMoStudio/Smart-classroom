@@ -103,6 +103,11 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      # l10n 产物不入库（.gitignore 已排除），每次都由 ARB 生成。
+      # `flutter pub get` 通常已经跑过，这里显式再跑一次，避免依赖它的副作用。
+      - name: Generate localizations
+        run: flutter gen-l10n
+
       # ---- 不在这里失败：先让输出落盘，否则失败时反而拿不到任何细节 ----
       - name: Analyze
         id: analyze
