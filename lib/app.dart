@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'providers/settings_provider.dart';
 import 'services/app_log.dart';
+import 'services/audio_engine.dart';
 import 'services/storage_service.dart';
 import 'services/update_service.dart';
 import 'services/workspace_service.dart';
@@ -28,11 +31,39 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // 设置里选的「布局方向」要真正生效：旧版只有下拉框，没有任何代码读它。
+    _applyLayoutMode(ref.read(settingsProvider).layoutMode);
+  }
+
+  /// auto 恢复系统默认（全部方向），portrait / landscape 锁定单一方向。
+  void _applyLayoutMode(String mode) {
+    // 桌面端没有「屏幕方向」，调用平台通道只会得到 MissingPluginException
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
+    final orientations = switch (mode) {
+      'portrait' => <DeviceOrientation>[
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ],
+      'landscape' => <DeviceOrientation>[
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      _ => <DeviceOrientation>[],
+    };
+    SystemChrome.setPreferredOrientations(orientations);
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // 设置页改方向后立即生效，不必重启
+    ref.listen<String>(
+      settingsProvider.select((s) => s.layoutMode),
+      (_, mode) => _applyLayoutMode(mode),
+    );
 
     return MaterialApp(
       title: '灵动课堂',
@@ -90,6 +121,12 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   @override
   void initState() {
     super.initState();
+    // 设置里保存的音效/触感开关要在启动时真正生效：
+    // AudioEngine 是单例，默认全开，不主动同步的话「上次关掉音效」会在重启后失效。
+    final s = ref.read(settingsProvider);
+    AudioEngine()
+      ..setSoundEnabled(s.soundEnabled)
+      ..setHapticEnabled(s.hapticFeedback);
     _checkOnboarding();
   }
 

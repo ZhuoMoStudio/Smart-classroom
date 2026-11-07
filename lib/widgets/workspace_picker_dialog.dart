@@ -78,7 +78,7 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
                 '所有数据将以 xlsx 格式保存在工作目录中',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),

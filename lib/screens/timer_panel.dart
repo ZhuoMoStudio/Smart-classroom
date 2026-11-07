@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/timer_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/audio_engine.dart';
+import '../services/duration_input.dart';
 import '../services/network_time.dart';
 import '../widgets/toast_overlay.dart';
 import '../widgets/glass_panel.dart';
@@ -45,20 +46,6 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
     super.dispose();
   }
 
-  int _parseHms(String input) {
-    try {
-      final parts =
-          input.split(':').map((s) => int.tryParse(s.trim()) ?? 0).toList();
-      if (parts.isEmpty) return 0;
-      if (parts.length == 1) return parts[0] * 60;
-      if (parts.length == 2) return parts[0] * 60 + parts[1];
-      if (parts.length == 3) {
-        return parts[0] * 3600 + parts[1] * 60 + parts[2];
-      }
-    } catch (_) {}
-    return 0;
-  }
-
   Future<void> _syncNetworkTime() async {
     final networkTime = await NetworkTimeService.getNetworkTime();
     if (!mounted) return;
@@ -78,6 +65,18 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
       '时间已按网络校准（偏差 ${offset.inSeconds >= 0 ? '+' : ''}${offset.inSeconds} 秒）',
       type: ToastType.success,
     );
+  }
+
+  /// 12/24 小时制显示。设置里的「24小时制」开关以前只是个摆设，
+  /// 时钟永远按 24 小时显示。
+  String _clockText(SettingsState settings) {
+    final h24 = _currentTime.hour;
+    if (settings.is24Hour) {
+      return '${_pad(h24)}:${_pad(_currentTime.minute)}:${_pad(_currentTime.second)}';
+    }
+    final h12 = h24 % 12 == 0 ? 12 : h24 % 12;
+    final period = h24 < 12 ? '上午' : '下午';
+    return '$period ${_pad(h12)}:${_pad(_currentTime.minute)}:${_pad(_currentTime.second)}';
   }
 
   @override
@@ -113,7 +112,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
               child: Column(
                 children: [
                   Text(
-                    '${_pad(_currentTime.hour)}:${_pad(_currentTime.minute)}:${_pad(_currentTime.second)}',
+                    _clockText(settings),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w300,
                       letterSpacing: 2,
@@ -221,7 +220,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                 child: TextField(
                   controller: _customTimeController,
                   decoration: const InputDecoration(
-                    labelText: '时:分:秒 (如 1:30:00)',
+                    labelText: '如 1.5 或 1:30',
                     labelStyle: TextStyle(fontSize: 11),
                     isDense: true,
                     contentPadding:
@@ -229,7 +228,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                   ),
                   style: const TextStyle(fontSize: 13),
                   onSubmitted: (value) {
-                    final secs = _parseHms(value);
+                    final secs = DurationInput.parseSeconds(value);
                     if (secs > 0) {
                       ref.read(timerProvider.notifier).setTimer(secs);
                       _customTimeController.clear();
@@ -242,7 +241,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                 icon: const Icon(Icons.check, size: 16),
                 iconSize: 16,
                 onPressed: () {
-                  final secs = _parseHms(_customTimeController.text);
+                  final secs = DurationInput.parseSeconds(_customTimeController.text);
                   if (secs > 0) {
                     ref.read(timerProvider.notifier).setTimer(secs);
                     _customTimeController.clear();
