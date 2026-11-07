@@ -114,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 未选中项用 colorScheme.onSurfaceVariant：它在深色模式下会自动变亮，
     // 而 AppColors.textSecondary 只是一个固定浅灰。
     final idle = theme.colorScheme.onSurfaceVariant;
-    final active = AppColors.brandPrimary;
+    const active = AppColors.brandPrimary;
     return GestureDetector(
       onTap: () => setState(() => _tabIndex = i),
       child: Tooltip(
