@@ -23,6 +23,7 @@ import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
 import '../widgets/textbook_panel.dart';
 import '../services/audio_engine.dart';
+import '../services/cloud/cloud_presets.dart';
 import '../services/excel_service.dart';
 import 'draw_panel.dart';
 import 'question_panel.dart';
@@ -544,6 +545,22 @@ class _SettingsPage extends ConsumerWidget {
           Navigator.push(context, slideFadePageRoute(const UsageGuideScreen()));
         }),
         const SizedBox(height: 2),
+        _tile(theme, Icons.bug_report_outlined, '导出运行日志', '出问题时把这个文件发给维护者', () async {
+          try {
+            final f = await ref.read(fileServiceProvider).exportLog();
+            if (f == null) return;
+            if (context.mounted) {
+              ToastOverlay.show(context, '日志已导出：${f.path}',
+                  type: ToastType.success,
+                  duration: const Duration(seconds: 5));
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ToastOverlay.show(context, '导出失败：$e', type: ToastType.error);
+            }
+          }
+        }),
+        const SizedBox(height: 2),
         const _AboutTile(),
         const SizedBox(height: 32),
       ]),
@@ -672,14 +689,6 @@ class _SyncPasswordFieldState extends ConsumerState<_SyncPasswordField> {
     );
   }
 }
-
-// ==================== 云服务预设 ====================
-class CloudPreset { final String name, defaultUrl, description; const CloudPreset(this.name, this.defaultUrl, this.description); }
-const cloudPresets = [
-  CloudPreset('坚果云', 'https://dav.jianguoyun.com/dav/', '需在坚果云设置中开启第三方应用密码'),
-  CloudPreset('Nextcloud', '', '请填写您的 Nextcloud 服务器地址'),
-  CloudPreset('自定义', '', '任意 WebDAV 兼容服务'),
-];
 
 // ==================== 导入导出面板 ====================
 void _showImportExportSheet(BuildContext ctx, WidgetRef ref) {

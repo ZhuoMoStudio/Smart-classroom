@@ -49,6 +49,15 @@ class FileService {
         build: (path) => ExcelService.exportQuestionTemplate(path),
       );
 
+  /// 导出运行日志（出问题时发给维护者）。
+  /// 日志文件在工作区里，但老师不一定找得到，所以给一个「另存为」入口。
+  Future<File?> exportLog() => _export(
+        fileName: '运行日志.log',
+        dialogTitle: '导出运行日志',
+        allowedExtensions: const ['log', 'txt'],
+        build: (path) => AppLog.exportTo(path),
+      );
+
   /// 通用导出流程。
   ///
   /// 关键修复：**把字节直接交给 FilePicker.saveFile**，
@@ -65,6 +74,7 @@ class FileService {
     required String fileName,
     required String dialogTitle,
     required Future<File> Function(String path) build,
+    List<String> allowedExtensions = const ['xlsx'],
   }) async {
     // 1) 先在可写的位置生成 xlsx
     final baseDir = await getWorkingDir();
@@ -83,7 +93,7 @@ class FileService {
         dialogTitle: dialogTitle,
         fileName: fileName,
         type: FileType.custom,
-        allowedExtensions: ['xlsx'],
+        allowedExtensions: allowedExtensions,
         bytes: bytes,
       );
       if (savePath == null) {
