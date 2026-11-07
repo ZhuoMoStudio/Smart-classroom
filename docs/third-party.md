@@ -5,8 +5,8 @@
 
 - 直接依赖：16 个
 - 开发依赖：1 个
-- 间接依赖：87 个
-- 合计：104 个
+- 间接依赖：86 个
+- 合计：103 个
 
 应用内的完整协议原文由 Flutter 框架在构建时收集，
 界面上的「开源许可」页直接调用 `showLicensePage()` 展示，
@@ -17,19 +17,19 @@
 | 组件 | 版本 | 协议 |
 |---|---|---|
 | `audioplayers` | 6.8.1 | MIT |
-| `crypto` | 3.0.7 | BSD-3-Clause |
+| `crypto` | 3.0.8 | BSD-3-Clause |
 | `excel` | 3.0.0 | MIT |
 | `file_picker` | 10.3.8 | MIT |
 | `flutter_riverpod` | 2.6.1 | MIT |
-| `flutter_secure_storage` | 9.2.4 | BSD-3-Clause |
+| `flutter_secure_storage` | 10.3.4 | BSD-3-Clause |
 | `http` | 1.6.0 | BSD-3-Clause |
 | `intl` | 0.20.2 | BSD-3-Clause |
 | `package_info_plus` | 8.3.1 | BSD-3-Clause |
 | `path` | 1.9.1 | BSD-3-Clause |
 | `path_provider` | 2.1.6 | BSD-3-Clause |
 | `pdfrx` | 1.3.5 | MIT |
-| `shared_preferences` | 2.5.5 | BSD-3-Clause |
-| `url_launcher` | 6.3.2 | BSD-3-Clause |
+| `shared_preferences` | 2.5.6 | BSD-3-Clause |
+| `url_launcher` | 6.3.3 | BSD-3-Clause |
 | `uuid` | 4.6.0 | MIT |
 | `webdav_plus` | 1.2.2 | MIT |
 
@@ -66,17 +66,16 @@
 | `file` | 7.0.1 | BSD-3-Clause |
 | `fixnum` | 1.1.1 | BSD-3-Clause |
 | `flutter_plugin_android_lifecycle` | 2.0.35 | BSD-3-Clause |
-| `flutter_secure_storage_linux` | 1.2.3 | BSD-3-Clause |
-| `flutter_secure_storage_macos` | 3.1.3 | BSD-3-Clause |
-| `flutter_secure_storage_platform_interface` | 1.1.2 | BSD-3-Clause |
-| `flutter_secure_storage_web` | 1.2.1 | BSD-3-Clause |
-| `flutter_secure_storage_windows` | 3.1.2 | BSD-3-Clause |
+| `flutter_secure_storage_darwin` | 0.3.2 | BSD-3-Clause |
+| `flutter_secure_storage_linux` | 3.0.3 | BSD-3-Clause |
+| `flutter_secure_storage_platform_interface` | 2.1.1 | BSD-3-Clause |
+| `flutter_secure_storage_web` | 2.1.1 | BSD-3-Clause |
+| `flutter_secure_storage_windows` | 4.1.0 | BSD-3-Clause |
 | `hooks` | 2.0.2 | BSD-3-Clause |
 | `http_parser` | 4.1.2 | BSD-3-Clause |
 | `jni` | 1.0.3 | BSD-3-Clause |
 | `jni_flutter` | 1.0.3 | BSD-3-Clause |
 | `jni_util` | 1.0.0 | BSD-3-Clause |
-| `js` | 0.6.7 | BSD-3-Clause |
 | `json_annotation` | 4.12.0 | BSD-3-Clause |
 | `leak_tracker` | 11.0.2 | BSD-3-Clause |
 | `leak_tracker_flutter_testing` | 3.0.10 | BSD-3-Clause |

@@ -30,12 +30,12 @@ void main() {
         problems.add('$stage: 学段节点不是对象');
         return;
       }
-      (subjects as Map).forEach((subject, versions) {
+      (subjects).forEach((subject, versions) {
         if (versions is! Map) {
           problems.add('$stage/$subject: 科目节点不是对象');
           return;
         }
-        (versions as Map).forEach((version, files) {
+        (versions).forEach((version, files) {
           if (files is! List) {
             problems.add('$stage/$subject/$version: 版本节点不是列表，'
                 '实际为 ${files.runtimeType}');
