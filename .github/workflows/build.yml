@@ -108,7 +108,7 @@ jobs:
         id: analyze
         run: |
           set +e
-          flutter analyze --no-fatal-warnings --no-fatal-infos > analyze-raw.txt 2>&1
+          flutter analyze --fatal-infos > analyze-raw.txt 2>&1
           code=$?
           cat analyze-raw.txt
           echo "exit=$code" >> "$GITHUB_OUTPUT"
@@ -455,10 +455,12 @@ jobs:
           $iscc = $env:ISCC_PATH
           if (-not $iscc) { $iscc = "iscc.exe" }
 
-          & $iscc setup.iss
+          # 版本号从 pubspec 传进去：setup.iss 里写死过 1.25.0，
+          # 结果安装包叫新版本、控制面板里显示旧版本。
+          $V = "${{ needs.verify.outputs.version }}"
+          & $iscc "/DMyAppVersion=$V" setup.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed" }
 
-          $V = "${{ needs.verify.outputs.version }}"
           $setupName = "${{ env.APP_NAME }}_v${V}_Setup.exe"
           Copy-Item build/installer/*.exe $setupName -Force
           $mb = [math]::Round((Get-Item $setupName).Length / 1MB, 1)
