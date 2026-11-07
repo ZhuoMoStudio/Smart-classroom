@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # 回提交要用 rebase，浅克隆会让 rebase 直接失败
           fetch-depth: 0
@@ -80,7 +80,7 @@ jobs:
           cache: true
 
       - name: Cache pub packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.PUB_CACHE }}
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
@@ -163,6 +163,8 @@ jobs:
       # 「剩下哪些问题、在哪个文件」。
       - name: Annotate analyzer findings
         if: always()
+        env:
+          ANALYZE_EXIT: ${{ steps.analyze.outputs.exit }}
         run: |
           set +e
           if [ ! -s analyze-raw.txt ]; then
@@ -174,6 +176,10 @@ jobs:
           count=$(grep -cE "$pat" analyze-raw.txt)
           echo "::notice title=flutter analyze::共 $count 条问题（完整输出见 docs/analyzer-report.md）"
           if [ "$count" = "0" ]; then
+            if [ "${ANALYZE_EXIT:-0}" = "0" ]; then
+              echo "::notice title=flutter analyze::没有发现问题"
+              exit 0
+            fi
             # 0 条却失败，说明是分析器自身出错，把尾部输出贴出来
             tail_out=$(tail -12 analyze-raw.txt | paste -sd ' | ' | cut -c1-3500)
             echo "::warning title=flutter analyze（无问题行但退出码非 0）::$tail_out"
@@ -249,10 +255,10 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -265,7 +271,7 @@ jobs:
           cache: true
 
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -275,7 +281,7 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Cache pub packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.PUB_CACHE }}
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
@@ -336,7 +342,7 @@ jobs:
           done
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-apks
           path: ${{ env.APP_NAME }}_v*.apk
@@ -359,7 +365,7 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -410,7 +416,7 @@ jobs:
           "- ``$zipName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Windows ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-zip
           path: ${{ env.APP_NAME }}_v*_windows.zip
@@ -469,7 +475,7 @@ jobs:
           "- ``$setupName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Setup.exe
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-setup
           path: ${{ env.APP_NAME }}_v*_Setup.exe
@@ -495,7 +501,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
           merge-multiple: true
