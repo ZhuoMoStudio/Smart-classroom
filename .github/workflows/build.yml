@@ -171,10 +171,18 @@ jobs:
             echo "::notice title=flutter analyze::没有分析输出"
             exit 0
           fi
-          count=$(grep -cE "^(info|warning|error) • " analyze-raw.txt)
+          # flutter analyze 的行首有缩进，不能锚定 ^info
+          pat='^[[:space:]]*(info|warning|error) • '
+          count=$(grep -cE "$pat" analyze-raw.txt)
           echo "::notice title=flutter analyze::共 $count 条问题（完整输出见 docs/analyzer-report.md）"
+          if [ "$count" = "0" ]; then
+            # 0 条却失败，说明是分析器自身出错，把尾部输出贴出来
+            tail_out=$(tail -12 analyze-raw.txt | paste -sd ' | ' | cut -c1-3500)
+            echo "::warning title=flutter analyze（无问题行但退出码非 0）::$tail_out"
+            exit 0
+          fi
           rm -f /tmp/ann_*
-          grep -E "^(info|warning|error) • " analyze-raw.txt | head -60 | split -l 6 - /tmp/ann_
+          grep -E "$pat" analyze-raw.txt | head -60 | split -l 6 - /tmp/ann_
           for f in /tmp/ann_*; do
             [ -e "$f" ] || continue
             msg=$(paste -sd ' | ' "$f" | cut -c1-3500)
