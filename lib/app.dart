@@ -178,9 +178,9 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
             },
           ),
         );
-      } else if (ws.isConfigured && mounted) {
-        await ref.read(dataServiceProvider).loadFromWorkspace();
       }
+      // 工作区已配置时的加载由 HomeScreen 的 initState 负责；
+      // 这里再调一次会让启动时解析两遍 xlsx（日志里能看到重复的「载入数据」）。
     });
   }
 

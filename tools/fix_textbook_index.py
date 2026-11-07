@@ -17,6 +17,15 @@ assets/textbook_index.json 的顶层键应当是「学段」：
 之所以不直接删：这些条目是真实的教材数据，只是被放错了层级；
 删掉就再也找不回来，而搬移是可逆的。应用侧会跳过以 `_` 开头的顶层键。
 
+顺带修形状
+----------
+搬迁只换了顶层键，**没有检查层级深度**。被搬走的这段数据实际是四层：
+    学段 / 科目 / 分类 / 试卷 / [文件]
+而应用只认三层（学段 / 科目 / 版本 / [文件]）。
+于是 `(files as List)` 在运行时抛 `type '_Map<String,dynamic>' is not subtype of
+type 'List<dynamic>'`，整份教材索引加载失败 —— 界面上就是「加载教材索引失败」。
+这里把所有非三层的节点按 `上级 / 下级` 合并成版本名，并丢掉结构不对的条目。
+
 用法
 ----
     python3 tools/fix_textbook_index.py [--check]
@@ -54,6 +63,39 @@ def is_stage_key(key: str) -> bool:
     return False
 
 
+def flatten_versions(prefix: str, versions: dict) -> dict:
+    """把任意深度的 版本→文件 子树压平成 版本名→[文件]。"""
+    out: dict = {}
+    for key, value in versions.items():
+        name = f"{prefix} / {key}" if prefix else str(key)
+        if isinstance(value, list):
+            files = [
+                f
+                for f in value
+                if isinstance(f, dict)
+                and isinstance(f.get("n"), str)
+                and isinstance(f.get("p"), str)
+            ]
+            if files:
+                out[name] = files
+        elif isinstance(value, dict):
+            out.update(flatten_versions(name, value))
+        # 其他类型（字符串、数字）不是文件列表，丢弃
+    return out
+
+
+def normalize_stage(node: dict) -> dict:
+    """确保 科目→版本→[文件] 的层级；结构不对的科目整条丢弃。"""
+    out: dict = {}
+    for subject, versions in node.items():
+        if not isinstance(versions, dict):
+            continue
+        flat = flatten_versions("", versions)
+        if flat:
+            out[subject] = flat
+    return out
+
+
 def count_leaves(node) -> int:
     if isinstance(node, list):
         return len(node)
@@ -78,13 +120,23 @@ def main() -> int:
 
     bad = [k for k in data if not is_stage_key(k)]
 
-    if not bad:
-        print("✓ 顶层键全部是合法学段，无需清理")
+    # 先按「应用认识的三层」重建一遍，比较是否有形状问题
+    normalized = {
+        stage: normalize_stage(node) if isinstance(node, dict) else node
+        for stage, node in data.items()
+    }
+    shape_ok = normalized == data
+
+    if not bad and shape_ok:
+        print("✓ 顶层键全部是合法学段，层级也符合 学段/科目/版本/[文件]")
         return 0
 
-    print(f"发现 {len(bad)} 个非学段顶层键：")
-    for k in bad:
-        print(f"  - {k!r}  （{count_leaves(data[k])} 本）")
+    if bad:
+        print(f"发现 {len(bad)} 个非学段顶层键：")
+        for k in bad:
+            print(f"  - {k!r}  （{count_leaves(data[k])} 本）")
+    if not shape_ok:
+        print("发现层级形状不符合 学段/科目/版本/[文件]（会被压平或丢弃）")
 
     if check_only:
         print("\n(--check 模式，未写入)")
@@ -93,13 +145,20 @@ def main() -> int:
     quarantine = data.get(QUARANTINE, {})
     for k in bad:
         quarantine[k] = data.pop(k)
-    data[QUARANTINE] = quarantine
+    if quarantine:
+        data[QUARANTINE] = quarantine
+
+    # 把所有学段（含隔离区）压平成应用认识的三个月层级
+    for stage in list(data):
+        if isinstance(data[stage], dict):
+            data[stage] = normalize_stage(data[stage])
 
     with open(INDEX, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
     total = sum(count_leaves(v) for k, v in data.items() if not k.startswith("_"))
-    print(f"\n✓ 已搬移到 {QUARANTINE} 下；当前有效学段共 {total} 本")
+    quarantined = sum(count_leaves(v) for k, v in data.items() if k.startswith("_"))
+    print(f"\n✓ 已写入；有效学段 {total} 本，隔离区 {quarantined} 本")
     return 0
 
 

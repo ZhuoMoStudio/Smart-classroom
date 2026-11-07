@@ -5,24 +5,61 @@ import 'package:flutter/services.dart' show rootBundle;
 class TextbookIndexService {
   static Map<String, Map<String, Map<String, List<Map<String, String>>>>>? _cache;
 
-  /// 从 embedded assets 加载教材索引
+  /// 从 embedded assets 加载教材索引。
+  ///
+  /// 对数据形状做**防御性**解析：应用只认「学段/科目/版本/[文件]」三层，
+  /// 但索引是从上游教材仓库整理的，历史上出现过四层节点（多了一层分类），
+  /// 旧实现直接 `(files as List)`，于是整份索引加载失败 ——
+  /// 界面上就是「加载教材索引失败」，教材页全空。
+  /// 现在：多出来的层级用「上级 / 下级」合并成版本名，结构不对的条目跳过，
+  /// 单个坏节点不会拖垮整份索引。
   static Future<void> load() async {
     if (_cache != null) return;
     final jsonStr = await rootBundle.loadString('assets/textbook_index.json');
-    final Map<String, dynamic> raw = jsonDecode(jsonStr);
-    _cache = {};
+    final raw = jsonDecode(jsonStr);
+    final cache = <String, Map<String, Map<String, List<Map<String, String>>>>>{};
+    if (raw is! Map) {
+      _cache = cache;
+      return;
+    }
+
     raw.forEach((stage, subjects) {
-      _cache![stage] = {};
-      (subjects as Map<String, dynamic>).forEach((subject, versions) {
-        _cache![stage]![subject] = {};
-        (versions as Map<String, dynamic>).forEach((version, files) {
-          _cache![stage]![subject]![version] =
-              (files as List).map((f) => {
-                    'n': f['n'] as String,
-                    'p': f['p'] as String,
-                  }).toList();
-        });
+      final stageName = stage.toString();
+      // `_未分类` 是维护脚本的隔离区，不作为学段展示
+      if (stageName.startsWith('_') || subjects is! Map) return;
+
+      final stageMap = <String, Map<String, List<Map<String, String>>>>{};
+      subjects.forEach((subject, versions) {
+        if (versions is! Map) return;
+        final flat = <String, List<Map<String, String>>>{};
+        _flattenVersions(flat, '', versions);
+        if (flat.isNotEmpty) stageMap[subject.toString()] = flat;
       });
+      if (stageMap.isNotEmpty) cache[stageName] = stageMap;
+    });
+
+    _cache = cache;
+  }
+
+  /// 把任意深度的「版本 → 文件」压平成「版本名 → [文件]」。
+  static void _flattenVersions(
+    Map<String, List<Map<String, String>>> out,
+    String prefix,
+    Map versions,
+  ) {
+    versions.forEach((key, value) {
+      final name = prefix.isEmpty ? key.toString() : '$prefix / $key';
+      if (value is List) {
+        final files = <Map<String, String>>[];
+        for (final item in value) {
+          if (item is Map && item['n'] is String && item['p'] is String) {
+            files.add({'n': item['n'] as String, 'p': item['p'] as String});
+          }
+        }
+        if (files.isNotEmpty) out[name] = files;
+      } else if (value is Map) {
+        _flattenVersions(out, name, value);
+      }
     });
   }
 

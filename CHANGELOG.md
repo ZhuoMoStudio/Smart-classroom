@@ -1,5 +1,23 @@
 # 更新日志
 
+## v1.33.1 (2026-11-08)
+
+### 📚 修掉「打开教材页就报加载失败」
+- `assets/textbook_index.json` 里有一段**四层**数据：
+  `学段/科目/分类/试卷/[文件]`（维护脚本搬进 `_未分类` 时没有压平）。
+  应用按三层强转，抛 `type '_Map<String,dynamic>' is not subtype of type 'List<dynamic>'`，
+  整份索引加载失败，教材页全空。
+- 数据侧：`tools/fix_textbook_index.py` 增加形状归一化，把多余层级用
+  「上级 / 下级」合并成版本名，坏条目丢弃；`--check` 现在也会检查层级。
+- 代码侧：`TextbookIndexService.load()` 改为防御式解析，单个坏节点不再拖垮整份索引；
+  `_未分类` 隔离区不再作为一个「学段」出现。
+- 新增 `test/textbook_index_test.dart`：校验 1905 本数据的层级与字段。
+
+### 🐢 启动少做一遍无用功
+- 工作区已配置时，启动会解析两遍名单/题库（`app.dart` 与 `HomeScreen.initState`
+  各调了一次 `loadFromWorkspace`），日志里出现两次「载入数据」。已去掉重复调用。
+
+
 ## v1.33.0 (2026-11-07)
 
 这一版没有新功能，全部是「本来就该成立却没成立」的修复与工程加固。
