@@ -16,7 +16,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   shared_preferences: ^2.2.2
   path_provider: ^2.1.2
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^10.3.4
   file_picker: 10.3.8
   http: ^1.2.0
   audioplayers: ^6.0.0
