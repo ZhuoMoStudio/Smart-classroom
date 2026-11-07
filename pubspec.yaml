@@ -29,7 +29,9 @@ dependencies:
   crypto: ^3.0.8
   webdav_plus: ^1.2.0
   # Android 11+ 写公共目录（老师自选的工作区）需要「所有文件访问」
-  permission_handler: ^13.0.2
+  # 固定在 11.4.0：它的 Android 实现 compileSdk 34，能配 AGP 9 / compileSdk 36；
+  # 12/13 依赖 permission_handler_android 13/14，要求 compileSdk 37，CI 会直接失败。
+  permission_handler: 11.4.0
 
 # 已移除的依赖及原因（避免以后有人再按旧印象加回来）：
 #   dio                       —— lib/ 中零 import；webdav_plus 1.2.2 依赖的是 http，不是 dio
