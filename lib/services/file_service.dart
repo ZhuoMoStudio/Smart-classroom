@@ -113,8 +113,6 @@ class FileService {
       AppLog.error('导出', '另存为异常', e, st);
       throw Exception('另存为失败：$e');
     }
-
-    throw Exception('导出未完成：$fileName');
   }
 
   /// 供界面判断「这个路径是不是落在我给他选的显式位置」。
