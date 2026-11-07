@@ -159,7 +159,8 @@ jobs:
               exit 0
             fi
             echo "::warning::push 被拒绝，rebase 到最新 main 后重试（第 $i 次）"
-            git pull --rebase origin main || { git rebase --abort || true; }
+            git fetch origin main
+            git rebase FETCH_HEAD || { git rebase --abort || true; }
             sleep $((i * 3))
           done
           echo "::error::提交连续 5 次被拒绝，放弃"

@@ -179,7 +179,8 @@ jobs:
               exit 0
             fi
             echo "::warning::push 被拒绝，rebase 到最新 main 后重试（第 $i 次）"
-            git pull --rebase origin main || { git rebase --abort || true; }
+            git fetch origin main
+            git rebase FETCH_HEAD || { git rebase --abort || true; }
             sleep $((i * 3))
           done
           echo "::error::报告提交连续 5 次被拒绝，放弃"
@@ -206,16 +207,20 @@ jobs:
           fi
           git commit -m "chore(ci): 记录失败的分析/测试输出" \
                      -m "由 verify job 自动写回，便于在没有 Actions 日志权限时排查。"
+          # checkout 出来的是 detached HEAD，`git pull --rebase origin <分支>`
+          # 会直接报 "You are not currently on a branch" —— 所以用 fetch + rebase。
           for i in 1 2 3; do
-            if git pull --rebase origin "$branch" && git push origin "HEAD:$branch"; then
+            if git push origin "HEAD:$branch"; then
               echo "报告已写回 $branch"
               exit 0
             fi
             echo "::warning::写回失败，重试（第 $i 次）"
+            git fetch origin "$branch"
+            git rebase FETCH_HEAD || { git rebase --abort || true; }
             sleep $((i * 3))
           done
-          echo "::warning::无法把报告写回分支，请到 Actions 页面查看"
-          exit 0
+          echo "::error::无法把报告写回分支"
+          exit 1
 
       # 报告已落盘、已提交，现在才真正失败
       - name: Fail if analyzer reported errors
