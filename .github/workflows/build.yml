@@ -324,9 +324,19 @@ jobs:
 
       - name: Build split APKs
         run: |
+          # 失败时把 Gradle 的最后几十行写成注解：Actions 日志需要 actions:read
+          # 才能下载，而注解在运行页面上公开可见，足以定位「是哪个依赖/哪条任务挂了」。
+          set +e
           flutter build apk --release --split-per-abi \
             --build-name=${{ needs.verify.outputs.version }} \
-            --build-number=${{ github.run_number }}
+            --build-number=${{ github.run_number }} > build-android.log 2>&1
+          code=$?
+          tail -120 build-android.log
+          if [ "$code" -ne 0 ]; then
+            msg=$(tail -60 build-android.log | paste -sd ' | ' | cut -c1-3500)
+            echo "::error title=Android 构建失败::$msg"
+            exit "$code"
+          fi
 
       - name: Package APKs
         run: |
