@@ -155,7 +155,9 @@ class DataService {
 
   void dispose() {
     if (_debounceTimer?.isActive == true) {
-      AppLog.warn('数据', '退出时仍有未落盘的改动，已尝试立即保存');
+      // dispose 是同步的，没法等一次 xlsx 写完；这里只如实记录，
+      // 真正的兜底是切后台时 lifecycle observer 触发的那次立即保存。
+      AppLog.warn('数据', '退出时仍有未落盘的改动，已取消防抖计时器');
     }
     _debounceTimer?.cancel();
     _debounceTimer = null;

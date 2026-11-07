@@ -29,11 +29,39 @@ class _SmartClassroomAppState extends ConsumerState<SmartClassroomApp> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // 设置里选的「布局方向」要真正生效：旧版只有下拉框，没有任何代码读它。
+    _applyLayoutMode(ref.read(settingsProvider).layoutMode);
+  }
+
+  /// auto 恢复系统默认（全部方向），portrait / landscape 锁定单一方向。
+  void _applyLayoutMode(String mode) {
+    // 桌面端没有「屏幕方向」，调用平台通道只会得到 MissingPluginException
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
+    final orientations = switch (mode) {
+      'portrait' => <DeviceOrientation>[
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ],
+      'landscape' => <DeviceOrientation>[
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      _ => <DeviceOrientation>[],
+    };
+    SystemChrome.setPreferredOrientations(orientations);
   }
 
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // 设置页改方向后立即生效，不必重启
+    ref.listen<String>(
+      settingsProvider.select((s) => s.layoutMode),
+      (_, mode) => _applyLayoutMode(mode),
+    );
 
     return MaterialApp(
       title: '灵动课堂',

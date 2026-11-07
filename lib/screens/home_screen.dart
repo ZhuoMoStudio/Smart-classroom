@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/sync_models.dart';
 import '../providers/class_provider.dart';
@@ -28,6 +29,7 @@ import 'question_panel.dart';
 import 'timer_panel.dart';
 import 'leaderboard_panel.dart';
 import 'open_source_screen.dart';
+import 'usage_guide_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -534,17 +536,15 @@ class _SettingsPage extends ConsumerWidget {
         _sec('本地存档', theme),
         SwitchListTile.adaptive(title: const Text('自动保存', style: TextStyle(fontSize: 14)), value: s.autoSave, dense: true,
             contentPadding: EdgeInsets.zero, onChanged: (v) => ref.read(settingsProvider.notifier).update(s.copyWith(autoSave: v))),
-        _ddInt(theme, '保存间隔', s.autoSaveInterval, const [
-          DropdownMenuItem(value: 15, child: Text('15秒', style: TextStyle(fontSize: 14))),
-          DropdownMenuItem(value: 30, child: Text('30秒', style: TextStyle(fontSize: 14))),
-          DropdownMenuItem(value: 60, child: Text('60秒', style: TextStyle(fontSize: 14))),
-          DropdownMenuItem(value: 120, child: Text('120秒', style: TextStyle(fontSize: 14))),
-        ], (v) => ref.read(settingsProvider.notifier).update(s.copyWith(autoSaveInterval: v!))),
+        const SizedBox(height: 4),
+        const _AutoSaveHint(),
         const SizedBox(height: 6), const Divider(height: 1), const SizedBox(height: 6),
-        _sec('关于', theme),
-        _tile(theme, Icons.info_outline, '灵动课堂 v1.31', '版本信息与开源说明 | Apache 2.0', () {
-          Navigator.push(context, slideFadePageRoute(const OpenSourceScreen()));
+        _sec('帮助与关于', theme),
+        _tile(theme, Icons.menu_book_outlined, '使用指南', '三步开始 · 抽取 · 题库 · 同步 · 排错', () {
+          Navigator.push(context, slideFadePageRoute(const UsageGuideScreen()));
         }),
+        const SizedBox(height: 2),
+        const _AboutTile(),
         const SizedBox(height: 32),
       ]),
     );
@@ -635,6 +635,12 @@ class _SyncButtonsState extends ConsumerState<_SyncButtons> {
     ref.read(syncProvider.notifier).startSync(); ToastOverlay.show(context, '正在同步...');
     try {
       final ok = await ref.read(cloudStorageServiceProvider).sync();
+      // 音效资源早就有，但 playSyncComplete/Fail 从来没被调用过
+      if (ok) {
+        AudioEngine().playSyncComplete();
+      } else {
+        AudioEngine().playSyncFail();
+      }
       if (mounted) { setState(() => _syncing = false); ToastOverlay.show(context, ok ? '同步完成 ✓' : ref.read(syncProvider).message ?? '同步失败', type: ok ? ToastType.success : ToastType.error); }
     } catch (e) { if (mounted) { setState(() => _syncing = false); ToastOverlay.show(context, '异常: $e', type: ToastType.error); } }
   }
@@ -799,6 +805,62 @@ class _TextInputDialogState extends State<_TextInputDialog> {
         ),
         FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
       ],
+    );
+  }
+}
+
+
+/// 自动保存的说明文字。
+/// 之前这里是一个「保存间隔 15/30/60/120 秒」的下拉框，但没有任何代码读它 ——
+/// 实际防抖固定 5 秒。假控件比没有控件更糟，改成把真实行为写清楚。
+class _AutoSaveHint extends StatelessWidget {
+  const _AutoSaveHint();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 2),
+      child: Text(
+        '改动后 5 秒自动写入；切到后台或退出时立即保存。',
+        style: theme.textTheme.bodySmall
+            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      ),
+    );
+  }
+}
+
+/// 关于：版本号从安装包读取，协议写 AGPL-3.0。
+/// 旧版这里硬编码「v1.31」和「Apache 2.0」，两个都是错的。
+class _AboutTile extends StatelessWidget {
+  const _AboutTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snap) {
+        final info = snap.data;
+        final version = info == null ? '' : ' v${info.version}';
+        return Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          child: ListTile(
+            leading: Icon(Icons.info_outline,
+                size: 22, color: theme.colorScheme.primary),
+            title: Text('灵动课堂$version',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            subtitle: const Text('AGPL-3.0 · 开源说明与第三方组件',
+                style: TextStyle(fontSize: 12)),
+            trailing: const Icon(Icons.chevron_right, size: 18),
+            onTap: () => Navigator.push(
+                context, slideFadePageRoute(const OpenSourceScreen())),
+            dense: true,
+          ),
+        );
+      },
     );
   }
 }

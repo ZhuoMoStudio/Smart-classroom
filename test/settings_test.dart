@@ -21,9 +21,6 @@ void main() {
         hapticFeedback: false,
         autoSync: true,
         autoSave: false,
-        wallpaperSource: 'url',
-        wallpaperUrl: 'https://example.com/a.jpg',
-        wallpaperInterval: 30,
         layoutMode: 'landscape',
         timerPresets: [1, 3, 5],
         cloudServiceType: 'Nextcloud',
@@ -32,9 +29,6 @@ void main() {
         remoteFolder: '/MyData/',
         autoSyncInterval: 15,
         syncStrategy: 'upload_only',
-        conflictStrategy: 'local',
-        autoSaveInterval: 60,
-        usbDataPath: '/mnt/usb',
         downloadSource: 'github',
       );
 
@@ -42,14 +36,12 @@ void main() {
       expect(back.localeTag, 'en');
       expect(back.isDarkMode, isTrue);
       expect(back.soundEnabled, isFalse);
-      expect(back.wallpaperUrl, 'https://example.com/a.jpg');
       expect(back.layoutMode, 'landscape');
       expect(back.timerPresets, [1, 3, 5]);
       expect(back.webdavUrl, 'https://cloud.example.com/dav/');
       expect(back.webdavUsername, 'teacher@example.com');
       expect(back.syncStrategy, 'upload_only');
       expect(back.downloadSource, 'github');
-      expect(back.usbDataPath, '/mnt/usb');
     });
 
     test('空 JSON 回退到默认值', () {
@@ -63,11 +55,11 @@ void main() {
     test('字段类型不对时逐项回退，不抛异常', () {
       final s = SettingsState.fromJson(const <String, dynamic>{
         'isDarkMode': 'yes',
-        'autoSaveInterval': '30',
+        'autoSyncInterval': '15',
         'timerPresets': ['a', 5, 10],
       });
       expect(s.isDarkMode, isFalse);
-      expect(s.autoSaveInterval, 30);
+      expect(s.autoSyncInterval, 0);
       expect(s.timerPresets, [5, 10]);
     });
   });
