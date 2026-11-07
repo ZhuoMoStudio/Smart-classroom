@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_classroom/services/textbook_index_service.dart';
 
 /// 教材索引是「学段 / 科目 / 版本 / [文件]」四层 JSON。
 ///
@@ -69,5 +70,14 @@ void main() {
     });
     expect(total, greaterThanOrEqualTo(1900));
     expect(emptyPath, 0);
+  });
+
+  test('下载地址把中文路径编码成 ASCII', () {
+    final url = TextbookIndexService.getDownloadUrl(
+        '初中（五·四学制）/数学/鲁教版-山东教育出版社/义务教育教科书（五·四学制）·数学七年级.pdf');
+    expect(RegExp(r'[^\x00-\x7F]').hasMatch(url), isFalse,
+        reason: 'URL 里不该有非 ASCII 字符');
+    expect(Uri.parse(url).pathSegments.last,
+        '义务教育教科书（五·四学制）·数学七年级.pdf');
   });
 }

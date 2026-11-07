@@ -76,10 +76,14 @@ class FileService {
     required Future<File> Function(String path) build,
     List<String> allowedExtensions = const ['xlsx'],
   }) async {
-    // 1) 先在可写的位置生成 xlsx
-    final baseDir = await getWorkingDir();
-    final localPath = p.join(baseDir, fileName);
-    await Directory(baseDir).create(recursive: true);
+    // 1) 先在**应用私有临时目录**生成 xlsx。
+    //    不能写工作区：工作区常在 /storage/emulated/0/Download 下，
+    //    Android 11+ 分区存储下 dart:io 直接写会 EACCES（errno 13），
+    //    这正是「导出失败：PathAccessException」的来源。
+    //    真正的落盘交给第 2 步 FilePicker.saveFile（SAF），它才拥有写权限。
+    final tmpDir = await getTemporaryDirectory();
+    final localPath = p.join(tmpDir.path, fileName);
+    await tmpDir.create(recursive: true);
     await build(localPath);
 
     final bytes = await File(localPath).readAsBytes();
@@ -104,17 +108,13 @@ class FileService {
       AppLog.info('导出', '$fileName 已保存到 $savePath');
       return File(savePath);
     } on Exception catch (e, st) {
-      // 不吞异常。另存为失败时退回工作区，并把真实路径返回给调用方。
-      AppLog.warn('导出', '$fileName 另存为失败，回退到工作区：$e');
+      // 不再“回退到工作区”假装成功：那份文件在应用私有目录，老师根本看不到。
+      AppLog.warn('导出', '$fileName 另存为失败：$e');
       AppLog.error('导出', '另存为异常', e, st);
+      throw Exception('另存为失败：$e');
     }
 
-    // 3) 兜底：文件已经在工作区目录里了，把它当作成功并返回其真实路径。
-    final fallback = File(localPath);
-    if (await fallback.exists()) {
-      return fallback;
-    }
-    throw Exception('模板写入失败：$localPath');
+    throw Exception('导出未完成：$fileName');
   }
 
   /// 供界面判断「这个路径是不是落在我给他选的显式位置」。

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/workspace_service.dart';
+import '../services/storage_access.dart';
 import '../services/data_service.dart';
 import '../theme/design_tokens.dart';
 import 'toast_overlay.dart';
@@ -158,6 +159,9 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
       final ws = ref.read(workspaceServiceProvider);
       final path = await ws.pickFolder();
       if (path != null && mounted) {
+        // 公共目录需要「所有文件访问」才能写，先引导授权
+        await ensureStorageAccess(context, workspacePath: ws.rootPath);
+        if (!mounted) return;
         await ws.ensureInitialTemplates();
         await ref.read(dataServiceProvider).loadFromWorkspace();
         if (mounted) {

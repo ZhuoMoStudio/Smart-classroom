@@ -106,11 +106,21 @@ class PdfCacheManager {
     }
   }
 
+  /// 解码 URL 里的文件名。历史数据里出现过非法百分号编码，
+  /// 解码失败时退回原串，绝不让缓存路径计算抛异常。
+  static String _decodedName(String url) {
+    try {
+      return Uri.decodeFull(url);
+    } catch (_) {
+      return url;
+    }
+  }
+
   /// 根据 URL 生成缓存文件路径
   Future<String> _cachePathForUrl(String url) async {
     final hash = sha256.convert(utf8.encode(url)).toString();
     // 从 URL 中提取原始文件名作为前缀，方便人工识别
-    final base = p.basenameWithoutExtension(Uri.decodeFull(url));
+    final base = p.basenameWithoutExtension(_decodedName(url));
     final originalName = base.isNotEmpty ? base : 'document';
     final safeName =
         originalName.replaceAll(RegExp(r'[^\w\u4e00-\u9fff]'), '_');
@@ -121,7 +131,7 @@ class PdfCacheManager {
   /// 兼容查找：工作区没有时，再到旧私有缓存里找一次
   Future<String?> _legacyPathIfExists(String url) async {
     final hash = sha256.convert(utf8.encode(url)).toString();
-    final base = p.basenameWithoutExtension(Uri.decodeFull(url));
+    final base = p.basenameWithoutExtension(_decodedName(url));
     final safeName = (base.isNotEmpty ? base : 'document')
         .replaceAll(RegExp(r'[^\w\u4e00-\u9fff]'), '_');
     final legacy = File(p.join(await _legacyDir, '${safeName}_$hash.pdf'));
@@ -179,7 +189,12 @@ class PdfCacheManager {
       try {
         final client = http.Client();
         try {
-          final request = http.Request('GET', Uri.parse(proxyUrl));
+          final uri = Uri.tryParse(proxyUrl);
+          if (uri == null) {
+            AppLog.warn('课本', '非法的下载地址，跳过：$proxyUrl');
+            continue;
+          }
+          final request = http.Request('GET', uri);
           request.headers.addAll({
             'User-Agent': 'SmartClassroom/1.0',
             'Accept': '*/*',

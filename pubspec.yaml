@@ -1,7 +1,7 @@
 name: smart_classroom
 description: 灵动课堂 - 课堂互动管理工具（AGPL-3.0 开源协议）
 publish_to: 'none'
-version: 1.33.1+4
+version: 1.33.2+5
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
@@ -28,6 +28,8 @@ dependencies:
   path: ^1.8.3
   crypto: ^3.0.8
   webdav_plus: ^1.2.0
+  # Android 11+ 写公共目录（老师自选的工作区）需要「所有文件访问」
+  permission_handler: ^13.0.2
 
 # 已移除的依赖及原因（避免以后有人再按旧印象加回来）：
 #   dio                       —— lib/ 中零 import；webdav_plus 1.2.2 依赖的是 http，不是 dio

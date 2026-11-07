@@ -127,7 +127,15 @@ class TextbookIndexService {
 
   /// 获取下载 URL
   static String getDownloadUrl(String filePath) {
-    return 'https://raw.githubusercontent.com/TapXWorld/ChinaTextbook/master/$filePath';
+    // 路径里有中文、全角括号、`&`、`：` 等字符，直接拼进 URI 会让
+    // Uri.parse 抛 "Illegal percent encoding"（尤其是含 `%` 或全角符号时）。
+    // 按段做百分号编码，得到纯 ASCII 的 URL；缓存文件名那边再解回来。
+    final encoded = filePath
+        .split('/')
+        .where((s) => s.isNotEmpty)
+        .map(Uri.encodeComponent)
+        .join('/');
+    return 'https://raw.githubusercontent.com/TapXWorld/ChinaTextbook/master/$encoded';
   }
 
   /// 获取统计信息

@@ -11,6 +11,7 @@ import 'services/audio_engine.dart';
 import 'services/storage_service.dart';
 import 'services/update_service.dart';
 import 'services/workspace_service.dart';
+import 'services/storage_access.dart';
 import 'services/data_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
@@ -150,11 +151,22 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   /// 但 build 期间弹对话框 / 发网络请求本身就是未定义行为，
   /// 主题变化、字体缩放、窗口尺寸变化都会重新触发 build。
   void _scheduleStartupTasks() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       _maybeShowWorkspacePicker();
       _maybeCheckUpdate();
+      await _ensureStoragePermission();
     });
+  }
+
+  /// 工作目录在公共存储时，先确认「所有文件访问」权限。
+  /// 否则老师会在导出/保存时看到 errno 13，却不知道为什么。
+  Future<void> _ensureStoragePermission() async {
+    final ws = ref.read(workspaceServiceProvider);
+    if (!StorageAccess.needsAllFiles(ws.rootPath)) return;
+    if (await StorageAccess.isGranted()) return;
+    if (!mounted) return;
+    await ensureStorageAccess(context, workspacePath: ws.rootPath);
   }
 
   void _maybeShowWorkspacePicker() {

@@ -12,6 +12,7 @@ import '../providers/draw_provider.dart';
 import '../services/data_service.dart';
 import '../services/workspace_service.dart';
 import '../services/storage_service.dart';
+import '../services/storage_access.dart';
 import '../services/auto_sync_timer.dart';
 import '../services/cloud/webdav_plus_sync.dart';
 import '../providers/services_provider.dart';
@@ -470,6 +471,10 @@ class _SettingsPage extends ConsumerWidget {
         _tile(theme, Icons.folder_open, '工作目录', ws.isConfigured ? ws.rootPath!.split('/').last : '未设置', () async {
           final p = await ws.pickFolder();
           if (p == null || !ws.isConfigured) return;
+          // 选在 Download 等公共目录时，先要「所有文件访问」，否则后面的写入全会被拒
+          if (context.mounted) {
+            await ensureStorageAccess(context, workspacePath: ws.rootPath);
+          }
           await ws.ensureInitialTemplates();
           await ref.read(dataServiceProvider).loadFromWorkspace();
           if (context.mounted) {
