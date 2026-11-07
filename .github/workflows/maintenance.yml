@@ -22,7 +22,7 @@
 #   它就会把整条 Maintenance 卡死 —— 连带 dart fix、教材索引、第三方清单
 #   全都不会执行。许可证是「取一次长期不动」的东西，不该和日常维护绑在一起。
 #
-# 触发：push 改动 tools/** 或本文件，或手动 workflow_dispatch。
+# 触发：main 上 push 改动 tools/** 或本文件，或手动 workflow_dispatch。
 # 注意：GITHUB_TOKEN 触发的 push 不会再触发其他 workflow（防递归），
 # 所以这次提交之后需要再推一次代码才会跑 Build & Release。
 # ============================================================
@@ -30,6 +30,9 @@ name: Maintenance
 
 on:
   push:
+    # 只在 main 上跑：分支上的改动会由 PR 的 verify 检查，
+    # 而这里会往分支提交 dart fix 结果 —— 那会把 Dependabot 之类的 PR 弄脏。
+    branches: [main]
     paths:
       - 'tools/**'
       - '.github/workflows/maintenance.yml'
@@ -126,10 +129,8 @@ jobs:
           git status --short
           git --no-pager diff --stat
 
-      # 任何分支的 push 都可以把结果提交回去：
-      # 分支上运行它相当于「让 CI 代跑 dart fix」，main 上则是常规维护。
       - name: Commit
-        if: github.event_name == 'push' && github.ref_type == 'branch'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
