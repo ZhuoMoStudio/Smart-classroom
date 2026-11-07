@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
 import '../providers/services_provider.dart';
 import 'app_log.dart';
-import 'cloud/cloud_storage_service.dart';
 
 /// 自动同步定时器
 ///

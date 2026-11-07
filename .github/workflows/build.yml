@@ -3,20 +3,26 @@
 # 产出：Android APK (3 ABIs) + Windows ZIP + Windows Setup.exe
 #
 # 设计要点：
-# 1. verify job 先跑静态分析与单元测试，两个构建 job 都 needs 它。
-# 2. flutter analyze 只把**编译级错误**当失败（--no-fatal-warnings --no-fatal-infos）：
-#    代码库有大量历史告警，一上来全当失败只会得到一个没用的红叉。
-# 3. 【关键】分析与测试都先捕获退出码、不中断 job，把输出写成
+# 1. verify 先跑静态分析与单元测试，两个构建 job 都 needs 它。
+# 2. **PR 只跑 verify**。以前每次 PR 都会顺带编译 Android + Windows，
+#    两个 runner 十几分钟起步；而 PR 阶段真正需要回答的问题只有
+#    「能不能编译 / 测试过不过」，完整产物交给 main。
+# 3. flutter analyze 只把**编译级错误**当失败（--no-fatal-warnings --no-fatal-infos）：
+#    代码库仍有历史告警，一上来全当失败只会得到一个没用的红叉。
+# 4. 【关键】分析与测试都先捕获退出码、不中断 job，把输出写成
 #    docs/analyzer-report.md 并回提交，**最后**才因失败而收尾。
 #    因为这份报告是维护者能看到分析器/测试输出的唯一通道。
-# 4. 版本号不写死：从 pubspec.yaml 读，单一来源。
-# 5. 【发布方式】
+# 5. 版本号不写死：从 pubspec.yaml 读，单一来源。
+# 6. 【发布方式】
 #    - 推 tag（v*）→ 发布
 #    - 或：提交信息里带 [release] → 发布
 #      后者是为了在没有 tag 推送权限、或不想额外开一个 workflow 创建 tag 时
 #      仍能发布。action-gh-release 会在 tag 不存在时自己创建。
-#      两条路径都仍然被 `needs: [verify, build-android, build-windows]` 把关，
-#      即：编译错误或单测失败时不会产生发布。
+#      两条路径都仍然被 `needs` 把关，编译错误或单测失败时不会产生发布。
+# 7. 回提交必须带 rebase 重试：verify 与 Maintenance 会在同一次 push 上
+#    同时往 main 提交，先到的那一个会让后到的 push 被拒（非快进）。
+#    旧实现直接 `git push`，于是 Maintenance 在 2026-09-25 那次 push 上
+#    整条流水线失败 —— 而它其实什么代码都没写错。
 # ============================================================
 name: Build & Release
 
@@ -28,14 +34,25 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      release:
+        description: 构建完成后创建 Release（仅 main 上有效）
+        type: boolean
+        default: false
+
+# 同一分支上的新 push 取消旧构建；PR 更激进，省 runner 时间。
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write
   actions: read
-  id-token: write  # 用于 Sigstore 签名
 
 env:
   APP_NAME: SmartClassroom
+  FLUTTER_VERSION: '3.44.9'
+  PUB_CACHE: ${{ github.workspace }}/.pub-cache
 
 jobs:
   # ==========================================================
@@ -51,13 +68,24 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          # 回提交要用 rebase，浅克隆会让 rebase 直接失败
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
 
       - name: Read version from pubspec
         id: version
@@ -123,6 +151,7 @@ jobs:
             echo '```'
           } > docs/analyzer-report.md
           echo "报告行数: $(wc -l < docs/analyzer-report.md)"
+          grep -E "issues? found|No issues" analyze-raw.txt | tail -1 || true
 
       # 把报告与锁文件回提交（仅限 main 的 push）。
       # GITHUB_TOKEN 触发的 push 不会再触发其他 workflow，不会递归。
@@ -141,7 +170,50 @@ jobs:
           git commit \
             -m "chore(ci): 刷新 CI 诊断报告与 pubspec.lock" \
             -m "由 verify job 自动生成。docs/analyzer-report.md 请勿手工编辑。"
-          git push
+
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "已推送报告（第 $i 次尝试）"
+              exit 0
+            fi
+            echo "::warning::push 被拒绝，rebase 到最新 main 后重试（第 $i 次）"
+            git pull --rebase origin main || { git rebase --abort || true; }
+            sleep $((i * 3))
+          done
+          echo "::error::报告提交连续 5 次被拒绝，放弃"
+          exit 1
+
+      # 失败时把报告写回触发分支：Actions 日志需要 actions:read 才能下载，
+      # 而维护者手上不一定有；写回分支后，`git pull` 就能看到完整的分析输出。
+      - name: Publish report to branch (failure only)
+        if: |
+          always() &&
+          github.event_name == 'push' &&
+          github.ref_type == 'branch' &&
+          github.ref != 'refs/heads/main' &&
+          (steps.analyze.outputs.exit != '0' || steps.test.outputs.exit != '0')
+        run: |
+          set -euo pipefail
+          branch="${GITHUB_REF_NAME}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A docs/analyzer-report.md
+          if git diff --cached --quiet; then
+            echo "报告无变化"
+            exit 0
+          fi
+          git commit -m "chore(ci): 记录失败的分析/测试输出" \
+                     -m "由 verify job 自动写回，便于在没有 Actions 日志权限时排查。"
+          for i in 1 2 3; do
+            if git pull --rebase origin "$branch" && git push origin "HEAD:$branch"; then
+              echo "报告已写回 $branch"
+              exit 0
+            fi
+            echo "::warning::写回失败，重试（第 $i 次）"
+            sleep $((i * 3))
+          done
+          echo "::warning::无法把报告写回分支，请到 Actions 页面查看"
+          exit 0
 
       # 报告已落盘、已提交，现在才真正失败
       - name: Fail if analyzer reported errors
@@ -162,6 +234,7 @@ jobs:
   build-android:
     name: Android Build
     needs: verify
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -178,9 +251,48 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/**/*.gradle') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      - name: Configure release signing (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64:-}" ]; then
+            echo "::warning::未配置 ANDROID_KEYSTORE_BASE64，本次 APK 使用 debug 签名（仅适合自用，不能作为正式分发）"
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+          echo "已配置 release 签名"
 
       - name: Create local.properties
         run: |
@@ -209,7 +321,9 @@ jobs:
             src="build/app/outputs/flutter-apk/app-${abi}-release.apk"
             dst="${{ env.APP_NAME }}_v${V}_${abi}.apk"
             cp "$src" "$dst"
-            echo "$dst  $(du -h "$dst" | cut -f1)"
+            size=$(du -h "$dst" | cut -f1)
+            echo "$dst  $size"
+            echo "- \`$dst\` — $size" >> "$GITHUB_STEP_SUMMARY"
           done
 
       - name: Upload APKs
@@ -218,6 +332,7 @@ jobs:
           name: android-apks
           path: ${{ env.APP_NAME }}_v*.apk
           if-no-files-found: error
+          retention-days: 14
 
   # ==========================================================
   # Windows
@@ -225,6 +340,7 @@ jobs:
   build-windows:
     name: Windows Build
     needs: verify
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     timeout-minutes: 60
 
@@ -234,21 +350,26 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           architecture: x64
 
       - name: Enable Windows
         run: flutter config --enable-windows-desktop
 
-      # 仓库里的 windows/ 是个不完整的骨架（没有 Runner.rc、没有 main.cpp、
-      # 缺 app_icon.ico），本地根本构建不了。这里先重建以保证 CI 可用；
-      # 真正的修法是把完整的 windows/ 工程提交进仓库并删掉这一步。
-      - name: Recreate Windows project
+      # 仓库里的 windows/ 工程完整时直接用；缺失才重建。
+      # 旧实现无条件删除重建，于是每次构建都会把自定义窗口标题、
+      # 以及 icons workflow 生成的应用图标覆盖回 Flutter 默认值。
+      - name: Ensure Windows project exists
         shell: pwsh
         run: |
-          Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
-          flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
+          if (Test-Path 'windows/runner/main.cpp') {
+            Write-Host "使用仓库内的 Windows 工程"
+          } else {
+            Write-Host "::warning::windows/ 工程不完整，临时用 flutter create 重建"
+            Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
+            flutter create --platforms=windows --org=com.zhuomostudio --project-name=smart_classroom .
+          }
 
       - name: Set MSVC compatibility
         shell: pwsh
@@ -270,7 +391,9 @@ jobs:
           $zipName = "${{ env.APP_NAME }}_v${V}_windows.zip"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $zipName
           echo "ZIP_PATH=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "$zipName  $((Get-Item $zipName).Length / 1MB) MB"
+          $mb = [math]::Round((Get-Item $zipName).Length / 1MB, 1)
+          Write-Host "$zipName  $mb MB"
+          "- ``$zipName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Windows ZIP
         uses: actions/upload-artifact@v4
@@ -278,6 +401,7 @@ jobs:
           name: windows-zip
           path: ${{ env.APP_NAME }}_v*_windows.zip
           if-no-files-found: error
+          retention-days: 14
 
       # ----- 产物 2：Inno Setup 安装包 -----
       - name: Install Inno Setup
@@ -324,7 +448,9 @@ jobs:
           $V = "${{ needs.verify.outputs.version }}"
           $setupName = "${{ env.APP_NAME }}_v${V}_Setup.exe"
           Copy-Item build/installer/*.exe $setupName -Force
-          Write-Host "$setupName  $((Get-Item $setupName).Length / 1MB) MB"
+          $mb = [math]::Round((Get-Item $setupName).Length / 1MB, 1)
+          Write-Host "$setupName  $mb MB"
+          "- ``$setupName`` — $mb MB" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload Setup.exe
         uses: actions/upload-artifact@v4
@@ -332,20 +458,24 @@ jobs:
           name: windows-setup
           path: ${{ env.APP_NAME }}_v*_Setup.exe
           if-no-files-found: error
+          retention-days: 14
 
   # ==========================================================
   # Release
   #
-  # 两种触发方式：
-  #   1. 推 tag v*            —— 常规发布
-  #   2. 提交信息含 [release] —— 无需 tag 推送权限也能发布；
-  #      tag 不存在时由 action-gh-release 自己创建
-  # 两者都要先过 needs（verify + 两端构建），所以编译/测试不过时不会发布。
+  # 触发方式：
+  #   1. 推 tag v*                     —— 常规发布
+  #   2. 提交信息含 [release]          —— 无需 tag 推送权限也能发布
+  #   3. 手动 workflow_dispatch 且勾选 release
+  # 都要先过 needs（verify + 两端构建），所以编译/测试不过时不会发布。
   # ==========================================================
   release:
     needs: [verify, build-android, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]'))
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && inputs.release) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]'))
 
     steps:
       - name: Download all artifacts
@@ -361,12 +491,13 @@ jobs:
           du -h release-assets/* | sort -h
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.verify.outputs.version }}
           name: 灵动课堂 v${{ needs.verify.outputs.version }}
           files: release-assets/*
           generate_release_notes: true
           fail_on_unmatched_files: true
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

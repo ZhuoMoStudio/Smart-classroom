@@ -1,0 +1,26 @@
+name: 功能建议
+description: 希望增加或改进的功能
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的教学场景
+      description: 描述具体场景，比“加个功能”更容易判断该不该做
+      placeholder: 上课抽人时，我想……
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望它怎么工作
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 现在你是怎么绕过去的
+      description: 可选。现有的临时办法能说明痛点有多真实

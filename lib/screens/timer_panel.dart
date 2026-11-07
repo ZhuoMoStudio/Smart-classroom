@@ -17,6 +17,11 @@ class TimerPanel extends ConsumerStatefulWidget {
 class _TimerPanelState extends ConsumerState<TimerPanel> {
   DateTime _currentTime = DateTime.now();
   Timer? _clockTimer;
+
+  /// 与网络时间的偏差。双击校时后，本地时钟按这个偏移显示；
+  /// 旧实现只改了 `_currentTime` 一次，下一秒的 tick 就把它覆盖回本机时间，
+  /// 「时间已同步」提示完等于什么都没发生。
+  Duration _clockOffset = Duration.zero;
   bool _wasTimerRunning = false;
   final TextEditingController _customTimeController = TextEditingController();
 
@@ -26,7 +31,9 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
     _clockTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) {
-        if (mounted) setState(() => _currentTime = DateTime.now());
+        if (mounted) {
+          setState(() => _currentTime = DateTime.now().add(_clockOffset));
+        }
       },
     );
   }
@@ -54,12 +61,23 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
 
   Future<void> _syncNetworkTime() async {
     final networkTime = await NetworkTimeService.getNetworkTime();
-    if (networkTime != null && mounted) {
-      setState(() => _currentTime = networkTime);
-      ToastOverlay.show(context, '时间已同步', type: ToastType.success);
-    } else {
+    if (!mounted) return;
+
+    if (networkTime == null) {
       ToastOverlay.show(context, '网络时间获取失败', type: ToastType.error);
+      return;
     }
+
+    final offset = networkTime.difference(DateTime.now());
+    setState(() {
+      _clockOffset = offset;
+      _currentTime = DateTime.now().add(offset);
+    });
+    ToastOverlay.show(
+      context,
+      '时间已按网络校准（偏差 ${offset.inSeconds >= 0 ? '+' : ''}${offset.inSeconds} 秒）',
+      type: ToastType.success,
+    );
   }
 
   @override
@@ -105,7 +123,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
                   Text(
                     '${_currentTime.year}/${_pad(_currentTime.month)}/${_pad(_currentTime.day)}  星期${_weekday(_currentTime.weekday)}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                   Text(
@@ -127,7 +145,7 @@ class _TimerPanelState extends ConsumerState<TimerPanel> {
             padding: EdgeInsets.all(isLowTime ? 12 : 8),
             decoration: isLowTime
                 ? BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.red, width: 2),
                   )

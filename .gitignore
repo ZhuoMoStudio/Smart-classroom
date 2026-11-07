@@ -5,6 +5,7 @@ android/upload-keystore.jks
 
 # Flutter
 .dart_tool/
+windows/flutter/ephemeral/
 .packages
 build/
 *.iml

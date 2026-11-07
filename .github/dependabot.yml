@@ -1,0 +1,44 @@
+version: 2
+
+# 依赖自动升级。
+#
+# 这个项目没有本地构建环境（Flutter 工具链只存在于 CI），
+# 依赖漂移只能靠 Actions 发现。Dependabot 每次升级都会开 PR，
+# 而 PR 在 build.yml 里只跑 verify（analyze + test），
+# 所以一个升级 PR 是否安全，看它的红绿就知道。
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+    groups:
+      # 小版本与补丁合成一个 PR，减少评审噪音；大版本单独开，
+      # 因为它们往往伴随破坏性 API 变更，需要单独看 CI 结果。
+      pub-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "ci"

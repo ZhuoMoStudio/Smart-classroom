@@ -184,9 +184,9 @@ class QuestionPanel extends ConsumerWidget {
                     left: left ?? BorderSide.none,
                     bottom: bottom ?? BorderSide.none,
                     top: BorderSide(
-                        color: t.colorScheme.outline.withOpacity(0.15)),
+                        color: t.colorScheme.outline.withValues(alpha: 0.15)),
                     right: BorderSide(
-                        color: t.colorScheme.outline.withOpacity(0.15)),
+                        color: t.colorScheme.outline.withValues(alpha: 0.15)),
                   ),
                 ),
                 child: Center(
@@ -214,7 +214,7 @@ class QuestionPanel extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: t.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: t.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -277,6 +277,7 @@ class QuestionPanel extends ConsumerWidget {
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
     );
+    if (!ctx.mounted) return;
     if (r == null || r.files.isEmpty) return;
     final p = r.files.single.path;
     if (p == null) return;
@@ -284,12 +285,15 @@ class QuestionPanel extends ConsumerWidget {
       final bn = p.split(Platform.pathSeparator).last
           .replaceAll(RegExp(r'\.(xlsx|xls)$'), '');
       final bank = await ExcelService.parseQuestionBank(p, bn);
+      if (!ctx.mounted) return;
       ref.read(questionProvider.notifier).addBank(bank);
       ToastOverlay.show(
           ctx, '导入成功: ${bank.name} (${bank.questions.length} 题)',
           type: ToastType.success);
     } catch (e) {
-      ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error);
+      if (ctx.mounted) {
+        ToastOverlay.show(ctx, '导入失败: $e', type: ToastType.error);
+      }
     }
   }
 

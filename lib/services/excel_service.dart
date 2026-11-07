@@ -428,7 +428,7 @@ class ExcelService {
     final c = sheet.cell(
       CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
     );
-    return c?.value?.toString() ?? '';
+    return c?.value.toString() ?? '';
   }
 
   /// 读单元格里的数字。
