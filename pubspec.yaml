@@ -21,7 +21,7 @@ dependencies:
   http: ^1.2.0
   audioplayers: ^6.0.0
   uuid: ^4.3.3
-  package_info_plus: ^8.0.0
+  package_info_plus: ^9.0.1
   url_launcher: ^6.3.3
   excel: ^3.0.0
   pdfrx: ^1.0.100
