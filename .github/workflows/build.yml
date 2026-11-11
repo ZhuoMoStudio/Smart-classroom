@@ -420,43 +420,79 @@ jobs:
       - name: Package portable single exe
         shell: pwsh
         run: |
-          $V = "${{ needs.verify.outputs.version }}"
-          $src = "build/windows/x64/runner/Release"
-          if (-not (Test-Path "$src/SmartClassroom.exe")) {
-            throw "构建产物缺失：$src/SmartClassroom.exe"
+          $ErrorActionPreference = 'Stop'
+          try {
+            $V = "${{ needs.verify.outputs.version }}"
+            $src = "build/windows/x64/runner/Release"
+            if (-not (Test-Path "$src/SmartClassroom.exe")) {
+              throw "构建产物缺失：$src/SmartClassroom.exe"
+            }
+            New-Item -ItemType File -Path "$src/portable.marker" -Force | Out-Null
+
+            # 7z.exe：优先 PATH，其次默认安装位置
+            $sevenZip = (Get-Command 7z.exe -ErrorAction SilentlyContinue).Source
+            if (-not $sevenZip) {
+              $candidate = "C:\Program Files\7-Zip\7z.exe"
+              if (Test-Path $candidate) { $sevenZip = $candidate }
+            }
+            if (-not $sevenZip) { throw "找不到 7z.exe" }
+            Write-Host "7z: $sevenZip"
+
+            # 官方 7-Zip Extra 里带 7zSD.sfx（安装型 SFX 模块，支持 Directory）
+            $extra = $null
+            try {
+              $page = Invoke-WebRequest -Uri "https://www.7-zip.org/download.html"
+              $m = [regex]::Match($page.Content, 'a/(7z[0-9]+(?:-x64)?-extra\.7z)')
+              if ($m.Success) { $extra = "https://www.7-zip.org/a/" + $m.Groups[1].Value }
+            } catch {
+              Write-Host "下载页解析失败：$_"
+            }
+            $fallbacks = @(
+              "https://www.7-zip.org/a/7z2409-extra.7z",
+              "https://www.7-zip.org/a/7z2301-extra.7z"
+            )
+            if ($extra) { $fallbacks = @($extra) + $fallbacks }
+            $got = $false
+            foreach ($u in $fallbacks) {
+              try {
+                Write-Host "下载 $u"
+                Invoke-WebRequest -Uri $u -OutFile extra.7z
+                if ((Get-Item extra.7z).Length -gt 100000) { $got = $true; break }
+              } catch { Write-Host "失败：$_" }
+            }
+            if (-not $got) { throw "7-Zip Extra 下载失败" }
+
+            & $sevenZip x extra.7z -osfx -y | Out-Null
+            $sfx = 'sfx\7zSD.sfx'
+            if (-not (Test-Path $sfx)) {
+              Get-ChildItem sfx | Select-Object Name | Out-Host
+              throw "7zSD.sfx 缺失"
+            }
+
+            $cfg = ";!@Install@!UTF-8!`r`nTitle=`"灵动课堂 $V`"`r`nDirectory=`"灵动课堂`"`r`nRunProgram=`"SmartClassroom.exe`"`r`n;!@InstallEnd@!`r`n"
+            [IO.File]::WriteAllText("$PWD/sfx-config.txt", $cfg,
+              (New-Object System.Text.UTF8Encoding($false)))
+
+            $archive = Join-Path $PWD "app.7z"
+            & $sevenZip a -t7z $archive "$src\*" -mx=9 | Out-Null
+            if (-not (Test-Path $archive)) { throw "7z 打包失败" }
+
+            $exeName = "${{ env.APP_NAME }}_v${V}_portable.exe"
+            cmd /c copy /b "$sfx" + "sfx-config.txt" + "app.7z" "$exeName" | Out-Null
+            if (-not (Test-Path $exeName)) { throw "便携 exe 未生成" }
+
+            $mb = [math]::Round((Get-Item $exeName).Length / 1MB, 1)
+            Write-Host "$exeName  $mb MB"
+            "- ``$exeName`` — $mb MB（放 U 盘直接双击）" |
+              Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          } catch {
+            $msg = ($_ | Out-String).Trim()
+            Write-Host $msg
+            $flat = ($msg -replace "`r?`n", ' | ')
+            if ($flat.Length -gt 3000) { $flat = $flat.Substring(0, 3000) }
+            Write-Output "::error title=Windows 便携包构建失败::$flat"
+            exit 1
           }
-          # 便携标记：应用据此把工作区锚定到 exe 同目录（换台电脑盘符变了也能找到）
-          New-Item -ItemType File -Path "$src/portable.marker" -Force | Out-Null
-
-          # 官方 7-Zip Extra 里带 7zSD.sfx（安装型 SFX 模块，支持 Directory）
-          $page = Invoke-WebRequest -Uri "https://www.7-zip.org/download.html" -UseBasicParsing
-          $m = [regex]::Match($page.Content, 'a/(7z[0-9]+(?:-x64)?-extra\.7z)')
-          if (-not $m.Success) { throw "无法从 7-zip.org 解析 Extra 包地址" }
-          Invoke-WebRequest -Uri ("https://www.7-zip.org/a/" + $m.Groups[1].Value) -OutFile extra.7z
-          & "C:\Program Files\7-Zip\7z.exe" x extra.7z -osfx -y | Out-Null
-          if (-not (Test-Path "sfx/7zSD.sfx")) { throw "7zSD.sfx 缺失" }
-
-          $cfg = @"
-          ;!@Install@!UTF-8!
-          Title="灵动课堂 $V"
-          Directory="灵动课堂"
-          RunProgram="SmartClassroom.exe"
-          ;!@InstallEnd@!
-          "@
-          [IO.File]::WriteAllText("$PWD/sfx-config.txt", ($cfg -replace '(?m)^ {10}', '') + "`r`n",
-            (New-Object System.Text.UTF8Encoding($false)))
-
-          $archive = Join-Path $PWD "app.7z"
-          & "C:\Program Files\7-Zip\7z.exe" a -t7z $archive "$src\*" -mx=9 | Out-Null
-
-          $exeName = "${{ env.APP_NAME }}_v${V}_portable.exe"
-          cmd /c copy /b "sfx\7zSD.sfx" + "sfx-config.txt" + "app.7z" "$exeName" | Out-Null
-          if (-not (Test-Path $exeName)) { throw "便携 exe 未生成" }
-
-          $mb = [math]::Round((Get-Item $exeName).Length / 1MB, 1)
-          Write-Host "$exeName  $mb MB"
-          "- ``$exeName`` — $mb MB（放 U 盘直接双击）" |
-            Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload portable exe
         uses: actions/upload-artifact@v7
