@@ -2,9 +2,9 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-11-11 15:30:49Z
+- 生成时间：2026-11-11 15:37:51Z
 - 触发：push @ main
-- 提交：`00f436257b507aec1614ebfd9d3710af78b64509`
+- 提交：`61d2d3028e093ce5e862a08e30eb49e89af57e51`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
 - `flutter analyze` 退出码：0
 - `flutter test` 退出码：0
@@ -59,7 +59,7 @@ Got dependencies!
 41 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
-No issues found! (ran in 12.2s)
+No issues found! (ran in 10.6s)
 ```
 
 ## flutter test
@@ -121,7 +121,7 @@ Try `flutter pub outdated` for more information.
 00:00 +6: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 非法段不会让比较抛异常
 00:00 +7: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 预发布后缀只比较主版本
 00:00 +8: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 下载页地址使用 v 前缀
-00:02 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:03 +9: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
 00:03 +10: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 解析出正确的 UTC 时间
 00:03 +11: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 一位数日期与前后空白
 00:03 +12: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 月份大小写不敏感
@@ -142,11 +142,11 @@ Try `flutter pub outdated` for more information.
 00:04 +27: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_complete.wav
 00:04 +28: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_fail.wav
 00:04 +29: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 timer_end.wav
-00:05 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 往返序列化保留所有字段
-00:05 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 空 JSON 回退到默认值
-00:05 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 字段类型不对时逐项回退，不抛异常
-00:05 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsNotifier 落盘 update 后新建 notifier 能读回
-00:05 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsNotifier 落盘 存档损坏时用默认值启动
+00:04 +30: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 往返序列化保留所有字段
+00:04 +31: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 空 JSON 回退到默认值
+00:04 +32: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsState JSON 字段类型不对时逐项回退，不抛异常
+00:04 +33: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsNotifier 落盘 update 后新建 notifier 能读回
+00:04 +34: /home/runner/work/Smart-classroom/Smart-classroom/test/settings_test.dart: SettingsNotifier 落盘 存档损坏时用默认值启动
 读取设置失败，使用默认值：FormatException: Unexpected character (at character 3)
 { 这不是 JSON
   ^
@@ -179,39 +179,39 @@ Try `flutter pub outdated` for more information.
 00:05 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 不同年级/班级互不影响
 00:05 +61: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 三年二班 与 3年2班 混排时视为同一组
 00:05 +62: /home/runner/work/Smart-classroom/Smart-classroom/test/roster_manager_test.dart: planRetention 保留策略（最旧 1 份 + 最新 5 份） 识别不出年级班级的文件永不淘汰
-00:06 +63: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
-00:06 +64: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
-00:06 +65: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 跨过 50 分进入秩序白银
-00:06 +66: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 小数分向下取整，49.9 仍属倔强青铜 I
-00:06 +67: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 负分被夹到 0，不产生越界段位
-00:06 +68: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 290 分是至尊星耀 I，300 分起进入最强王者
-00:06 +69: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 350 分及以上封顶荣耀王者，level 不再增长
-00:06 +70: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
-00:06 +71: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
-00:06 +72: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
+00:05 +63: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 0 分是倔强青铜 V
+00:05 +64: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 每个大段位内部从 V 递增到 I（以倔强青铜为例）
+00:05 +65: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 跨过 50 分进入秩序白银
+00:05 +66: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 小数分向下取整，49.9 仍属倔强青铜 I
+00:05 +67: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 负分被夹到 0，不产生越界段位
+00:05 +68: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 290 分是至尊星耀 I，300 分起进入最强王者
+00:05 +69: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: RankSystem.getRank 350 分及以上封顶荣耀王者，level 不再增长
+00:05 +70: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Group.totalScore 是成员分数之和
+00:05 +71: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Classroom.allMembers 展开全部小组
+00:05 +72: /home/runner/work/Smart-classroom/Smart-classroom/test/rank_system_test.dart: 模型派生值 Member.copyWith 不改 uid，只改传入字段
 00:06 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (setUpAll)
 00:06 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 顶层是对象，且至少包含小学/初中/高中
 00:06 +74: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 每个学段都符合 科目/版本/[文件] 三层结构
 00:06 +75: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 教材总数不低于 1900，且路径不为空
 00:06 +76: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 下载地址把中文路径编码成 ASCII
 00:06 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (tearDownAll)
-00:07 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数分钟
-00:07 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 分:秒
-00:07 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 时:分:秒
-00:07 +80: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 空串、乱写、非正数都返回 0
-00:07 +81: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数秒四舍五入
-00:07 +82: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: format 小时为 0 时省略
+00:06 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数分钟
+00:06 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 分:秒
+00:06 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 时:分:秒
+00:06 +80: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 空串、乱写、非正数都返回 0
+00:06 +81: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数秒四舍五入
+00:06 +82: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: format 小时为 0 时省略
 00:07 +83: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 原始地址只在候选末尾兜底
 00:07 +84: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像优先时，原始地址仍在最后
 00:07 +85: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 非 raw 地址原样返回，不拼接镜像
 00:07 +86: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 单镜像转换可指定序号且不越界
 00:07 +87: /home/runner/work/Smart-classroom/Smart-classroom/test/gh_proxy_service_test.dart: 镜像列表不含已知失效域名
-00:08 +88: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: peekLast 只看不取
-00:08 +89: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: undoLast 取出最新一条，并支持连续撤销
-00:08 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 记录按时间倒序（最新在前）
-00:08 +91: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 超过上限后丢弃最旧的，防止内存无限增长
-00:08 +92: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
-00:08 +93: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
-00:08 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
-00:08 +95: All tests passed!
+00:07 +88: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: peekLast 只看不取
+00:07 +89: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: undoLast 取出最新一条，并支持连续撤销
+00:07 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 记录按时间倒序（最新在前）
+00:07 +91: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 超过上限后丢弃最旧的，防止内存无限增长
+00:07 +92: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
+00:07 +93: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
+00:07 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
+00:07 +95: All tests passed!
 ```
