@@ -116,13 +116,19 @@ class WorkspaceService {
     var saved = _decodeRoot(_storage.getString(_rootPathKey));
 
     // 便携版第一次运行：默认把数据放在 exe 旁边的「课堂数据」，
-    // 老师把整个 U 盘目录拷走，数据一起带走。
+    // 老师把整个 U 盘目录拷走，数据一起带走。直接 setRootPath 落盘，
+    // 这样换台电脑（盘符变了）也能按相对路径找回。
     if (saved.isEmpty && isPortable) {
       final dir = exeDirectory;
-      if (dir != null) saved = p.join(dir.path, '课堂数据');
+      if (dir != null) {
+        await setRootPath(p.join(dir.path, '课堂数据'));
+        return;
+      }
     }
 
-    if (saved.isNotEmpty && Directory(saved).existsSync()) {
+    if (saved.isEmpty) return;
+    // 便携版目录被清掉也自动重建；非便携版则保留「让用户重新选」的行为
+    if (Directory(saved).existsSync() || isPortable) {
       _rootPath = saved;
       await _ensureDirectories();
     }
