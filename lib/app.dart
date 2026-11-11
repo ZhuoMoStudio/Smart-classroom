@@ -17,7 +17,6 @@ import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'widgets/workspace_picker_dialog.dart';
-import 'widgets/toast_overlay.dart';
 import 'l10n/generated/app_localizations.dart';
 
 class SmartClassroomApp extends ConsumerStatefulWidget {
