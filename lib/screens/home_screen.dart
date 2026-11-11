@@ -20,6 +20,7 @@ import '../theme/design_tokens.dart';
 import '../theme/route_utils.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/toast_overlay.dart';
+import '../widgets/update_dialog.dart';
 import '../widgets/auto_save_indicator.dart';
 import '../widgets/sync_status_indicator.dart';
 import '../widgets/textbook_panel.dart';
@@ -141,13 +142,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildMainContent() {
+    Widget child;
     switch (_tabIndex) {
-      case 0: return const _ClassroomView();
-      case 1: return const _ClassDataView();
-      case 2: return const TextbookPanel();
-      case 3: return const _SettingsPage();
-      default: return const _ClassroomView();
+      case 1:
+        child = const _ClassDataView();
+      case 2:
+        child = const TextbookPanel();
+      case 3:
+        child = const _SettingsPage();
+      default:
+        child = const _ClassroomView();
     }
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 180),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: KeyedSubtree(key: ValueKey<int>(_tabIndex), child: child),
+    );
   }
 
   Widget _buildBottomBar() => FrostedPanel(blur: 20,
@@ -157,7 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     child: SafeArea(top: false, child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: List.generate(_tabLabels.length, (i) => GestureDetector(
         onTap: () => setState(() => _tabIndex = i),
-        child: FrostedPanel(blur: 6, padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        child: FrostedPanel(blur: 6, padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 14),
           backgroundColor: _tabIndex == i ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -607,7 +618,11 @@ class _SettingsPage extends ConsumerWidget {
           if (p == null || !ws.isConfigured) return;
           // 选在 Download 等公共目录时，先要「所有文件访问」，否则后面的写入全会被拒
           if (context.mounted) {
-            await ensureStorageAccess(context, workspacePath: ws.rootPath);
+            await ensureStorageAccess(
+              context,
+              workspacePath: ws.rootPath,
+              onUseAppDir: () => ws.useAppPrivateWorkspace(),
+            );
           }
           await ws.ensureInitialTemplates();
           await ref.read(dataServiceProvider).loadFromWorkspace();
@@ -680,6 +695,10 @@ class _SettingsPage extends ConsumerWidget {
         const _AutoSaveHint(),
         const SizedBox(height: 6), const Divider(height: 1), const SizedBox(height: 6),
         _sec('帮助与关于', theme),
+        _tile(theme, Icons.system_update_alt, '检查更新', '获取最新版本；打不开时可直接去仓库下载页', () {
+          checkForUpdates(context, alwaysShow: true);
+        }),
+        const SizedBox(height: 2),
         _tile(theme, Icons.menu_book_outlined, '使用指南', '三步开始 · 抽取 · 题库 · 同步 · 排错', () {
           Navigator.push(context, slideFadePageRoute(const UsageGuideScreen()));
         }),
@@ -706,11 +725,31 @@ class _SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _sec(String t, ThemeData th) => Text(t, style: TextStyle(fontWeight: FontWeight.bold, color: th.colorScheme.primary, fontSize: 14));
+  /// 区域标题：左侧一条 3px 强调条 + 次级文字色。
+  /// 以前是「主题色 + 加粗 14」，一屏七个标题全在抢注意力。
+  Widget _sec(String t, ThemeData th) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(children: [
+          Container(
+            width: 3,
+            height: 14,
+            decoration: BoxDecoration(
+              color: th.colorScheme.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(t,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: th.colorScheme.onSurfaceVariant)),
+        ]),
+      );
 
   Widget _tile(ThemeData th, IconData ic, String t, String sub, VoidCallback onTap) => Card(
     elevation: 0, color: th.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     child: ListTile(leading: Icon(ic, size: 22, color: th.colorScheme.primary),
         title: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         subtitle: Text(sub, style: const TextStyle(fontSize: 12)),

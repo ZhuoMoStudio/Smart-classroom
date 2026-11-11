@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/class_model.dart';
@@ -41,14 +44,84 @@ class WorkspaceService {
   String get rootFolderName =>
       _rootPath == null ? '未设置' : fileNameOf(_rootPath!);
 
+  /// 退回应用私有目录（免存储权限）。
+  /// 公共目录拿不到「所有文件访问」时，这是让应用继续可用的兜底：
+  /// 数据在应用自己的目录里，老师看不到，但不会再出现 errno 13。
+  Future<void> useAppPrivateWorkspace() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory('${base.path}/课堂数据');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    await setRootPath(dir.path);
+  }
+
+  // ==================== 便携版（U 盘）====================
+
+  /// 便携版标记文件，由 Windows 打包时放进 exe 同目录。
+  static const String _portableMarker = 'portable.marker';
+  static const String _portablePrefix = '@portable:';
+
+  /// exe 所在目录。移动端返回 null。
+  static Directory? get exeDirectory {
+    if (!Platform.isWindows) return null;
+    try {
+      return File(Platform.resolvedExecutable).parent;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 便携版：exe 同目录存在 portable.marker。
+  static bool get isPortable {
+    final dir = exeDirectory;
+    if (dir == null) return false;
+    try {
+      return File(p.join(dir.path, _portableMarker)).existsSync();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 便携版里把工作区存成「相对 exe 的路径」。
+  ///
+  /// U 盘换一台电脑盘符会变（E: → F:），存绝对路径下次就找不到了；
+  /// 相对路径跟着 exe 走，才谈得上「自动记住 U 盘目录」。
+  String _encodeRoot(String path) {
+    final dir = exeDirectory;
+    if (!isPortable || dir == null) return path;
+    try {
+      final sameDrive =
+          p.rootPrefix(path).toLowerCase() == p.rootPrefix(dir.path).toLowerCase();
+      if (!sameDrive) return path;
+      return '$_portablePrefix${p.relative(path, from: dir.path)}';
+    } catch (_) {
+      return path;
+    }
+  }
+
+  String _decodeRoot(String saved) {
+    if (!saved.startsWith(_portablePrefix)) return saved;
+    final dir = exeDirectory;
+    if (dir == null) return saved;
+    return p.normalize(
+        p.join(dir.path, saved.substring(_portablePrefix.length)));
+  }
+
   Future<void> setRootPath(String path) async {
     _rootPath = path;
-    await _storage.setString(_rootPathKey, path);
+    await _storage.setString(_rootPathKey, _encodeRoot(path));
     await _ensureDirectories();
   }
 
   Future<void> loadSavedPath() async {
-    final saved = _storage.getString(_rootPathKey);
+    var saved = _decodeRoot(_storage.getString(_rootPathKey));
+
+    // 便携版第一次运行：默认把数据放在 exe 旁边的「课堂数据」，
+    // 老师把整个 U 盘目录拷走，数据一起带走。
+    if (saved.isEmpty && isPortable) {
+      final dir = exeDirectory;
+      if (dir != null) saved = p.join(dir.path, '课堂数据');
+    }
+
     if (saved.isNotEmpty && Directory(saved).existsSync()) {
       _rootPath = saved;
       await _ensureDirectories();

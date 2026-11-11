@@ -85,6 +85,11 @@ class UpdateService {
     return _repoUrl;
   }
 
+  /// 仓库的「最新版本」页面。用 latest 而不是具体 tag：
+  /// 老师点「前往下载」时总会落到最新一版，不会因为客户端缓存了旧 tag 而扑空。
+  static String get releasePageUrl => '$_repoUrl/releases/latest';
+
+  /// 某个具体版本的 tag 页面（仅用于展示/日志）。
   static String releaseUrl(String version) =>
       '$_repoUrl/releases/tag/v${normalizeVersion(version)}';
 
@@ -102,7 +107,7 @@ class UpdateService {
       hasUpdate: hasUpdate,
       currentVersion: cur,
       latestVersion: lat,
-      downloadUrl: hasUpdate ? releaseUrl(lat) : null,
+      downloadUrl: hasUpdate ? releasePageUrl : null,
       message: hasUpdate ? '发现新版本 v$lat' : '已是最新版本',
     );
   }

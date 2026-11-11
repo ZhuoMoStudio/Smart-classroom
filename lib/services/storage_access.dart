@@ -85,6 +85,7 @@ class StorageAccess {
 Future<bool> ensureStorageAccess(
   BuildContext context, {
   required String? workspacePath,
+  Future<void> Function()? onUseAppDir,
 }) async {
   if (workspacePath == null || workspacePath.isEmpty) return false;
   // 先实测：能写就不用打扰用户（哪怕权限 API 说没授权）
@@ -92,31 +93,44 @@ Future<bool> ensureStorageAccess(
 
   if (!context.mounted) return false;
 
-  final go = await showDialog<bool>(
+  final choice = await showDialog<String>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('需要「所有文件访问」权限'),
+      title: const Text('工作目录无法读写'),
       content: const Text(
         '工作目录在公共存储里（例如 Download）。\n\n'
-        'Android 11 以后，应用必须获得「所有文件访问」才能把名单和积分写回这个目录，'
-        '否则导出会失败、积分也不会落盘。\n\n'
-        '点「去授权」→ 在系统页面里打开「允许访问所有文件」→ 返回应用。',
+        'Android 11 以后，应用必须获得「所有文件访问」才能读写这个目录，'
+        '否则会报 Permission denied（errno 13），表现为导出失败、积分没保存、日志导不出。\n\n'
+        '不想授权也可以点「改用应用目录」：数据改存到应用自己的目录，不需要任何权限，'
+        '但文件管理器里看不到。',
         style: TextStyle(fontSize: 13, height: 1.6),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
+          onPressed: () => Navigator.pop(ctx, 'later'),
           child: const Text('稍后'),
         ),
+        if (onUseAppDir != null)
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'appdir'),
+            child: const Text('改用应用目录'),
+          ),
         FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
+          onPressed: () => Navigator.pop(ctx, 'grant'),
           child: const Text('去授权'),
         ),
       ],
     ),
   );
 
-  if (go != true) return false;
+  if (choice == 'appdir' && onUseAppDir != null) {
+    await onUseAppDir();
+    if (!context.mounted) return true;
+    ToastOverlay.show(context, '已改用应用目录，数据仍会正常保存',
+        type: ToastType.success);
+    return true;
+  }
+  if (choice != 'grant') return false;
 
   await StorageAccess.request();
   if (!context.mounted) return false;

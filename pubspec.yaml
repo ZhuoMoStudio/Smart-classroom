@@ -1,7 +1,7 @@
 name: smart_classroom
 description: 灵动课堂 - 课堂互动管理工具（AGPL-3.0 开源协议）
 publish_to: 'none'
-version: 1.34.0+6
+version: 2.0.0+7
 
 environment:
   sdk: '>=3.6.0 <4.0.0'

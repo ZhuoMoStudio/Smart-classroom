@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'providers/settings_provider.dart';
 import 'services/app_log.dart';
 import 'services/audio_engine.dart';
 import 'services/storage_service.dart';
 import 'services/update_service.dart';
+import 'widgets/update_dialog.dart';
 import 'services/workspace_service.dart';
 import 'services/storage_access.dart';
 import 'services/data_service.dart';
@@ -173,7 +173,12 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     try {
       if (await StorageAccess.probeWritable(ws.rootPath)) return;
       if (!mounted) return;
-      final ok = await ensureStorageAccess(context, workspacePath: ws.rootPath);
+      final ok = await ensureStorageAccess(
+        context,
+        workspacePath: ws.rootPath,
+        // 拿不到「所有文件访问」时的兜底：换到应用私有目录，应用继续可用
+        onUseAppDir: () => ws.useAppPrivateWorkspace(),
+      );
       if (ok && mounted) {
         // 授权后把之前读失败/没写进去的数据重新加载一遍
         await ref.read(dataServiceProvider).loadFromWorkspace();
@@ -214,70 +219,26 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
   ///
   /// 放在启动而不是塞进设置页深处：老师不会主动去设置里找「检查更新」，
   /// 有新版就当场告诉他更符合预期。同一个版本只提示一次。
+  /// 检查失败不阻塞启动；弹窗里永远保留「前往下载」。
   Future<void> _maybeCheckUpdate() async {
     if (_updateChecked) return;
     _updateChecked = true;
-
     try {
-      final result = await UpdateService.check();
-      if (!mounted) return;
-      if (!result.hasUpdate) return;
-
-      final skipped =
+      final skippedVersion =
           ref.read(storageServiceProvider).getString(_skippedVersionKey);
-      if (skipped == result.latestVersion) return;
-
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('发现新版本'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('当前版本：${result.currentVersion ?? '未知'}'),
-              const SizedBox(height: 4),
-              Text('最新版本：${result.latestVersion ?? '未知'}',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              const Text('前往下载页获取新版本安装包。',
-                  style: TextStyle(fontSize: 13)),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                ref
-                    .read(storageServiceProvider)
-                    .setString(_skippedVersionKey, result.latestVersion ?? '');
-                Navigator.pop(ctx);
-              },
-              child: const Text('跳过此版本'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('稍后'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                final url = result.downloadUrl;
-                if (url == null) return;
-                try {
-                  await launchUrl(Uri.parse(url),
-                      mode: LaunchMode.externalApplication);
-                } catch (e) {
-                  AppLog.warn('更新', '无法打开下载页: $e');
-                  if (mounted) {
-                    ToastOverlay.show(context, '无法打开下载页：$url',
-                        type: ToastType.warning);
-                  }
-                }
-              },
-              child: const Text('前往下载'),
-            ),
-          ],
-        ),
+      final result = await UpdateService.check();
+      if (!mounted || !result.hasUpdate) return;
+      if (skippedVersion.isNotEmpty &&
+          skippedVersion == result.latestVersion) {
+        return;
+      }
+      await showUpdateDialog(
+        context,
+        result,
+        onSkip: () {
+          ref.read(storageServiceProvider).setString(
+              _skippedVersionKey, result.latestVersion ?? '');
+        },
       );
     } catch (e, st) {
       // 检查更新失败绝不能影响启动

@@ -135,12 +135,19 @@ class AppLog {
   static Future<File> exportTo(String outputPath) async {
     final f = File(outputPath);
     await f.create(recursive: true);
-    final onDisk = logFile;
-    if (onDisk != null && onDisk.existsSync()) {
-      await onDisk.copy(outputPath);
-    } else {
-      await f.writeAsString(recentText, flush: true);
+    // 工作区可能不可读（公共目录 + 没拿到「所有文件访问」，
+    // 系统会以 errno 13 拒绝 copy）。这时退回内存里的近期日志，
+    // 至少能让老师把「为什么写不进去」这部分信息发出来。
+    try {
+      final onDisk = logFile;
+      if (onDisk != null && onDisk.existsSync()) {
+        await onDisk.copy(outputPath);
+        return f;
+      }
+    } catch (e) {
+      warn('日志', '读取工作区日志失败，改用内存缓冲：$e');
     }
+    await f.writeAsString(recentText, flush: true);
     return f;
   }
 

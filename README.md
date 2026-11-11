@@ -34,7 +34,7 @@
 | 平台 | 状态 | 安装方式 |
 |------|------|---------|
 | Android | ✅ | APK（arm64-v8a / armeabi-v7a / x86_64） |
-| Windows | ✅ | ZIP 绿色版 / Setup.exe 安装包 |
+| Windows | ✅ | 单文件便携 exe（放 U 盘直接运行，数据存在 exe 同目录） |
 
 ## 数据存放
 
@@ -107,8 +107,7 @@ CI 包含：
 | `SmartClassroom_v<版本>_arm64-v8a.apk` | 现代 Android 手机/平板 |
 | `SmartClassroom_v<版本>_armeabi-v7a.apk` | 老旧 32 位设备 |
 | `SmartClassroom_v<版本>_x86_64.apk` | 模拟器 / x86 平板 |
-| `SmartClassroom_v<版本>_windows.zip` | Windows 绿色版 |
-| `SmartClassroom_v<版本>_Setup.exe` | Windows 安装包 |
+| `SmartClassroom_v<版本>_portable.exe` | Windows 单文件便携版：放 U 盘双击即用，数据在 exe 同目录 |
 
 ### Android 签名
 

@@ -160,7 +160,11 @@ class _WorkspacePickerDialogState extends ConsumerState<WorkspacePickerDialog>
       final path = await ws.pickFolder();
       if (path != null && mounted) {
         // 公共目录需要「所有文件访问」才能写，先引导授权
-        await ensureStorageAccess(context, workspacePath: ws.rootPath);
+        await ensureStorageAccess(
+          context,
+          workspacePath: ws.rootPath,
+          onUseAppDir: () => ws.useAppPrivateWorkspace(),
+        );
         if (!mounted) return;
         await ws.ensureInitialTemplates();
         await ref.read(dataServiceProvider).loadFromWorkspace();
