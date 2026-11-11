@@ -175,100 +175,232 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 // ==================== 课堂主页 + 控制栏 ====================
-class _ClassroomView extends ConsumerWidget {
+class _ClassroomView extends ConsumerStatefulWidget {
   const _ClassroomView();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ClassroomView> createState() => _ClassroomViewState();
+}
+
+class _ClassroomViewState extends ConsumerState<_ClassroomView> {
+  int _tool = 0;
+
+  static const _toolLabels = ['抽取', '计时', '排行', '题库'];
+  static const _toolIcons = [
+    Icons.casino,
+    Icons.timer,
+    Icons.leaderboard,
+    Icons.quiz,
+  ];
+  static const _toolColors = [
+    AppColors.brandPrimary,
+    Colors.orange,
+    Colors.green,
+    Colors.purple,
+  ];
+
+  Widget _panelFor(int i) {
+    switch (i) {
+      case 1:
+        return const TimerPanel();
+      case 2:
+        return const LeaderboardPanel();
+      case 3:
+        return const QuestionPanel();
+      default:
+        return const DrawPanel();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cs = ref.watch(classProvider);
     final ds = ref.watch(drawProvider);
     final cls = cs.selectedClass;
     final theme = Theme.of(context);
-    final isNarrow = MediaQuery.of(context).size.width < 500;
 
     return Column(children: [
-      // 课堂控制栏
+      // 控制栏：班级选择 + 抽取策略
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Row(children: [
-          // 班级选择器
           Expanded(
             child: cls != null
                 ? Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.school, size: 16, color: theme.colorScheme.primary),
+                    Icon(Icons.school,
+                        size: 16, color: theme.colorScheme.primary),
                     const SizedBox(width: 4),
-                    Flexible(child: Text(cls.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis)),
-                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(cls.name,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                    const SizedBox(width: 6),
                     Text('${cls.groups.length}组·${cls.allMembers.length}人',
-                        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurfaceVariant)),
                   ])
-                : Text('请先添加班级', style: TextStyle(fontSize: 13, color: theme.colorScheme.outline)),
+                : Text('还没有班级',
+                    style: TextStyle(
+                        fontSize: 13, color: theme.colorScheme.outline)),
           ),
-          // 排除已选开关
           _ctrlChip(theme, '排除已选', ds.excludeDrawn,
               () => ref.read(drawProvider.notifier).toggleExcludeDrawn()),
           const SizedBox(width: 4),
           _ctrlChip(theme, '不重复', ds.noReplacement,
               () => ref.read(drawProvider.notifier).toggleNoReplacement()),
           const SizedBox(width: 4),
-          // 重置排除
-          InkWell(
-            onTap: () { ref.read(drawProvider.notifier).resetDrawnOnly(); ToastOverlay.show(context, '已重置排除列表'); },
-            child: Icon(Icons.refresh, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+          InkResponse(
+            onTap: () {
+              ref.read(drawProvider.notifier).resetDrawnOnly();
+              ToastOverlay.show(context, '已重置排除列表');
+            },
+            radius: 18,
+            child: Icon(Icons.refresh,
+                size: 18, color: theme.colorScheme.onSurfaceVariant),
           ),
         ]),
       ),
       const Divider(height: 1),
-      // 功能卡片
-      Expanded(child: Padding(padding: const EdgeInsets.all(6),
-        child: isNarrow
-            ? Column(children: [
-                Expanded(child: _fc(Icons.casino, '抽取', AppColors.brandPrimary, const DrawPanel())),
-                const SizedBox(height: 4),
-                Expanded(child: _fc(Icons.timer, '计时', Colors.orange, const TimerPanel())),
-                const SizedBox(height: 4),
-                Expanded(child: _fc(Icons.leaderboard, '排行', Colors.green, const LeaderboardPanel())),
-                const SizedBox(height: 4),
-                Expanded(child: _fc(Icons.quiz, '题库', Colors.purple, const QuestionPanel())),
-              ])
-            : Column(children: [
-                Expanded(child: Row(children: [
-                  Expanded(child: _fc(Icons.casino, '抽取', AppColors.brandPrimary, const DrawPanel())),
-                  const SizedBox(width: 4), Expanded(child: _fc(Icons.timer, '计时', Colors.orange, const TimerPanel())),
-                ])),
-                const SizedBox(height: 4),
-                Expanded(child: Row(children: [
-                  Expanded(child: _fc(Icons.leaderboard, '排行', Colors.green, const LeaderboardPanel())),
-                  const SizedBox(width: 4), Expanded(child: _fc(Icons.quiz, '题库', Colors.purple, const QuestionPanel())),
-                ])),
-              ]),
-      )),
+      ...(cls == null
+          ? <Widget>[Expanded(child: _emptyState(theme))]
+          : <Widget>[
+              _toolSwitcher(theme),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: KeyedSubtree(
+                      key: ValueKey<int>(_tool),
+                      child: _panelFor(_tool),
+                    ),
+                  ),
+                ),
+              ),
+            ]),
     ]);
   }
 
-  Widget _ctrlChip(ThemeData theme, String label, bool active, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: active ? AppColors.brandPrimary.withValues(alpha: 0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: active ? AppColors.brandPrimary : theme.colorScheme.outline.withValues(alpha: 0.2)),
-        ),
-        child: Text(label, style: TextStyle(fontSize: 11, color: active ? AppColors.brandPrimary : theme.colorScheme.outline)),
+  /// 四选一的功能切换。以前是 4 个面板同时塞进一屏（手机竖屏每块只有约 1/4 高），
+  /// 表格和题库都挤在很矮的框里。现在一次只显示一个功能，占满剩余高度。
+  Widget _toolSwitcher(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+      child: Row(
+        children: [
+          for (var i = 0; i < _toolLabels.length; i++)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                    right: i == _toolLabels.length - 1 ? 0 : 6),
+                child: GestureDetector(
+                  onTap: () => setState(() => _tool = i),
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _tool == i
+                          ? _toolColors[i].withValues(alpha: 0.14)
+                          : theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _tool == i
+                            ? _toolColors[i].withValues(alpha: 0.7)
+                            : Colors.transparent,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(_toolIcons[i],
+                            size: 16,
+                            color: _tool == i
+                                ? _toolColors[i]
+                                : theme.colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            _toolLabels[i],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: _tool == i
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                              color: _tool == i
+                                  ? _toolColors[i]
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _fc(IconData icon, String label, Color color, Widget child) => FrostedPanel(child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(children: [Icon(icon, size: 14, color: color), const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color))]),
-      const SizedBox(height: 4), Expanded(child: child),
-    ],
-  ));
+  Widget _emptyState(ThemeData theme) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.school_outlined,
+                  size: 56,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+              const SizedBox(height: 12),
+              Text('还没有班级', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 4),
+              Text(
+                '到「班级」页导入 xlsx 名单，或先手动添加一个班级',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _ctrlChip(
+      ThemeData theme, String label, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: active
+              ? AppColors.brandPrimary.withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: active
+                  ? AppColors.brandPrimary
+                  : theme.colorScheme.outline.withValues(alpha: 0.25)),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                color: active
+                    ? AppColors.brandPrimary
+                    : theme.colorScheme.outline)),
+      ),
+    );
+  }
 }
 
 // ==================== 班级数据 ====================
@@ -467,6 +599,8 @@ class _SettingsPage extends ConsumerWidget {
             }
           }
         }),
+        const SizedBox(height: 2),
+        const _StorageAccessTile(),
         const SizedBox(height: 2),
         _tile(theme, Icons.folder_open, '工作目录', ws.isConfigured ? ws.rootPath!.split('/').last : '未设置', () async {
           final p = await ws.pickFolder();
@@ -875,6 +1009,73 @@ class _AboutTile extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+
+/// 工作目录是否真的可写。
+/// 权限 API 说 granted 不代表写得进去（分区存储 / 只读挂载 / ROM 差异），
+/// 所以这里用「写一个探测文件」的实测结果说话，并给出授权入口。
+class _StorageAccessTile extends ConsumerStatefulWidget {
+  const _StorageAccessTile();
+
+  @override
+  ConsumerState<_StorageAccessTile> createState() => _StorageAccessTileState();
+}
+
+class _StorageAccessTileState extends ConsumerState<_StorageAccessTile> {
+  bool? _writable;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    final path = ref.read(workspaceServiceProvider).rootPath;
+    final ok = path == null ? false : await StorageAccess.probeWritable(path);
+    if (mounted) setState(() => _writable = ok);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ok = _writable;
+    final color = ok == false ? AppColors.error : theme.colorScheme.primary;
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        leading: Icon(
+          ok == null
+              ? Icons.hourglass_empty
+              : ok
+                  ? Icons.verified_user_outlined
+                  : Icons.lock_outline,
+          size: 22,
+          color: color,
+        ),
+        title: const Text('文件访问权限',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        subtitle: Text(
+          ok == null
+              ? '检测中…'
+              : ok
+                  ? '工作目录可读写'
+                  : '工作目录不可写，点此授权',
+          style: const TextStyle(fontSize: 12),
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 18),
+        dense: true,
+        onTap: () async {
+          final path = ref.read(workspaceServiceProvider).rootPath;
+          await ensureStorageAccess(context, workspacePath: path);
+          await _check();
+        },
+      ),
     );
   }
 }

@@ -159,14 +159,28 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     });
   }
 
-  /// 工作目录在公共存储时，先确认「所有文件访问」权限。
-  /// 否则老师会在导出/保存时看到 errno 13，却不知道为什么。
+  bool _storageChecked = false;
+
+  /// 工作目录写不进去时（公共目录 + 没有「所有文件访问」），
+  /// 启动阶段就给出一次说明和授权入口，而不是等保存失败才让老师猜。
+  /// 每次启动最多问一次；能写就完全不打扰。
   Future<void> _ensureStoragePermission() async {
+    if (_storageChecked) return;
+    _storageChecked = true;
     final ws = ref.read(workspaceServiceProvider);
+    if (!ws.isConfigured) return;
     if (!StorageAccess.needsAllFiles(ws.rootPath)) return;
-    if (await StorageAccess.isGranted()) return;
-    if (!mounted) return;
-    await ensureStorageAccess(context, workspacePath: ws.rootPath);
+    try {
+      if (await StorageAccess.probeWritable(ws.rootPath)) return;
+      if (!mounted) return;
+      final ok = await ensureStorageAccess(context, workspacePath: ws.rootPath);
+      if (ok && mounted) {
+        // 授权后把之前读失败/没写进去的数据重新加载一遍
+        await ref.read(dataServiceProvider).loadFromWorkspace();
+      }
+    } catch (e, st) {
+      AppLog.error('权限', '检查工作目录可写性失败', e, st);
+    }
   }
 
   void _maybeShowWorkspacePicker() {
