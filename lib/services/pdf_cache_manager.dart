@@ -227,6 +227,14 @@ class PdfCacheManager {
             continue;
           }
 
+          // 校验 PDF 头：代理/网关出错时常常返回 200 + HTML 错误页，
+          // 直接缓存会让阅读器打开一片空白，且以后一直命中坏缓存。
+          if (!await _looksLikePdf(tempFile)) {
+            await tempFile.delete();
+            AppLog.warn('课本', '下载内容不是 PDF，换源重试：$proxyUrl');
+            continue;
+          }
+
           await tempFile.rename(cachePath);
           _downloadStates[url] = DownloadState.completed;
           onStatus?.call(DownloadState.completed);
@@ -247,6 +255,26 @@ class PdfCacheManager {
     _downloadStates[url] = DownloadState.failed;
     onStatus?.call(DownloadState.failed);
     throw PdfCacheException('所有下载源均失败: $url');
+  }
+
+  /// 只读文件头 5 字节判断是不是 PDF。
+  static Future<bool> _looksLikePdf(File file) async {
+    try {
+      final raf = await file.open();
+      try {
+        final head = await raf.read(5);
+        return head.length == 5 &&
+            head[0] == 0x25 && // %
+            head[1] == 0x50 && // P
+            head[2] == 0x44 && // D
+            head[3] == 0x46 && // F
+            head[4] == 0x2D; // -
+      } finally {
+        await raf.close();
+      }
+    } catch (_) {
+      return false;
+    }
   }
 
   /// 获取下载状态

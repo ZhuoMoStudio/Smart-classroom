@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../providers/class_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../models/class_model.dart';
+import '../services/app_log.dart';
 import '../services/excel_service.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/rank_badge.dart';
@@ -287,41 +288,32 @@ Future<void> _exportReport(BuildContext context, WidgetRef ref) async {
     final tempPath = '$tempDir/$fileName';
     await ExcelService.exportFullReport(cs.classrooms, tempPath);
 
-    // 首选：系统「另存为」（SAF）。Android 11+ 下这一步可靠，
-    // 而且位置由老师自己选。
+    // 首选：系统「另存为」（SAF）。
+    // 关键：必须把 bytes 交给 file_picker，由它写入 SAF 返回的位置；
+    // 先 saveFile 再用 File.copy 在 Android 11+ 会因为没有权限而失败。
     try {
+      final bytes = await File(tempPath).readAsBytes();
       final savePath = await FilePicker.platform.saveFile(
         dialogTitle: '保存积分报表',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
+        bytes: bytes,
       );
-      if (savePath != null) {
-        await File(tempPath).copy(savePath);
-        if (context.mounted) {
-          ToastOverlay.show(context, '报表已保存: $savePath', type: ToastType.success);
-        }
-        return;
+      if (savePath == null) return; // 用户取消
+      if (context.mounted) {
+        ToastOverlay.show(context, '报表已保存: $savePath', type: ToastType.success);
       }
-    } catch (_) {}
-
-    // 降级：公共 Download 目录（Android 10 及以下通常可用）
-    try {
-      final downloadsDir = Directory('/storage/emulated/0/Download');
-      if (await downloadsDir.exists()) {
-        await File(tempPath).copy('${downloadsDir.path}/$fileName');
-        if (context.mounted) {
-          ToastOverlay.show(context, '报表已保存到 Download 目录', type: ToastType.success);
-        }
-        return;
-      }
-    } catch (_) {}
+      return;
+    } catch (e) {
+      AppLog.warn('导出', '报表另存为失败：$e');
+    }
 
     // 最后不再含糊：直接把完整路径告诉老师
     if (context.mounted) {
       ToastOverlay.show(
         context,
-        '报表已生成（未找到可写的外部目录）:\n$tempPath',
+        '另存为没有完成，报表暂存在应用私有目录（文件管理器可能看不到）：\n$tempPath',
         type: ToastType.warning,
         duration: const Duration(seconds: 6),
       );
