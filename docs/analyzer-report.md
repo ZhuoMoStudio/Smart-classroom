@@ -2,9 +2,9 @@
 
 本文件由 CI 的 verify job 自动生成，请勿手工编辑。
 
-- 生成时间：2026-11-14 04:15:46Z
+- 生成时间：2026-11-14 04:27:12Z
 - 触发：push @ main
-- 提交：`feef8c7e395d02d9998aafb582bfad0151a0320d`
+- 提交：`4dc8da14baefed3523a4996bf4968e63b55e0fa6`
 - Flutter：Flutter 3.44.9 • channel stable • https://github.com/flutter/flutter.git
 - `flutter analyze` 退出码：0
 - `flutter test` 退出码：0
@@ -59,7 +59,7 @@ Got dependencies!
 41 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 Analyzing Smart-classroom...                                    
-No issues found! (ran in 14.4s)
+No issues found! (ran in 9.6s)
 ```
 
 ## flutter test
@@ -168,15 +168,15 @@ Try `flutter pub outdated` for more information.
 00:01 +49: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: undoLast 取出最新一条，并支持连续撤销
 00:01 +50: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 记录按时间倒序（最新在前）
 00:01 +51: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: 超过上限后丢弃最旧的，防止内存无限增长
-00:02 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
-00:02 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
-00:02 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
-00:02 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数分钟
-00:02 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 分:秒
-00:02 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 时:分:秒
-00:02 +58: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 空串、乱写、非正数都返回 0
-00:02 +59: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数秒四舍五入
-00:02 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: format 小时为 0 时省略
+00:01 +52: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: recentRecords 只暴露最近 50 条
+00:01 +53: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: clear 之后队列为空
+00:01 +54: /home/runner/work/Smart-classroom/Smart-classroom/test/score_history_test.dart: delta 正负判断
+00:01 +55: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数分钟
+00:01 +56: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 分:秒
+00:01 +57: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 时:分:秒
+00:01 +58: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 空串、乱写、非正数都返回 0
+00:01 +59: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: parseSeconds 小数秒四舍五入
+00:01 +60: /home/runner/work/Smart-classroom/Smart-classroom/test/duration_input_test.dart: format 小时为 0 时省略
 00:02 +61: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 音效目录存在且包含全部预期文件
 00:02 +62: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 add_member.wav
 00:02 +63: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 click.wav
@@ -189,29 +189,29 @@ Try `flutter pub outdated` for more information.
 00:02 +70: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_complete.wav
 00:02 +71: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 sync_fail.wav
 00:02 +72: /home/runner/work/Smart-classroom/Smart-classroom/test/assets_test.dart: 每个 wav 都是可播放的 PCM 文件 timer_end.wav
-00:05 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 去掉开头的 v
-00:05 +74: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 只去掉开头那一个 v，不误伤中间字符
-00:05 +75: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 去掉构建号后缀
-00:05 +76: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 逐段按数字比较，1.10 大于 1.9
-00:05 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 缺失段按 0 处理
-00:05 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 当前版本低于最新版本时返回负数
-00:05 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 非法段不会让比较抛异常
-00:05 +80: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 预发布后缀只比较主版本
-00:05 +81: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 下载页地址使用 v 前缀
-00:05 +82: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 解析出正确的 UTC 时间
-00:05 +83: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 一位数日期与前后空白
-00:05 +84: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 月份大小写不敏感
-00:05 +85: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 十二月的边界
-00:05 +86: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 RFC 850 两位年份按 50 年窗口解释
-00:05 +87: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 asctime 格式
-00:05 +88: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 空串、垃圾串、越界字段都返回 null
-00:05 +89: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 ISO-8601 走兜底解析
-00:05 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (setUpAll)
-00:05 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 顶层是对象，且至少包含小学/初中/高中
-00:05 +91: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 每个学段都符合 科目/版本/[文件] 三层结构
-00:05 +92: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 教材总数不低于 1900，且路径不为空
-00:05 +93: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 下载地址把中文路径编码成 ASCII
-00:05 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (tearDownAll)
-00:09 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
-00:10 +95: All tests passed!
+00:04 +73: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 去掉开头的 v
+00:04 +74: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 只去掉开头那一个 v，不误伤中间字符
+00:04 +75: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本号归一化 去掉构建号后缀
+00:04 +76: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 逐段按数字比较，1.10 大于 1.9
+00:04 +77: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 缺失段按 0 处理
+00:04 +78: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 当前版本低于最新版本时返回负数
+00:04 +79: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 非法段不会让比较抛异常
+00:04 +80: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 版本比较 预发布后缀只比较主版本
+00:04 +81: /home/runner/work/Smart-classroom/Smart-classroom/test/update_service_test.dart: 下载页地址使用 v 前缀
+00:04 +82: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 解析出正确的 UTC 时间
+00:04 +83: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 一位数日期与前后空白
+00:04 +84: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 月份大小写不敏感
+00:04 +85: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: IMF-fixdate（主流格式） 十二月的边界
+00:04 +86: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 RFC 850 两位年份按 50 年窗口解释
+00:04 +87: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: RFC 850 与 asctime 兼容 asctime 格式
+00:04 +88: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 空串、垃圾串、越界字段都返回 null
+00:04 +89: /home/runner/work/Smart-classroom/Smart-classroom/test/http_date_test.dart: 非法输入不崩溃 ISO-8601 走兜底解析
+00:04 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (setUpAll)
+00:04 +90: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 顶层是对象，且至少包含小学/初中/高中
+00:04 +91: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 每个学段都符合 科目/版本/[文件] 三层结构
+00:04 +92: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 教材总数不低于 1900，且路径不为空
+00:04 +93: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: 下载地址把中文路径编码成 ASCII
+00:04 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/textbook_index_test.dart: (tearDownAll)
+00:07 +94: /home/runner/work/Smart-classroom/Smart-classroom/test/widget_test.dart: 应用能启动并渲染首屏
+00:07 +95: All tests passed!
 ```
