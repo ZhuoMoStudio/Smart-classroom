@@ -428,8 +428,12 @@ jobs:
           try {
             $V = "${{ needs.verify.outputs.version }}"
             $src = "build/windows/x64/runner/Release"
-            if (-not (Test-Path "$src/SmartClassroom.exe")) {
-              throw "构建产物缺失：$src/SmartClassroom.exe"
+            # 注意：Windows runner 的可执行文件名由 CMake 的 BINARY_NAME 决定，
+            # 这里是 smart_classroom.exe（不是产品名 SmartClassroom）。
+            $appExe = Join-Path $src "smart_classroom.exe"
+            if (-not (Test-Path $appExe)) {
+              Get-ChildItem $src | Select-Object Name | Out-Host
+              throw "构建产物缺失：$appExe"
             }
             New-Item -ItemType File -Path "$src/portable.marker" -Force | Out-Null
 
@@ -473,7 +477,7 @@ jobs:
               throw "7zSD.sfx 缺失"
             }
 
-            $cfg = ";!@Install@!UTF-8!`r`nTitle=`"灵动课堂 $V`"`r`nDirectory=`"灵动课堂`"`r`nRunProgram=`"SmartClassroom.exe`"`r`n;!@InstallEnd@!`r`n"
+            $cfg = ";!@Install@!UTF-8!`r`nTitle=`"灵动课堂 $V`"`r`nDirectory=`"灵动课堂`"`r`nRunProgram=`"smart_classroom.exe`"`r`n;!@InstallEnd@!`r`n"
             [IO.File]::WriteAllText("$PWD/sfx-config.txt", $cfg,
               (New-Object System.Text.UTF8Encoding($false)))
 

@@ -610,8 +610,10 @@ class _SettingsPage extends ConsumerWidget {
             }
           }
         }),
-        const SizedBox(height: 2),
-        const _StorageAccessTile(),
+        if (StorageAccess.isAndroid) ...[
+          const SizedBox(height: 2),
+          const _StorageAccessTile(),
+        ],
         const SizedBox(height: 2),
         _tile(theme, Icons.folder_open, '工作目录', ws.isConfigured ? ws.rootPath!.split('/').last : '未设置', () async {
           final p = await ws.pickFolder();

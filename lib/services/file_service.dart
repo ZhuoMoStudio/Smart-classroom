@@ -55,6 +55,8 @@ class FileService {
         fileName: '运行日志.log',
         dialogTitle: '导出运行日志',
         allowedExtensions: const ['log', 'txt'],
+        // 日志不是已知 MIME，用 any 避免部分 ROM 对自定义扩展名报错
+        fileType: FileType.any,
         build: (path) => AppLog.exportTo(path),
       );
 
@@ -75,6 +77,7 @@ class FileService {
     required String dialogTitle,
     required Future<File> Function(String path) build,
     List<String> allowedExtensions = const ['xlsx'],
+    FileType fileType = FileType.custom,
   }) async {
     // 1) 先在**应用私有临时目录**生成 xlsx。
     //    不能写工作区：工作区常在 /storage/emulated/0/Download 下，
@@ -96,8 +99,9 @@ class FileService {
       final savePath = await FilePicker.platform.saveFile(
         dialogTitle: dialogTitle,
         fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: allowedExtensions,
+        type: fileType,
+        allowedExtensions:
+            fileType == FileType.custom ? allowedExtensions : null,
         bytes: bytes,
       );
       if (savePath == null) {
