@@ -6,7 +6,7 @@
 课堂互动管理工具 — 教师专用，Android 与 Windows 双端可用。
 
 **[下载最新版](https://github.com/ZhuoMoStudio/Smart-classroom/releases/latest)** ·
-[更新日志](CHANGELOG.md) · [参与开发](CONTRIBUTING.md) · [踩坑记录](docs/PITFALLS.md)
+[更新日志](CHANGELOG.md) · [参与开发](CONTRIBUTING.md)
 
 **本项目采用 [AGPL-3.0](LICENSE) 协议。** 你可以自由使用、修改、分发，包括商用，
 但若分发修改版、或把它作为网络服务提供给他人使用，必须以同样协议公开完整源代码。

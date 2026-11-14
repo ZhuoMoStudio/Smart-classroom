@@ -446,38 +446,23 @@ jobs:
             if (-not $sevenZip) { throw "找不到 7z.exe" }
             Write-Host "7z: $sevenZip"
 
-            # 官方 7-Zip Extra 里带 7zSD.sfx（安装型 SFX 模块，支持 Directory）
-            $extra = $null
-            try {
-              $page = Invoke-WebRequest -Uri "https://www.7-zip.org/download.html"
-              $m = [regex]::Match($page.Content, 'a/(7z[0-9]+(?:-x64)?-extra\.7z)')
-              if ($m.Success) { $extra = "https://www.7-zip.org/a/" + $m.Groups[1].Value }
-            } catch {
-              Write-Host "下载页解析失败：$_"
-            }
-            $fallbacks = @(
-              "https://www.7-zip.org/a/7z2409-extra.7z",
-              "https://www.7-zip.org/a/7z2301-extra.7z"
-            )
-            if ($extra) { $fallbacks = @($extra) + $fallbacks }
-            $got = $false
-            foreach ($u in $fallbacks) {
-              try {
-                Write-Host "下载 $u"
-                Invoke-WebRequest -Uri $u -OutFile extra.7z
-                if ((Get-Item extra.7z).Length -gt 100000) { $got = $true; break }
-              } catch { Write-Host "失败：$_" }
-            }
-            if (-not $got) { throw "7-Zip Extra 下载失败" }
-
-            & $sevenZip x extra.7z -osfx -y | Out-Null
-            $sfx = 'sfx\7zSD.sfx'
+            # 用 7zsfxmm 的 7zsd.sfx：它支持 InstallPath（解压到指定目录并保留），
+            # 官方 7zSD 只会解压到临时目录、退出即删，数据留不到 U 盘。
+            $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/chrislake/7zsfxmm/releases/latest" `
+              -Headers @{ 'User-Agent' = 'SmartClassroom-CI' }
+            $asset = $rel.assets |
+              Where-Object { $_.name -like '7zsd_*.7z' } | Select-Object -First 1
+            if (-not $asset) { throw "7zsfxmm 发布里找不到 7zsd 包" }
+            Write-Host "下载 $($asset.browser_download_url)"
+            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile sfxmod.7z
+            & $sevenZip x sfxmod.7z -osfx -y | Out-Null
+            $sfx = 'sfx\7zsd.sfx'
             if (-not (Test-Path $sfx)) {
               Get-ChildItem sfx | Select-Object Name | Out-Host
-              throw "7zSD.sfx 缺失"
+              throw "7zsd.sfx 缺失"
             }
 
-            $cfg = ";!@Install@!UTF-8!`r`nTitle=`"灵动课堂 $V`"`r`nDirectory=`"灵动课堂`"`r`nRunProgram=`"smart_classroom.exe`"`r`n;!@InstallEnd@!`r`n"
+            $cfg = ";!@Install@!UTF-8!`r`nTitle=`"灵动课堂 $V`"`r`nInstallPath=`"灵动课堂`"`r`nRunProgram=`"smart_classroom.exe`"`r`n;!@InstallEnd@!`r`n"
             [IO.File]::WriteAllText("$PWD/sfx-config.txt", $cfg,
               (New-Object System.Text.UTF8Encoding($false)))
 
