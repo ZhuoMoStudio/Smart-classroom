@@ -197,6 +197,10 @@ jobs:
       # GITHUB_TOKEN 触发的 push 不会再触发其他 workflow，不会递归。
       - name: Commit report & pubspec.lock
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # 诊断报告是辅助产物：推不上去只警告，不能因此把整次构建判失败。
+        # 之前并发构建互相 rebase 冲突时，这里连续重试后 exit 1，
+        # 把一次「analyze/test 全绿」的构建变成了红叉。
+        continue-on-error: true
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
@@ -221,8 +225,8 @@ jobs:
             git rebase FETCH_HEAD || { git rebase --abort || true; }
             sleep $((i * 3))
           done
-          echo "::error::报告提交连续 5 次被拒绝，放弃"
-          exit 1
+          echo "::warning::报告提交连续 5 次被拒绝，本次跳过（不影响构建结果）"
+          exit 0
 
       # 报告已落盘、已提交，现在才真正失败
       - name: Fail if analyzer reported errors
